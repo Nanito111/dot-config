@@ -20,7 +20,7 @@ tab_activity_symbol "  "
 sync_to_monitor no
 
 background_blur 1
-background_opacity 0.5
+background_opacity 0.92
 
 shell_integration no-cursor
 
@@ -32,6 +32,6 @@ map ctrl+alt+g goto_layout grid
 
 
 # BEGIN_KITTY_THEME
-# Selenized Black
+# Wombat
 include current-theme.conf
 # END_KITTY_THEME
