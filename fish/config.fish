@@ -13,3 +13,4 @@ if test -f "/home/nanito/mambaforge-pypy3/etc/fish/conf.d/mamba.fish"
 end
 # <<< conda initialize <<<
 
+starship init fish | source
