@@ -1,5 +1,5 @@
 # this is a configuration file for the next tools
-* neovim (with nvchad)
 * fish
+* omf (oh my fish)
 * starship (fish theme)
 * kitty
