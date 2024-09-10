@@ -14,6 +14,7 @@ font_size 14.0
 cursor_shape block
 
 hide_window_decorations no
+window_padding_width 0 20
 
 tab_activity_symbol "  "
 
@@ -32,6 +33,6 @@ map ctrl+alt+g goto_layout grid
 
 
 # BEGIN_KITTY_THEME
-# Constant Perceptual Luminosity (dark)
+# Gruvbox Dark Hard
 include current-theme.conf
 # END_KITTY_THEME
