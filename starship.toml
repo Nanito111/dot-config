@@ -4,7 +4,9 @@ add_newline = false
 continuation_prompt = "[▸▹ ](dimmed white)"
 
 format = """
-($nix_shell$container)$cmd_duration\
+($nix_shell$container)\
+$time\
+ \
 $hostname\
 $localip\
 $shlvl\
@@ -13,17 +15,19 @@ $env_var\
 $jobs\
 $sudo\
 $username\
+ \
 $singularity\
 $kubernetes\
 $directory\
+$cmd_duration\
 $fill\
 $vcsh\
 $fossil_branch\
+$git_state\
+$git_metrics\
+$git_status\
 $git_branch\
 $git_commit\
-$git_state\
-$git_status\
-$git_metrics\
 $hg_branch\
 $pijul_channel\
 $docker_context\
@@ -83,8 +87,7 @@ $crystal\
 $custom\
 $status\
 $os\
-$battery\
-$time
+$battery
 $character"""
 
 [fill]
@@ -113,7 +116,7 @@ disabled = false
 [username]
 style_user = "bright-yellow bold"
 style_root = "purple bold"
-format = "[⭘ $user]($style) "
+format = "[$user ]($style)"
 disabled = false
 show_always = true
 
@@ -130,7 +133,7 @@ repo_root_style = 'bold blue'
 repo_root_format = '[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style) [△](bold bright-blue)'
 
 [cmd_duration]
-format = "[◄ $duration ](italic white)"
+format = "[ ◄$duration ](italic white)"
 
 [jobs]
 format = "[$symbol$number]($style) "
@@ -140,11 +143,11 @@ symbol = "[▶](blue italic)"
 [localip]
 ssh_only = true
 format = " ◯[$localipv4](bold magenta)"
-disabled = false
+disabled = true
 
 [time]
 disabled = false
-format = "[ 󰅐 $time]($style)"
+format = "[$time ]($style)"
 time_format = "%R"
 utc_time_offset = "local"
 style = "italic dimmed white"
@@ -186,15 +189,15 @@ disabled = false
 
 [git_status]
 style = "bold bright-blue"
-format = "([ $ahead$behind$staged$modified$untracked$renamed$deleted$conflicted$stashed󰇙]($style))"
+format = "([ $ahead$behind$staged$modified$untracked$renamed$deleted$conflicted$stashed]($style))"
 conflicted = "[◪◦](bright-magenta)"
-ahead = "[▴│[${count}](bold white)󰇙]( green)"
-behind = "[▿│[${count}](bold white)󰇙]( red)"
-diverged = "[◇ ▴┤[${ahead_count}](regular white)󰇙▿┤[${behind_count}](regular white)󰇙]( bright-magenta)"
+ahead = "[▴│[${count}](bold white)]( green)"
+behind = "[▿│[${count}](bold white)]( red)"
+diverged = "[◇ ▴┤[${ahead_count}](regular white) ▿┤[${behind_count}](regular white)]( bright-magenta)"
 untracked = "[◌◦]( bright-yellow)"
 stashed = "[◃◈]( white)"
 modified = "[●◦]( yellow)"
-staged = "[▪┤[$count](bold white)󰇙]( bright-cyan)"
+staged = "[▪┤[$count](bold white)]( bright-cyan)"
 renamed = "[◎◦]( bright-blue)"
 deleted = "[✕]( red)"
 
