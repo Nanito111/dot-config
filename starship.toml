@@ -6,7 +6,6 @@ continuation_prompt = "[▸▹ ](dimmed white)"
 format = """
 ($nix_shell$container)\
 $time\
- \
 $hostname\
 $localip\
 $shlvl\
@@ -15,7 +14,6 @@ $env_var\
 $jobs\
 $sudo\
 $username\
- \
 $singularity\
 $kubernetes\
 $directory\
@@ -94,7 +92,7 @@ $character"""
 symbol = ' '
 
 [character]
-format = "$symbol "
+format = " $symbol "
 success_symbol = "[◎](bold bright-yellow)"
 error_symbol = "[○](purple)"
 vimcmd_symbol = "[■](dimmed green)"
@@ -177,7 +175,7 @@ format = " [$branch(:$remote_branch)]($style)"
 symbol = "[△](bold bright-blue)"
 style = "bright-blue"
 truncation_symbol = "⋯"
-truncation_length = 40
+truncation_length = 30
 only_attached = true
 
 [git_metrics]
