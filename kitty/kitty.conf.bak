@@ -4,7 +4,7 @@ globinclude kitty.d/**/*.conf
 # Include the *contents* of all env vars starting with KITTY_CONF_
 envinclude KITTY_CONF_*
 
-font_size 10.0
+font_size 15.0
 
 cursor_shape block
 
@@ -17,7 +17,7 @@ repaint_delay 30
 sync_to_monitor no
 
 background_blur 1
-background_opacity 0.94
+background_opacity 0.92
 
 shell_integration no-cursor
 
@@ -29,13 +29,13 @@ map ctrl+alt+g goto_layout grid
 
 
 # BEGIN_KITTY_THEME
-# Kanagawa_dragon
+# Ayu
 include current-theme.conf
 # END_KITTY_THEME
 
 
 # BEGIN_KITTY_FONTS
-font_family      family="zai Olivetti-Underwood Studio 21 Typewriter"
+font_family      family="GoMono Nerd Font"
 bold_font        auto
 italic_font      auto
 bold_italic_font auto

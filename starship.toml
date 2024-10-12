@@ -148,7 +148,7 @@ disabled = false
 format = "[$time ]($style)"
 time_format = "%R"
 utc_time_offset = "local"
-style = "italic bright-black"
+style = "italic dimmed white"
 
 [battery]
 format = "[ $percentage $symbol]($style)"
