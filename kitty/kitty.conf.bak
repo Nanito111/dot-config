@@ -4,12 +4,12 @@ globinclude kitty.d/**/*.conf
 # Include the *contents* of all env vars starting with KITTY_CONF_
 envinclude KITTY_CONF_*
 
-font_size 15.0
+font_size 12
 
 cursor_shape block
 
 hide_window_decorations no
-window_padding_width 0 0
+window_padding_width 0 5
 
 tab_activity_symbol "  "
 
@@ -29,7 +29,7 @@ map ctrl+alt+g goto_layout grid
 
 
 # BEGIN_KITTY_THEME
-# Ayu
+# Rosé Pine
 include current-theme.conf
 # END_KITTY_THEME
 
