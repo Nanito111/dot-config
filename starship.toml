@@ -17,7 +17,7 @@ $username\
 $singularity\
 $kubernetes\
 $directory\
-$cmd_duration\
+$cmd_duration
 $fill\
 $vcsh\
 $fossil_branch\
