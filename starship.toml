@@ -4,7 +4,7 @@ add_newline = false
 continuation_prompt = "[▸▹ ](dimmed white)"
 
 format = """
- ($nix_shell$container)\
+($nix_shell$container)\
 $time\
 $hostname\
 $localip\
@@ -85,7 +85,7 @@ $crystal\
 $custom\
 $status\
 $os\
-$battery   \n\
+$battery
 $character"""
 
 [fill]
