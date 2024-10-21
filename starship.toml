@@ -17,7 +17,7 @@ $username\
 $singularity\
 $kubernetes\
 $directory\
-$cmd_duration
+$cmd_duration\n\
 $fill\
 $vcsh\
 $fossil_branch\
@@ -85,7 +85,7 @@ $crystal\
 $custom\
 $status\
 $os\
-$battery
+$battery \n\
 $character"""
 
 [fill]
