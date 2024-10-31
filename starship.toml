@@ -214,7 +214,7 @@ symbol = "󰎙 "
 [python]
 style = "bg:overlay fg:pine"
 version_format = "${raw}"
-format = '[](fg:overlay)[$symbol$version \($virtualenv\)]($style)[](fg:overlay)'
+format = '[](fg:overlay)[$symbol$version( \($virtualenv\))]($style)[](fg:overlay)'
 disabled = false
 symbol = ' '
 
