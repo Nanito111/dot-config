@@ -83,16 +83,27 @@ $os\
 $battery \n\
 $character"""
 
-palette = "rose-pine-dawn"
+palette = "gruvbox"
 
-[palettes.rose-pine-dawn]
-overlay = '#f2e9e1'
-love = '#b4637a'
-gold = '#ea9d34'
-rose = '#d7827e'
-pine = '#286983'
-foam = '#56949f'
-iris = '#907aa9'
+[palettes.gruvbox]
+overlay = '#282828'
+dark = '#ebdbb2'
+love = '#cc241d'
+gold = '#d79921'
+rose = '#b16286'
+pine = '#458588'
+foam = '#689d6a'
+iris = '#98971a'
+
+
+# [palettes.rose-pine-dawn]
+# overlay = '#f2e9e1'
+# love = '#b4637a'
+# gold = '#ea9d34'
+# rose = '#d7827e'
+# pine = '#286983'
+# foam = '#56949f'
+# iris = '#907aa9'
 
 [fill]
 style = "fg:overlay"
@@ -120,15 +131,15 @@ disabled = false
 
 [username]
 disabled = false
-format = "[](fg:overlay)[$user]($style)[](fg:overlay)"
+format = "[](fg:iris)[$user]($style)[](fg:iris)"
 show_always = true
-style_root = "bg:overlay fg:gold bold"
-style_user = "bg:overlay fg:iris"
+style_root = "bg:gold fg:overlay bold"
+style_user = "bg:iris fg:overlay"
 
 [directory]
 home_symbol = "⌂"
-format = " [](fg:overlay)[$path$read_only]($style)[](fg:overlay)"
-style = "bg:overlay fg:pine"
+format = " [](fg:pine)[$path$read_only]($style)[](fg:pine)"
+style = "bg:pine fg:overlay"
 truncation_length = 4
 truncation_symbol = "…/"
 use_logical_path=true
@@ -150,8 +161,8 @@ disabled = true
 
 [time]
 disabled = false
-format = " [](fg:overlay)[$time]($style)[](fg:overlay)"
-style = "bg:overlay fg:rose"
+format = " [](fg:rose)[$time]($style)[](fg:rose)"
+style = "bg:rose fg:overlay"
 time_format = "%H:%M"
 use_12hr = false
 
@@ -176,17 +187,17 @@ threshold = 70
 style = "italic dimmed yellow"
 
 [git_branch]
-format = "[ $symbol $branch]($style)[](fg:overlay)"
+format = "[ $symbol $branch]($style)[](fg:iris)"
 symbol = ""
-style = "bg:overlay fg:pine"
+style = "bg:iris fg:dark"
 truncation_symbol = "⋯"
 truncation_length = 30
 only_attached = true
 
 [git_metrics]
-format = '[](fg:overlay)[▴$added]($added_style)[▿$deleted]($deleted_style)'
-added_style = 'dimmed green bg:overlay'
-deleted_style = 'dimmed red bg:overlay'
+format = '[](fg:dark)[▴$added]($added_style)[▿$deleted ]($deleted_style)'
+added_style = 'foam bg:dark'
+deleted_style = 'love bg:dark'
 ignore_submodules = true
 disabled = false
 
@@ -212,9 +223,9 @@ disabled = false
 symbol = "󰎙 "
 
 [python]
-style = "bg:overlay fg:pine"
+style = "bg:pine fg:overlay"
 version_format = "${raw}"
-format = '[](fg:overlay)[$symbol$version( \($virtualenv\))]($style)[](fg:overlay)'
+format = '[](fg:pine)[$symbol$version( \($virtualenv\))]($style)[](fg:pine)'
 disabled = false
 symbol = ' '
 
