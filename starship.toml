@@ -6,6 +6,7 @@ continuation_prompt = "[▸▹ ](dimmed white)"
 format = """
 ($nix_shell$container)\
 $time \
+$battery\
 $hostname\
 $localip\
 $shell\
@@ -79,8 +80,7 @@ $azure\
 $crystal\
 $custom\
 $status\
-$os\
-$battery \n\
+$os \n\
 $character"""
 
 palette = "gruvbox_dark"
@@ -171,24 +171,66 @@ time_format = "%H:%M"
 use_12hr = false
 
 [battery]
+style = "bg:bg2 fg:fg1"
 format = "[ $percentage $symbol]($style)"
-full_symbol = "█"
-charging_symbol = "[↑](italic bold green)"
-discharging_symbol = "↓"
-unknown_symbol = "░"
-empty_symbol = "▃"
+full_symbol = "󰁹"
+unknown_symbol = "󱉝"
+empty_symbol = "󰂎"
+disabled = true
+
+[[battery.display]]
+threshold = 10
+charging_symbol = '󰢜'
+discharging_symbol = '󰁺'
 
 [[battery.display]]
 threshold = 20
-style = "italic bold red"
+style = "red"
+charging_symbol = '󰂆'
+discharging_symbol = '󰁻'
+
+[[battery.display]]
+threshold = 30
+charging_symbol = '󰂇'
+discharging_symbol = '󰁼'
+
+[[battery.display]]
+threshold = 40
+style = "orange"
+charging_symbol = '󰂈'
+discharging_symbol = '󰁽'
+
+[[battery.display]]
+threshold = 50
+charging_symbol = '󰢝'
+discharging_symbol = '󰁾'
 
 [[battery.display]]
 threshold = 60
-style = "italic dimmed bright-purple"
+charging_symbol = '󰂉'
+discharging_symbol = '󰁿'
 
 [[battery.display]]
 threshold = 70
-style = "italic dimmed yellow"
+style = "yellow"
+charging_symbol = '󰢞'
+discharging_symbol = '󰂀'
+
+[[battery.display]]
+threshold = 80
+charging_symbol = '󰂊'
+discharging_symbol = '󰂁'
+
+[[battery.display]]
+threshold = 90
+charging_symbol = '󰂋'
+discharging_symbol = '󰂂'
+
+[[battery.display]]
+threshold = 100
+style = "green"
+charging_symbol = '󰂅'
+discharging_symbol = '󰁹'
 
 [git_branch]
 format = "[](fg:dim_green bg:green)[$symbol $branch]($style)[](fg:dim_green)"
@@ -208,7 +250,14 @@ disabled = false
 
 [git_status]
 style = "fg:fg1 bg:bg3"
-format = '[](fg:bg3)[$ahead$behind$staged$modified$untracked$renamed$deleted$conflicted$stashed]($style)[](bg:bg3 fg:green)'
+format = '[](fg:bg3)[$all_status]($style)[](bg:bg3 fg:green)'
+modified = '󰢪 '
+conflicted = '󰀩 '
+stashed = '󰘛 '
+staged = '󰐗 '
+deleted = '󰩹 '
+untracked = '󰡯 '
+renamed = '󱇧 '
 disabled = false
 
 [deno]
@@ -218,7 +267,7 @@ version_format = "${raw}"
 [lua]
 format = " [lua](italic) [${symbol}${version}]($style)"
 version_format = "${raw}"
-symbol = "⨀ "
+symbol = "󰢱 "
 style = "bold bright-yellow"
 
 [nodejs]
@@ -232,11 +281,11 @@ style = "bg:blue fg:bg1"
 version_format = "${raw}"
 format = '[](fg:blue)[$symbol$version( \($virtualenv\))]($style)[](fg:blue)'
 disabled = false
-symbol = ' '
+symbol = '󰌠 '
 
 [ruby]
 format = " [rb](italic) [${symbol}${version}]($style)"
-symbol = "◆ "
+symbol = "󰴭 "
 version_format = "${raw}"
 style = "bold red"
 
@@ -244,7 +293,7 @@ style = "bold red"
 style = "bg:bg1 fg:blue"
 format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
 disabled = false
-symbol = ""
+symbol = "󱘗 "
 
 [package]
 format = " [pkg](italic dimmed) [$symbol$version]($style)"
@@ -254,7 +303,7 @@ style = "dimmed yellow italic bold"
 
 [swift]
 format = " [sw](italic) [${symbol}${version}]($style)"
-symbol = "◁ "
+symbol = "󰛥 "
 style = "bold bright-red"
 version_format = "${raw}"
 
@@ -279,7 +328,7 @@ style = "bg:aqua fg:bg1"
 format = "[](fg:aqua)[$environment]($style)[](fg:aqua)"
 
 [dart]
-symbol = "◁◅ "
+symbol = " "
 format = " dart [$symbol($version )]($style)"
 
 [docker_context]
@@ -302,7 +351,7 @@ symbol = " "
 style = "bg:bg1 fg:blue"
 format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
 disabled = false
-symbol = " "
+symbol = "󰟓 "
 
 [haskell]
 style = "bg:bg1 fg:blue"
