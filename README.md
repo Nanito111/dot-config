@@ -2,3 +2,5 @@
 * fish
 * starship
 * foot
+* fastfetch
+* tmux
