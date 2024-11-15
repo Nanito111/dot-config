@@ -3,85 +3,20 @@
 add_newline = false
 continuation_prompt = "[▸▹ ](dimmed white)"
 
-format = """
-($nix_shell$container)\
-$time \
-$battery\
-$hostname\
-$localip\
-$shell\
-$sudo\
-$username\
-$directory\
-$cmd_duration\n\
-$fill\
-$vcsh\
-$fossil_branch\
-$git_state\
-$git_status\
-$git_metrics\
-$git_branch\
-$git_commit \
-$hg_branch\
-$pijul_channel\
-$docker_context\
-$package\
-$c\
-$cmake\
-$cobol\
-$daml\
-$dart\
-$deno\
-$dotnet\
-$elixir\
-$elm\
-$erlang\
-$fennel\
-$golang\
-$guix_shell\
-$haskell\
-$haxe\
-$helm\
-$java\
-$julia\
-$kotlin\
-$gradle\
-$lua\
-$nim\
-$nodejs\
-$ocaml\
-$opa\
-$perl\
-$php\
-$pulumi\
-$purescript\
-$python\
-$raku\
-$rlang\
-$red\
-$ruby\
-$rust\
-$scala\
-$solidity\
-$swift\
-$terraform\
-$vlang\
-$vagrant\
-$zig\
-$buf\
-$conda\
-$meson\
-$spack\
-$memory_usage\
-$aws\
-$gcloud\
-$openstack\
-$azure\
-$crystal\
-$custom\
-$status\
-$os \n\
-$character"""
+format = """ $time $sudo$username $directory$cmd_duration\n\
+$fill$git_state$git_status$git_metrics$git_branch$git_commit\
+( $c)\
+( $cmake)\
+( $dotnet)\
+( $golang)\
+( $java)\
+( $lua)\
+( $nodejs)\
+( $python)\
+( $conda)\
+( $rust)\
+( $zig) \
+\n$character"""
 
 palette = "gruvbox_dark"
 
@@ -110,25 +45,19 @@ dim_yellow = '#FABC2E'
 dim_gray = '#918273'
 
 [fill]
-style = "fg:bg1"
+style = "fg:fg1"
 symbol = " "
 
-[character]
-format = " $symbol "
-success_symbol = "[◎](bold bright-yellow)"
-error_symbol = "[○](purple)"
-vimcmd_symbol = "[■](dimmed green)"
-# not supported in zsh
-vimcmd_replace_one_symbol = "◌"
-vimcmd_replace_symbol = "□"
-vimcmd_visual_symbol = "▼"
-
-[env_var.VIMSHELL]
-format = "[$env_value]($style)"
-style = 'green italic'
+# ----------------------- SYSTEM ------------------------
+[time]
+disabled = false
+format = "[](fg:bg2)[$time]($style)[](fg:bg2)"
+style = "bg:bg2 fg:fg1"
+time_format = "%H:%M"
+use_12hr = false
 
 [sudo]
-format = "[$symbol]($style)"
+format = '([$symbol]($style))'
 style = "bold fg:yellow"
 symbol = "⋈┈"
 disabled = false
@@ -142,7 +71,7 @@ style_user = "bg:orange fg:fg1"
 
 [directory]
 home_symbol = "⌂"
-format = " [](fg:yellow)[$path$read_only]($style)[](fg:yellow)"
+format = "[](fg:yellow)[$path$read_only]($style)[](fg:yellow)"
 style = "bg:yellow fg:bg1"
 truncation_length = 4
 truncation_symbol = "…/"
@@ -151,25 +80,19 @@ read_only = " ◈"
 use_os_path_sep = true
 
 [cmd_duration]
-format = "[ ◄$duration ](italic bright-black)"
+format = "[ ◄$duration](italic bright-black)"
 
-[jobs]
-format = "[$symbol$number]($style) "
-style = "white"
-symbol = "[▶](blue italic)"
+[character]
+format = " $symbol "
+success_symbol = "[◎](bold bright-yellow)"
+error_symbol = "[○](purple)"
+vimcmd_symbol = "[■](dimmed green)"
+# not supported in zsh
+vimcmd_replace_one_symbol = "◌"
+vimcmd_replace_symbol = "□"
+vimcmd_visual_symbol = "▼"
 
-[localip]
-ssh_only = true
-format = " ◯[$localipv4](bold magenta)"
-disabled = true
-
-[time]
-disabled = false
-format = " [](fg:bg2)[$time]($style)[](fg:bg2)"
-style = "bg:bg2 fg:fg1"
-time_format = "%H:%M"
-use_12hr = false
-
+# ----------------------- BATTERY ------------------------
 [battery]
 style = "bg:bg2 fg:fg1"
 format = "[ $percentage $symbol]($style)"
@@ -232,6 +155,7 @@ style = "green"
 charging_symbol = '󰂅'
 discharging_symbol = '󰁹'
 
+# ----------------------- GIT ------------------------
 [git_branch]
 format = "[](fg:dim_green bg:green)[$symbol $branch]($style)[](fg:dim_green)"
 symbol = ""
@@ -241,7 +165,7 @@ truncation_length = 30
 only_attached = true
 
 [git_metrics]
-format = '([▴$added]($added_style)[▿$deleted ]($deleted_style))'
+format = '([▴$added]($added_style))([▿$deleted]($deleted_style))'
 added_style = 'fg:bg2 bg:green'
 deleted_style = 'fg:red bg:green'
 only_nonzero_diffs = true
@@ -260,10 +184,7 @@ untracked = '󰡯 '
 renamed = '󱇧 '
 disabled = false
 
-[deno]
-format = " [deno](italic) [∫ $version](green bold)"
-version_format = "${raw}"
-
+# ----------------------- PROGRAMING ------------------------
 [lua]
 format = " [lua](italic) [${symbol}${version}]($style)"
 version_format = "${raw}"
@@ -283,39 +204,11 @@ format = '[](fg:blue)[$symbol$version( \($virtualenv\))]($style)[](fg:blue
 disabled = false
 symbol = '󰌠 '
 
-[ruby]
-format = " [rb](italic) [${symbol}${version}]($style)"
-symbol = "󰴭 "
-version_format = "${raw}"
-style = "bold red"
-
 [rust]
 style = "bg:bg1 fg:blue"
 format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
 disabled = false
 symbol = "󱘗 "
-
-[package]
-format = " [pkg](italic dimmed) [$symbol$version]($style)"
-version_format = "${raw}"
-symbol = "◨ "
-style = "dimmed yellow italic bold"
-
-[swift]
-format = " [sw](italic) [${symbol}${version}]($style)"
-symbol = "󰛥 "
-style = "bold bright-red"
-version_format = "${raw}"
-
-[aws]
-disabled = true
-format = " [aws](italic) [$symbol $profile $region]($style)"
-style = "bold blue"
-symbol = "▲ "
-
-[buf]
-symbol = "■ "
-format = " [buf](italic) [$symbol $version $buf_version]($style)"
 
 [c]
 style = "bg:bg1 fg:blue"
@@ -327,25 +220,9 @@ symbol = " "
 style = "bg:aqua fg:bg1"
 format = "[](fg:aqua)[$environment]($style)[](fg:aqua)"
 
-[dart]
-symbol = " "
-format = " dart [$symbol($version )]($style)"
-
 [docker_context]
 symbol = "◧ "
 format = " docker [$symbol$context]($style)"
-
-[elixir]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = " "
-
-[elm]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = " "
 
 [golang]
 style = "bg:bg1 fg:blue"
@@ -353,48 +230,6 @@ format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
 disabled = false
 symbol = "󰟓 "
 
-[haskell]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = " "
-
 [java]
 style = "bg:bg1 fg:blue"
 format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = " "
-
-[julia]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = " "
-
-[memory_usage]
-symbol = "▪▫▪ "
-format = " mem [${ram}( ${swap})]($style)"
-
-[nim]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = "󰆥 "
-
-[nix_shell]
-style = 'bold italic dimmed blue'
-symbol = '✶'
-format = '[$symbol nix⎪$state⎪]($style) [$name](italic dimmed white)'
-impure_msg = '[⌽](bold dimmed red)'
-pure_msg = '[⌾](bold dimmed green)'
-unknown_msg = '[◌](bold dimmed ellow)'
-
-[spack]
-symbol = "◇ "
-format = " spack [$symbol$environment]($style)"
-
-[scala]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = " "
