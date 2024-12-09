@@ -4,12 +4,18 @@ end
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-if test -f /home/nanito/mambaforge-pypy3/bin/conda
-    status is-interactive && eval /home/nanito/mambaforge-pypy3/bin/conda "shell.fish" "hook" $argv | source
+if test -f /home/francisco/miniforge3/bin/conda
+    eval /home/francisco/miniforge3/bin/conda "shell.fish" "hook" $argv | source
+else
+    if test -f "/home/francisco/miniforge3/etc/fish/conf.d/conda.fish"
+        . "/home/francisco/miniforge3/etc/fish/conf.d/conda.fish"
+    else
+        set -x PATH "/home/francisco/miniforge3/bin" $PATH
+    end
 end
 
-if test -f "/home/nanito/mambaforge-pypy3/etc/fish/conf.d/mamba.fish"
-    source "/home/nanito/mambaforge-pypy3/etc/fish/conf.d/mamba.fish"
+if test -f "/home/francisco/miniforge3/etc/fish/conf.d/mamba.fish"
+    source "/home/francisco/miniforge3/etc/fish/conf.d/mamba.fish"
 end
 # <<< conda initialize <<<
 
