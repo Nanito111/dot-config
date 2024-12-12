@@ -1,0 +1,4 @@
+os:
+  editPreset: 'nvim'
+git:
+  autoFetch: true
