@@ -13,6 +13,7 @@ $blue: #83A598;
 $purple: #D3869B;
 $purpleMuted: #B16286;
 $orange: #FE8019;
+$orangeMuted: #D65D0E;
 $aqua: #8EC07C;
 $aquaMuted: #689D6A;
 $yellow: #FABD2F;
@@ -31,20 +32,6 @@ window.Bar {
 
   button {
     all: unset;
-    background-color: transparent;
-
-    &:hover {
-      label {
-        background-color: color.adjust($fg, $alpha: -0.84);
-        border-color: color.adjust($orange, $alpha: -0.8);
-      }
-    }
-
-    &:active {
-      label {
-        background-color: color.adjust($fg, $alpha: -0.8)
-      }
-    }
   }
 
   label {
@@ -65,19 +52,40 @@ window.Bar {
   .Workspaces {
     padding: 3pt $radius;
 
-    .focused {
+
+    button {
+      background-color: transparent;
+
       label {
-        color: $bg;
-        background-color: $orange;
+        border-radius: $radius;
+        color: $orange;
+        border-color: $orange;
+        font-size: 12pt;
+      }
+
+      &:hover {
+        label {
+          background-color: $bg2;
+          border-color: $orangeMuted;
+        }
+      }
+
+      &:active {
+        label {
+          background-color: $bg1;
+          border-color: $orangeMuted;
+          color: $orangeMuted;
+        }
+      }
+
+      &.focused {
+        label {
+          color: $bg;
+          background-color: $orange;
+        }
       }
     }
 
-    label {
-      border-radius: $radius;
-      color: $orange;
-      border-color: $orange;
-      font-size: 12pt;
-    }
   }
 
   .LeftBox {
