@@ -1,0 +1,182 @@
+@use "sass:color";
+
+$font: "Noto Serif";
+$radius: 5pt;
+$bg: #1D2021;
+$bgOposite: #928374;
+$bg1: #3C3836;
+$bg2: #504945;
+$bg3: #665C54;
+$fg: #EBDBB2;
+$fgMuted: #A89984;
+$blue: #83A598;
+$purple: #D3869B;
+$purpleMuted: #B16286;
+$orange: #FE8019;
+$aqua: #8EC07C;
+$aquaMuted: #689D6A;
+$yellow: #FABD2F;
+
+window.Bar {
+  border: none;
+  box-shadow: none;
+  background-color: transparent;
+  color: $fg;
+  font-size: 1em;
+  font-weight: bold;
+
+  >* {
+    margin-top: 3px;
+  }
+
+  button {
+    all: unset;
+    background-color: transparent;
+
+    &:hover {
+      label {
+        background-color: color.adjust($fg, $alpha: -0.84);
+        border-color: color.adjust($orange, $alpha: -0.8);
+      }
+    }
+
+    &:active {
+      label {
+        background-color: color.adjust($fg, $alpha: -0.8)
+      }
+    }
+  }
+
+  label {
+    transition: 200ms;
+    padding: 0 8px;
+    margin: 2px;
+    border-radius: $radius;
+    border: 1pt solid transparent;
+    font-family: $font;
+    font-weight: 400;
+  }
+
+  .MiddleBox {
+    border-radius: $radius;
+    background-color: $bg;
+  }
+
+  .Workspaces {
+    padding: 3pt $radius;
+
+    .focused {
+      label {
+        color: $bg;
+        background-color: $orange;
+      }
+    }
+
+    label {
+      border-radius: $radius;
+      color: $orange;
+      border-color: $orange;
+      font-size: 12pt;
+    }
+  }
+
+  .LeftBox {
+    margin-left: 1em;
+    background-color: $bg;
+    border-radius: $radius;
+  }
+
+  .Time {
+    margin-right: 0;
+    background-color: $blue;
+    font-weight: 800;
+    color: $bg;
+  }
+
+  .Date {
+    margin-left: 0;
+  }
+
+  .Tray {
+    border-radius: $radius;
+
+    >* {
+      margin-left: 0.5em;
+      margin-right: 0.5em;
+    }
+  }
+
+  .AudioSlider {
+    min-width: 270px;
+    background-color: $yellow;
+    border-radius: $radius;
+    padding: 0 5px;
+
+    * {
+      all: unset;
+    }
+
+    button {
+      min-width: 1.8em;
+      min-height: 1.5em;
+      margin-top: 3px;
+      margin-bottom: 3px;
+      border-radius: $radius;
+
+      &:hover {
+        background-color: color.adjust($bg, $alpha: -0.84);
+      }
+
+      &:active {
+        background-color: color.adjust($bg, $alpha: -0.5);
+      }
+
+      icon {
+        color: $bg;
+      }
+
+
+      icon.Speaker {
+        font-size: 1.4em;
+      }
+
+      icon.Microphone {
+        font-size: 0.9em;
+      }
+
+    }
+
+
+    trough {
+      background-color: transparent;
+      border: 1px solid $bg;
+      border-radius: $radius;
+      margin: 0 5px;
+    }
+
+    highlight {
+      background-color: $bg;
+      border-radius: $radius;
+    }
+
+    slider {
+      background-color: $bg3;
+      border-radius: $radius;
+      min-height: 1em;
+      min-width: 1em;
+      margin: -0.4em;
+      border: 1px solid $bg;
+
+      &:hover {
+        background-color: $fgMuted;
+      }
+    }
+  }
+
+  .RightBox {
+    background-color: $bg;
+    border-radius: $radius;
+    padding: 4px;
+    margin-right: 1em;
+  }
+}
