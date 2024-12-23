@@ -105,9 +105,7 @@ window.Bar {
     margin-left: 0;
   }
 
-  .Tray {
-    border-radius: $radius;
-
+  .SysTray {
     >* {
       margin-left: 0.5em;
       margin-right: 0.5em;
