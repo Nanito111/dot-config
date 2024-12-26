@@ -1,8 +1,12 @@
 local astal = require("astal")
-local App = require("astal.gtk3.app")
-local Widget = require("astal.gtk3.widget")
+-- local App = require("astal.gtk3.app")
+local astal_gtk3 = require("astal.gtk3")
+local astalify = astal_gtk3.astalify
+local Widget = astal_gtk3.Widget
 local Variable = astal.Variable
-local Gdk = astal.require("Gdk", "3.0")
+local Gtk = astal_gtk3.Gtk
+-- local Gtd = astal_gtk3.Gtd
+-- local Gdk = astal.require("Gdk", "3.0")
 local GLib = astal.require("GLib")
 local bind = astal.bind
 -- local Mpris = astal.require("AstalMpris")
@@ -11,12 +15,16 @@ local Wp = astal.require("AstalWp")
 local Tray = astal.require("AstalTray")
 local Hyprland = astal.require("AstalHyprland")
 local map = require("lib").map
+local Calendar = astalify(Gtk.Calendar)
 
 local function SysTray()
 	local tray = Tray.get_default()
 
 	return Widget.Box({
 		class_name = "SysTray",
+		visible = bind(tray, "items"):as(function(items)
+			return #items > 0
+		end),
 		bind(tray, "items"):as(function(items)
 			return map(items, function(item)
 				return Widget.MenuButton({
@@ -133,7 +141,7 @@ local function Workspaces()
 		class_name = "Workspaces",
 		bind(hypr, "workspaces"):as(function(wss)
 			table.sort(wss, function(a, b)
-				return a.id < b.id
+				return a.id > b.id
 			end)
 
 			return map(wss, function(ws)
@@ -153,17 +161,108 @@ local function Workspaces()
 	})
 end
 
-local function DateTime(class_name, format)
+local function Clock()
 	local time = Variable(""):poll(1000, function()
-		return GLib.DateTime.new_now_local():format(format)
+		return GLib.DateTime.new_now_local():format("%H:%M:%S")
 	end)
 
 	return Widget.Label({
-		class_name = class_name,
+		class_name = "Time",
 		on_destroy = function()
 			time:drop()
 		end,
 		label = time(),
+	})
+end
+
+local function MiniCalendar()
+	local date = Variable(""):poll(1000, function()
+		return GLib.DateTime.new_now_local():format("%A %e-%m-%Y")
+	end)
+
+	return Widget.Button({
+		class_name = "Date",
+		on_clicked = function()
+			print("calendar trigger")
+
+			-- TODO
+			return Calendar({
+				setup = function(self)
+					self.class_name = "Calendar"
+					print("setup")
+					print(self:get_detail_height_rows())
+					print(self:get_detail_width_chars())
+					for i, x in pairs(self:get_display_options()) do
+						print(i, x)
+					end
+				end,
+			})
+		end,
+		on_destroy = function()
+			date:drop()
+		end,
+		label = date(),
+	})
+end
+
+local function PowerOptions()
+	local show_options = Variable(false)
+	return Widget.Box({
+		class_name = "PowerOptions",
+		Widget.Box({
+			class_name = "Options",
+			visible = bind(show_options),
+			Widget.Button({
+				on_clicked = function()
+					astal.exec("systemctl suspend")
+				end,
+				Widget.Icon({
+					icon = "system-suspend-symbolic",
+				}),
+			}),
+			Widget.Button({
+				on_clicked = function()
+					astal.exec("systemctl reboot")
+				end,
+				Widget.Icon({
+					icon = "system-reboot-symbolic",
+				}),
+			}),
+			Widget.Button({
+				on_clicked = function()
+					astal.exec("shutdown now")
+				end,
+				Widget.Icon({
+					icon = "system-shutdown-symbolic",
+				}),
+			}),
+		}),
+		Widget.Box({
+			Widget.Button({
+				class_name = "CloseOptions",
+				visible = bind(show_options):as(function(value)
+					return value
+				end),
+				on_clicked = function()
+					show_options:set(not show_options:get())
+				end,
+				Widget.Icon({
+					icon = "close-symbolic",
+				}),
+			}),
+			Widget.Button({
+				class_name = "ShowOptions",
+				visible = bind(show_options):as(function(value)
+					return not value
+				end),
+				on_clicked = function()
+					show_options:set(not show_options:get())
+				end,
+				Widget.Icon({
+					icon = "system-shutdown-symbolic",
+				}),
+			}),
+		}),
 	})
 end
 
@@ -173,15 +272,15 @@ return function(gdkmonitor)
 	return Widget.Window({
 		class_name = "Bar",
 		gdkmonitor = gdkmonitor,
-		anchor = WindowAnchor.TOP + WindowAnchor.LEFT + WindowAnchor.RIGHT,
+		anchor = WindowAnchor.BOTTOM + WindowAnchor.LEFT + WindowAnchor.RIGHT,
 		exclusivity = "EXCLUSIVE",
 
 		Widget.CenterBox({
 			Widget.Box({
 				class_name = "LeftBox",
 				halign = "START",
-				DateTime("Time", "%H:%M:%S"),
-				DateTime("Date", "%A %e-%m-%Y"),
+				Clock(),
+				MiniCalendar(),
 			}),
 			Widget.Box({
 				class_name = "MiddleBox",
@@ -192,6 +291,7 @@ return function(gdkmonitor)
 				halign = "END",
 				SysTray(),
 				AudioSlider(),
+				PowerOptions(),
 			}),
 		}),
 	})

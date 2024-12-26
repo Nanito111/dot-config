@@ -1,7 +1,15 @@
 @use "sass:color";
 
 $font: "Noto Serif";
-$radius: 5pt;
+$radius: 8pt;
+$hover-time: 200ms;
+$bar-side-margins: 5pt;
+$inner-margin: 2.5pt;
+$space-between: 4pt;
+$bar-min-height: 22pt;
+$font-size: 12pt;
+
+// colors
 $bg: #1D2021;
 $bgOposite: #928374;
 $bg1: #3C3836;
@@ -17,17 +25,23 @@ $orangeMuted: #D65D0E;
 $aqua: #8EC07C;
 $aquaMuted: #689D6A;
 $yellow: #FABD2F;
+$yellowMuted: #D79921;
 
 window.Bar {
   border: none;
   box-shadow: none;
   background-color: transparent;
   color: $fg;
-  font-size: 1em;
+  font-size: $font-size;
   font-weight: bold;
 
-  >* {
-    margin-top: 3px;
+  &>* {
+    margin-bottom: $inner-margin;
+
+    &>* {
+      // border: 1px solid $fg;
+      background-color: $bg;
+    }
   }
 
   button {
@@ -35,53 +49,54 @@ window.Bar {
   }
 
   label {
-    transition: 200ms;
-    padding: 0 8px;
-    margin: 2px;
-    border-radius: $radius;
-    border: 1pt solid transparent;
+    transition: $hover-time;
     font-family: $font;
     font-weight: 400;
   }
 
   .MiddleBox {
     border-radius: $radius;
-    background-color: $bg;
+    padding: $inner-margin;
   }
 
   .Workspaces {
-    padding: 3pt $radius;
-
+    button:first-child {
+      margin-left: 0;
+    }
 
     button {
+      margin-top: 0;
+      margin-bottom: 0;
       background-color: transparent;
+      margin-left: $inner-margin;
+      min-width: $bar-min-height;
 
       label {
-        border-radius: $radius;
-        color: $orange;
-        border-color: $orange;
+        border-radius: $radius - $inner-margin;
+        color: $yellow;
         font-size: 12pt;
+        border: 1px solid $yellow;
       }
 
       &:hover {
         label {
           background-color: $bg2;
-          border-color: $orangeMuted;
+          border-color: $yellowMuted;
         }
       }
 
       &:active {
         label {
           background-color: $bg1;
-          border-color: $orangeMuted;
-          color: $orangeMuted;
+          border-color: $yellowMuted;
+          color: $yellowMuted;
         }
       }
 
       &.focused {
         label {
           color: $bg;
-          background-color: $orange;
+          background-color: $yellow;
         }
       }
     }
@@ -89,20 +104,43 @@ window.Bar {
   }
 
   .LeftBox {
-    margin-left: 1em;
-    background-color: $bg;
+    margin-left: $bar-side-margins;
     border-radius: $radius;
+    padding: $inner-margin;
   }
 
   .Time {
-    margin-right: 0;
+    padding: 0 $inner-margin*2;
+    border-radius: $radius - $inner-margin;
     background-color: $blue;
     font-weight: 800;
     color: $bg;
   }
 
   .Date {
-    margin-left: 0;
+    margin-left: $inner-margin;
+    border-radius: $radius - $inner-margin;
+    transition: $hover-time;
+    padding: 0 $inner-margin*2;
+
+    &:hover {
+      background-color: $bg1;
+    }
+
+    &:active {
+      background-color: color.adjust($bg1, $alpha: -0.5);
+    }
+
+  }
+
+  .Calendar {
+    background-color: red;
+    min-width: 100px;
+    min-height: 100px;
+
+    button {
+      min-width: 2em;
+    }
   }
 
   .SysTray {
@@ -114,20 +152,19 @@ window.Bar {
 
   .AudioSlider {
     min-width: 270px;
-    background-color: $yellow;
-    border-radius: $radius;
-    padding: 0 5px;
+    background-color: $orange;
+    border-radius: $radius - $inner-margin;
+    padding: 0 ($inner-margin*3);
 
     * {
       all: unset;
     }
 
     button {
-      min-width: 1.8em;
-      min-height: 1.5em;
+      min-width: $font-size + 1pt + ($inner-margin * 2);
       margin-top: 3px;
       margin-bottom: 3px;
-      border-radius: $radius;
+      border-radius: $radius - ($inner-margin*2);
 
       &:hover {
         background-color: color.adjust($bg, $alpha: -0.84);
@@ -180,9 +217,57 @@ window.Bar {
   }
 
   .RightBox {
-    background-color: $bg;
     border-radius: $radius;
-    padding: 4px;
-    margin-right: 1em;
+    padding: $inner-margin;
+    margin-right: $bar-side-margins;
+
+    &>*:first-child {
+      margin-left: 0;
+    }
+
+    &>* {
+      margin-left: $space-between;
+    }
+
+  }
+
+  .PowerOptions {
+    background-color: $fg;
+    border-radius: $radius - $inner-margin;
+
+    button {
+      transition: $hover-time;
+      min-width: $font-size + 1pt + ($inner-margin * 2);
+      margin: $inner-margin;
+      border-radius: $radius - ($inner-margin * 2);
+
+      &:hover {
+        background-color: color.adjust($bg, $alpha: -0.84);
+      }
+
+      &:active {
+        background-color: color.adjust($bg, $alpha: -0.5);
+      }
+
+      icon {
+        color: $bg;
+      }
+    }
+
+    .CloseOptions {
+      background-color: $bg;
+
+      &:hover {
+        background-color: color.adjust($bg, $alpha: -0.15);
+      }
+
+      &:active {
+        background-color: color.adjust($bg, $alpha: -0.35);
+      }
+
+      icon {
+        color: $fgMuted;
+      }
+    }
   }
 }
