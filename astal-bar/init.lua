@@ -10,7 +10,6 @@ local css = "/tmp/style.css"
 astal.exec("sass " .. scss .. " " .. css)
 
 App:start({
-	instance_name = "astal-bar",
 	css = css,
 	request_handler = function(msg, res)
 		print(msg)
