@@ -60,18 +60,21 @@ end
 
 local function Ethernet()
 	local ethernet = Network.get_default().wired
-	local states = { "Connected", "Connecting", "Disconnected" }
 
 	if ethernet ~= nil then
 		return Widget.Icon({
-			tooltip_text = bind(ethernet, "internet"):as(string.lower),
-			class_name = "Ethernet",
+			tooltip_text = bind(ethernet, "state"):as(function(value)
+				return string.lower(value)
+			end),
+			class_name = bind(ethernet, "state"):as(function(value)
+				return "Ethernet " .. string.lower(value)
+			end),
 			icon = bind(ethernet, "icon-name"),
 		})
 	end
 	return Widget.Icon({
 		tooltip_text = "offline",
-		class_name = "Ethernet",
+		class_name = "Ethernet offline",
 		icon = "network-wired-offline-symbolic",
 	})
 end

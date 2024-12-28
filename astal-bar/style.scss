@@ -282,9 +282,27 @@ window.Bar {
 
   .Ethernet {
     border-radius: $radius - $inner-margin;
-    background: $accent;
     font-size: 22px;
     color: $bg;
     min-width: 20pt;
+    background-color: $green;
+
+    &.activated {
+      background-color: $green;
+    }
+
+    &.unknown {
+      background-color: $yellow;
+    }
+
+    &.disconnected {
+      background-color: $orange;
+    }
+
+    &.offline,
+    &.failed,
+    &.unavailable {
+      background-color: $red;
+    }
   }
 }
