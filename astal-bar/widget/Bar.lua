@@ -11,7 +11,7 @@ local GLib = astal.require("GLib")
 local bind = astal.bind
 -- local Mpris = astal.require("AstalMpris")
 local Wp = astal.require("AstalWp")
--- local Network = astal.require("AstalNetwork")
+local Network = astal.require("AstalNetwork")
 local Tray = astal.require("AstalTray")
 local Hyprland = astal.require("AstalHyprland")
 local map = require("lib").map
@@ -58,15 +58,23 @@ end
 -- 	})
 -- end
 
--- local function Wifi()
--- 	local wifi = Network.get_default().wifi
---
--- 	return Widget.Icon({
--- 		tooltip_text = bind(wifi, "ssid"):as(tostring),
--- 		class_name = "Wifi",
--- 		icon = bind(wifi, "icon-name"),
--- 	})
--- end
+local function Ethernet()
+	local ethernet = Network.get_default().wired
+	local states = { "Connected", "Connecting", "Disconnected" }
+
+	if ethernet ~= nil then
+		return Widget.Icon({
+			tooltip_text = bind(ethernet, "internet"):as(string.lower),
+			class_name = "Ethernet",
+			icon = bind(ethernet, "icon-name"),
+		})
+	end
+	return Widget.Icon({
+		tooltip_text = "offline",
+		class_name = "Ethernet",
+		icon = "network-wired-offline-symbolic",
+	})
+end
 
 local function AudioSlider()
 	local speaker = Wp.get_default().audio.default_speaker
@@ -290,6 +298,7 @@ return function(gdkmonitor)
 				class_name = "RightBox",
 				halign = "END",
 				SysTray(),
+				Ethernet(),
 				AudioSlider(),
 				PowerOptions(),
 			}),

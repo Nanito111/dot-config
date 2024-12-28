@@ -11,10 +11,10 @@ $font-size: 12pt;
 
 // colors
 $bg: #1D2021;
-$bgOposite: #928374;
 $bg1: #3C3836;
 $bg2: #504945;
 $bg3: #665C54;
+$bg4: #7C6F64;
 $fg: #EBDBB2;
 $fgMuted: #A89984;
 $red: #FB4934;
@@ -278,5 +278,13 @@ window.Bar {
         color: $fgMuted;
       }
     }
+  }
+
+  .Ethernet {
+    border-radius: $radius - $inner-margin;
+    background: $accent;
+    font-size: 22px;
+    color: $bg;
+    min-width: 20pt;
   }
 }
