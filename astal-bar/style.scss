@@ -17,7 +17,10 @@ $bg2: #504945;
 $bg3: #665C54;
 $fg: #EBDBB2;
 $fgMuted: #A89984;
+$red: #FB4934;
+$redMuted: #CC241D;
 $blue: #83A598;
+$blueMuted: #458588;
 $purple: #D3869B;
 $purpleMuted: #B16286;
 $orange: #FE8019;
@@ -26,6 +29,12 @@ $aqua: #8EC07C;
 $aquaMuted: #689D6A;
 $yellow: #FABD2F;
 $yellowMuted: #D79921;
+$green: #B8BB26;
+$greenMuted: #98971A;
+
+$accent: $green;
+$accentMuted: $greenMuted;
+
 
 window.Bar {
   border: none;
@@ -73,30 +82,30 @@ window.Bar {
 
       label {
         border-radius: $radius - $inner-margin;
-        color: $yellow;
+        color: $accent;
         font-size: 12pt;
-        border: 1px solid $yellow;
+        border: 1px solid $accent;
       }
 
       &:hover {
         label {
           background-color: $bg2;
-          border-color: $yellowMuted;
+          border-color: $accentMuted;
         }
       }
 
       &:active {
         label {
           background-color: $bg1;
-          border-color: $yellowMuted;
-          color: $yellowMuted;
+          border-color: $accentMuted;
+          color: $accentMuted;
         }
       }
 
       &.focused {
         label {
           color: $bg;
-          background-color: $yellow;
+          background-color: $accent;
         }
       }
     }
@@ -112,7 +121,7 @@ window.Bar {
   .Time {
     padding: 0 $inner-margin*2;
     border-radius: $radius - $inner-margin;
-    background-color: $blue;
+    background-color: $accent;
     font-weight: 800;
     color: $bg;
   }
@@ -152,7 +161,7 @@ window.Bar {
 
   .AudioSlider {
     min-width: 270px;
-    background-color: $orange;
+    background-color: $accent;
     border-radius: $radius - $inner-margin;
     padding: 0 ($inner-margin*3);
 
