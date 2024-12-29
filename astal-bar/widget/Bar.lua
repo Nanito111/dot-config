@@ -63,11 +63,11 @@ local function Ethernet()
 
 	if ethernet ~= nil then
 		return Widget.Icon({
-			tooltip_text = bind(ethernet, "state"):as(function(value)
-				return string.lower(value)
+			tooltip_text = bind(ethernet, "state"):as(function(state)
+				return string.lower(state)
 			end),
-			class_name = bind(ethernet, "state"):as(function(value)
-				return "Ethernet " .. string.lower(value)
+			class_name = bind(ethernet, "state"):as(function(state)
+				return "Ethernet " .. string.lower(state)
 			end),
 			icon = bind(ethernet, "icon-name"),
 		})
