@@ -108,6 +108,21 @@ window.Bar {
           background-color: $accent;
         }
       }
+
+      &.special {
+        label {
+          background-color: $bg;
+          border-color: $orangeMuted;
+          color: $orange;
+        }
+
+        &.focused {
+          label {
+            background-color: $orange;
+            color: $bg;
+          }
+        }
+      }
     }
 
   }
