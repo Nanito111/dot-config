@@ -188,7 +188,7 @@ end
 
 local function MiniCalendar()
 	local date = Variable(""):poll(1000, function()
-		return GLib.DateTime.new_now_local():format("%A %e-%m-%Y")
+		return GLib.DateTime.new_now_local():format("%A %d-%m-%Y")
 	end)
 
 	return Widget.Button({
