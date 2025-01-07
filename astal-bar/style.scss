@@ -1,7 +1,7 @@
 @use "sass:color";
 
 $font: "Noto Serif";
-$radius: 8pt;
+$radius: 2pt;
 $hover-time: 200ms;
 $bar-side-margins: 5pt;
 $inner-margin: 2.5pt;
@@ -10,13 +10,24 @@ $bar-min-height: 22pt;
 $font-size: 12pt;
 
 // colors
-$bg: #1D2021;
-$bg1: #3C3836;
-$bg2: #504945;
-$bg3: #665C54;
-$bg4: #7C6F64;
-$fg: #EBDBB2;
-$fgMuted: #A89984;
+//dark
+// $bg: #1D2021;
+// $bg1: #3C3836;
+// $bg2: #504945;
+// $bg3: #665C54;
+// $bg4: #7C6F64;
+// $fg: #EBDBB2;
+// $fgMuted: #A89984;
+
+//light
+$bg: #F2E5BC;
+$bg1: #EBDBB2;
+$bg2: #D5C4A1;
+$bg3: #BDAE93;
+$bg4: #A89984;
+$fg: #282828;
+$fgMuted: #7C6F64;
+
 $red: #FB4934;
 $redMuted: #CC241D;
 $blue: #83A598;
@@ -32,8 +43,8 @@ $yellowMuted: #D79921;
 $green: #B8BB26;
 $greenMuted: #98971A;
 
-$accent: $green;
-$accentMuted: $greenMuted;
+$accent: $redMuted;
+$accentMuted: $red;
 
 
 window.Bar {
@@ -48,8 +59,9 @@ window.Bar {
     margin-bottom: $inner-margin;
 
     &>* {
-      // border: 1px solid $fg;
+      border: 1px solid $fg;
       background-color: $bg;
+      box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.1);
     }
   }
 
@@ -81,7 +93,7 @@ window.Bar {
       min-width: $bar-min-height;
 
       label {
-        border-radius: $radius - $inner-margin;
+        border-radius: $radius;
         color: $accent;
         font-size: 12pt;
         border: 1px solid $accent;
@@ -135,7 +147,7 @@ window.Bar {
 
   .Time {
     padding: 0 $inner-margin*2;
-    border-radius: $radius - $inner-margin;
+    border-radius: $radius;
     background-color: $accent;
     font-weight: 800;
     color: $bg;
@@ -143,7 +155,7 @@ window.Bar {
 
   .Date {
     margin-left: $inner-margin;
-    border-radius: $radius - $inner-margin;
+    border-radius: $radius;
     transition: $hover-time;
     padding: 0 $inner-margin*2;
 
@@ -177,7 +189,7 @@ window.Bar {
   .AudioSlider {
     min-width: 270px;
     background-color: $accent;
-    border-radius: $radius - $inner-margin;
+    border-radius: $radius;
     padding: 0 ($inner-margin*3);
 
     * {
@@ -188,7 +200,7 @@ window.Bar {
       min-width: $font-size + 1pt + ($inner-margin * 2);
       margin-top: 3px;
       margin-bottom: 3px;
-      border-radius: $radius - ($inner-margin*2);
+      border-radius: $radius;
 
       &:hover {
         background-color: color.adjust($bg, $alpha: -0.84);
@@ -257,13 +269,13 @@ window.Bar {
 
   .PowerOptions {
     background-color: $fg;
-    border-radius: $radius - $inner-margin;
+    border-radius: $radius;
 
     button {
       transition: $hover-time;
       min-width: $font-size + 1pt + ($inner-margin * 2);
       margin: $inner-margin;
-      border-radius: $radius - ($inner-margin * 2);
+      border-radius: $radius;
 
       &:hover {
         background-color: color.adjust($bg, $alpha: -0.84);
@@ -296,7 +308,7 @@ window.Bar {
   }
 
   .Ethernet {
-    border-radius: $radius - $inner-margin;
+    border-radius: $radius;
     font-size: 22px;
     color: $bg;
     min-width: 20pt;
