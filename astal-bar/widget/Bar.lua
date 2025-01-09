@@ -63,10 +63,10 @@ local function Ethernet()
 
 	if ethernet ~= nil then
 		return Widget.Icon({
-			tooltip_text = bind(ethernet, "state"):as(function(state)
+			tooltip_text = bind(ethernet, "internet"):as(function(state)
 				return string.lower(state)
 			end),
-			class_name = bind(ethernet, "state"):as(function(state)
+			class_name = bind(ethernet, "internet"):as(function(state)
 				return "Ethernet " .. string.lower(state)
 			end),
 			icon = bind(ethernet, "icon-name"),
@@ -87,7 +87,10 @@ local function AudioSlider()
 		class_name = "AudioSlider",
 		-- speaker
 		Widget.Button({
-			class_name = "Speaker",
+			class_name = bind(speaker, "mute"):as(function(mute)
+				local mute_text = mute and "muted" or ""
+				return "Speaker" .. " " .. mute_text
+			end),
 			on_clicked = function()
 				speaker.mute = not speaker.mute
 			end,
@@ -105,7 +108,10 @@ local function AudioSlider()
 		}),
 		-- microphone
 		Widget.Button({
-			class_name = "Microphone",
+			class_name = bind(microphone, "mute"):as(function(mute)
+				local mute_text = mute and "muted" or ""
+				return "Microphone" .. " " .. mute_text
+			end),
 			on_clicked = function()
 				microphone.mute = not microphone.mute
 			end,

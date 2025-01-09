@@ -1,7 +1,7 @@
 @use "sass:color";
 
 $font: "Noto Serif";
-$radius: 2pt;
+$radius: 0;
 $hover-time: 200ms;
 $bar-side-margins: 5pt;
 $inner-margin: 2.5pt;
@@ -101,8 +101,9 @@ window.Bar {
 
       &:hover {
         label {
-          background-color: $bg2;
+          background-color: $bg;
           border-color: $accentMuted;
+          box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.1) inset;
         }
       }
 
@@ -111,6 +112,7 @@ window.Bar {
           background-color: $bg1;
           border-color: $accentMuted;
           color: $accentMuted;
+          box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.1) inset;
         }
       }
 
@@ -118,22 +120,24 @@ window.Bar {
         label {
           color: $bg;
           background-color: $accent;
+          box-shadow: none;
+          border: 1px solid $accent;
         }
       }
 
       &.special {
         label {
-          background-color: $bg;
-          border-color: $orangeMuted;
-          color: $orange;
+          background-color: $fg;
+          border-color: $accent;
+          color: $accentMuted;
         }
 
-        &.focused {
-          label {
-            background-color: $orange;
-            color: $bg;
-          }
-        }
+        // &.focused {
+        //   label {
+        //     background-color: $orange;
+        //     color: $bg;
+        //   }
+        // }
       }
     }
 
@@ -161,10 +165,12 @@ window.Bar {
 
     &:hover {
       background-color: $bg1;
+      box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
     }
 
     &:active {
-      background-color: color.adjust($bg1, $alpha: -0.5);
+      background-color: $bg2;
+      box-shadow: 3px 3px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
     }
 
   }
@@ -184,6 +190,9 @@ window.Bar {
       margin-left: 0.5em;
       margin-right: 0.5em;
     }
+
+    background-color: $bg2;
+    box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
   }
 
   .AudioSlider {
@@ -197,18 +206,31 @@ window.Bar {
     }
 
     button {
+      transition: $hover-time;
       min-width: $font-size + 1pt + ($inner-margin * 2);
       margin-top: 3px;
       margin-bottom: 3px;
       border-radius: $radius;
 
       &:hover {
-        background-color: color.adjust($bg, $alpha: -0.84);
+        box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        background-color: color.adjust($fg, $alpha: -0.9);
       }
 
       &:active {
-        background-color: color.adjust($bg, $alpha: -0.5);
+        box-shadow: 3px 3px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        background-color: color.adjust($fg, $alpha: -0.8);
       }
+
+      &.muted {
+        box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        background-color: color.adjust($fg, $alpha: -0.8);
+
+        &:active {
+          box-shadow: 3px 3px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        }
+      }
+
 
       icon {
         color: $bg;
@@ -235,19 +257,23 @@ window.Bar {
 
     highlight {
       background-color: $bg;
-      border-radius: $radius;
     }
 
     slider {
-      background-color: $bg3;
+      background-color: $bg;
       border-radius: $radius;
+      box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.2);
       min-height: 1em;
-      min-width: 1em;
-      margin: -0.4em;
-      border: 1px solid $bg;
+      margin: -0.42em -0.2em;
+      transition: $hover-time;
 
       &:hover {
-        background-color: $fgMuted;
+        background-color: $bg1;
+      }
+
+      &:active {
+        background-color: $bg1;
+        box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
       }
     }
   }
@@ -268,21 +294,23 @@ window.Bar {
   }
 
   .PowerOptions {
-    background-color: $fg;
+    background-color: $fgMuted;
     border-radius: $radius;
 
     button {
-      transition: $hover-time;
       min-width: $font-size + 1pt + ($inner-margin * 2);
       margin: $inner-margin;
       border-radius: $radius;
+      transition: $hover-time;
 
       &:hover {
-        background-color: color.adjust($bg, $alpha: -0.84);
+        background-color: color.adjust($fg, $alpha: -0.8);
+        box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
       }
 
       &:active {
-        background-color: color.adjust($bg, $alpha: -0.5);
+        background-color: color.adjust($fg, $alpha: -0.5);
+        box-shadow: 3px 3px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
       }
 
       icon {
@@ -294,42 +322,42 @@ window.Bar {
       background-color: $bg;
 
       &:hover {
-        background-color: color.adjust($bg, $alpha: -0.15);
+        background-color: $bg1;
       }
 
       &:active {
-        background-color: color.adjust($bg, $alpha: -0.35);
+        background-color: $bg2;
       }
 
       icon {
-        color: $fgMuted;
+        color: $fg;
       }
     }
   }
 
   .Ethernet {
     border-radius: $radius;
-    font-size: 22px;
+    font-size: 16px;
     color: $bg;
     min-width: 20pt;
-    background-color: $green;
+    background-color: $fg;
 
-    &.activated {
-      background-color: $aqua;
+    &.connected {
+      background-color: $greenMuted;
     }
 
-    &.unknown {
-      background-color: $yellow;
+    &.connecting {
+      background-color: $yellowMuted;
     }
 
     &.disconnected {
-      background-color: $orange;
+      background-color: $orangeMuted;
     }
 
     &.offline,
     &.failed,
     &.unavailable {
-      background-color: $red;
+      background-color: $redMuted;
     }
   }
 }
