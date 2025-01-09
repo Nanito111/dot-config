@@ -1,14 +1,5 @@
 @use "sass:color";
 
-$font: "Noto Serif";
-$radius: 0;
-$hover-time: 200ms;
-$bar-side-margins: 5pt;
-$inner-margin: 2.5pt;
-$space-between: 4pt;
-$bar-min-height: 22pt;
-$font-size: 12pt;
-
 // colors
 //dark
 // $bg: #1D2021;
@@ -46,6 +37,24 @@ $greenMuted: #98971A;
 $accent: $redMuted;
 $accentMuted: $red;
 
+$font: "Noto Serif";
+$radius: 0;
+$hover-time: 200ms;
+$bar-side-margins: 5px;
+$inner-margin: 3px;
+$space-between: 4px;
+$bar-min-height: 28px;
+$font-size: 12pt;
+$shadow-distance: 3px;
+$shadow-outer-color: color.adjust($fg, $alpha: -0.1);
+$shadow-inner-color: color.adjust($fg, $alpha: -0.2);
+
+// buttons
+$hover-deepness: 1px;
+$pressed-deepness: 2px;
+$press-deepness: 3px;
+
+
 
 window.Bar {
   border: none;
@@ -56,12 +65,13 @@ window.Bar {
   font-weight: bold;
 
   &>* {
-    margin-bottom: $inner-margin;
+    margin-bottom: 5px;
 
     &>* {
       border: 1px solid $fg;
       background-color: $bg;
-      box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.1);
+      box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
+      min-height: $bar-min-height;
     }
   }
 
@@ -90,7 +100,7 @@ window.Bar {
       margin-bottom: 0;
       background-color: transparent;
       margin-left: $inner-margin;
-      min-width: $bar-min-height;
+      min-width: $bar-min-height + ($inner-margin * 0.5);
 
       label {
         border-radius: $radius;
@@ -101,18 +111,18 @@ window.Bar {
 
       &:hover {
         label {
-          background-color: $bg;
+          background-color: $bg1;
           border-color: $accentMuted;
-          box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.1) inset;
+          box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
         }
       }
 
       &:active {
         label {
-          background-color: $bg1;
+          background-color: $bg2;
           border-color: $accentMuted;
           color: $accentMuted;
-          box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.1) inset;
+          box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
         }
       }
 
@@ -165,12 +175,12 @@ window.Bar {
 
     &:hover {
       background-color: $bg1;
-      box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+      box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
     }
 
     &:active {
       background-color: $bg2;
-      box-shadow: 3px 3px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+      box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
     }
 
   }
@@ -186,13 +196,16 @@ window.Bar {
   }
 
   .SysTray {
+    padding-left: $space-between;
+    padding-right: $space-between;
+
     >* {
-      margin-left: 0.5em;
-      margin-right: 0.5em;
+      margin-left: $space-between;
+      margin-right: $space-between;
     }
 
     background-color: $bg2;
-    box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+    box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
   }
 
   .AudioSlider {
@@ -213,38 +226,29 @@ window.Bar {
       border-radius: $radius;
 
       &:hover {
-        box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
         background-color: color.adjust($fg, $alpha: -0.9);
       }
 
       &:active {
-        box-shadow: 3px 3px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
         background-color: color.adjust($fg, $alpha: -0.8);
       }
 
       &.muted {
-        box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
         background-color: color.adjust($fg, $alpha: -0.8);
 
         &:active {
-          box-shadow: 3px 3px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+          box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
         }
       }
 
 
       icon {
         color: $bg;
+        font-size: 16px;
       }
-
-
-      icon.Speaker {
-        font-size: 1.4em;
-      }
-
-      icon.Microphone {
-        font-size: 0.9em;
-      }
-
     }
 
 
@@ -262,18 +266,19 @@ window.Bar {
     slider {
       background-color: $bg;
       border-radius: $radius;
-      box-shadow: 2px 2px 0px 0px color.adjust($fg, $alpha: -0.2);
+      box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color;
       min-height: 1em;
-      margin: -0.42em -0.2em;
+      margin: -0.42em -0.3em;
       transition: $hover-time;
 
       &:hover {
         background-color: $bg1;
+        box-shadow: none;
       }
 
       &:active {
-        background-color: $bg1;
-        box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        background-color: $bg2;
+        box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
       }
     }
   }
@@ -305,16 +310,17 @@ window.Bar {
 
       &:hover {
         background-color: color.adjust($fg, $alpha: -0.8);
-        box-shadow: 1px 1px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
       }
 
       &:active {
         background-color: color.adjust($fg, $alpha: -0.5);
-        box-shadow: 3px 3px 0px 0px color.adjust($fg, $alpha: -0.2) inset;
+        box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
       }
 
       icon {
         color: $bg;
+        font-size: 16px;
       }
     }
 
