@@ -16,6 +16,7 @@ local Tray = astal.require("AstalTray")
 local Hyprland = astal.require("AstalHyprland")
 local map = require("lib").map
 local Calendar = astalify(Gtk.Calendar)
+local WindowAnchor = astal.require("Astal", "3.0").WindowAnchor
 
 local function SysTray()
 	local tray = Tray.get_default()
@@ -136,7 +137,6 @@ local function AudioSlider()
 end
 
 local function ShowAudio(gdkmonitor)
-	local WindowAnchor = astal.require("Astal", "3.0").WindowAnchor
 	local audio_window = Widget.Window({
 		class_name = "Audio",
 		gdkmonitor = gdkmonitor,
@@ -257,28 +257,40 @@ local function Clock()
 	})
 end
 
-local function MiniCalendar()
+local function MiniCalendar(gdkmonitor)
 	local date = Variable(""):poll(1000, function()
 		return GLib.DateTime.new_now_local():format("%A %d-%m-%Y")
 	end)
 
+	local calendar_window = Widget.Window({
+		class_name = "Calendar",
+		gdkmonitor = gdkmonitor,
+		anchor = WindowAnchor.BOTTOM + WindowAnchor.LEFT,
+		Widget.EventBox({
+			on_hover_lost = function(self)
+				local parent = self:get_parent()
+				if parent:is_visible() then
+					parent:hide()
+				end
+			end,
+			Widget.Box({
+				class_name = "Calendar",
+				Calendar({
+					class_name = "CalendarPanel",
+				}),
+			}),
+		}),
+	})
+	calendar_window:hide()
+
 	return Widget.Button({
 		class_name = "Date",
 		on_clicked = function()
-			print("calendar trigger")
-
-			-- TODO: change this for a window then inside the calendar
-			return Calendar({
-				setup = function(self)
-					self.class_name = "Calendar"
-					print("setup")
-					print(self:get_detail_height_rows())
-					print(self:get_detail_width_chars())
-					for i, x in pairs(self:get_display_options()) do
-						print(i, x)
-					end
-				end,
-			})
+			if calendar_window:is_visible() then
+				calendar_window:hide()
+			else
+				calendar_window:show()
+			end
 		end,
 		on_destroy = function()
 			date:drop()
@@ -356,8 +368,6 @@ local function PowerOptions()
 end
 
 return function(gdkmonitor)
-	local WindowAnchor = astal.require("Astal", "3.0").WindowAnchor
-
 	return Widget.Window({
 		class_name = "Bar",
 		gdkmonitor = gdkmonitor,
@@ -369,7 +379,7 @@ return function(gdkmonitor)
 				class_name = "LeftBox",
 				halign = "START",
 				Clock(),
-				MiniCalendar(),
+				MiniCalendar(gdkmonitor),
 			}),
 			Widget.Box({
 				class_name = "MiddleBox",

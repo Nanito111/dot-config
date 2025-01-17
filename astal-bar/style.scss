@@ -55,6 +55,30 @@ $hover-deepness: 1px;
 $pressed-deepness: 2px;
 $press-deepness: 3px;
 
+window.Calendar {
+
+  .Calendar {
+    border: $window_border;
+    box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
+    margin: 10px;
+    margin-left: 18px;
+    background-color: $bg;
+
+    >* {
+      padding: 30px;
+    }
+  }
+
+  .CalendarPanel {
+    font-size: 24px;
+
+    &:selected {
+      color: $bg;
+      background-color: $accent;
+    }
+
+  }
+}
 
 window.Audio {
   .AudioSlider {
@@ -268,16 +292,6 @@ window.Bar {
       box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
     }
 
-  }
-
-  .Calendar {
-    background-color: red;
-    min-width: 100px;
-    min-height: 100px;
-
-    button {
-      min-width: 2em;
-    }
   }
 
   .SysTray {
