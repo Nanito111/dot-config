@@ -45,9 +45,10 @@ $inner-margin: 3px;
 $space-between: 4px;
 $bar-min-height: 28px;
 $font-size: 12pt;
-$shadow-distance: 3px;
+$shadow-distance: 4px;
 $shadow-outer-color: color.adjust($fg, $alpha: -0.1);
 $shadow-inner-color: color.adjust($fg, $alpha: -0.2);
+$window_border: 2px solid $fg;
 
 // buttons
 $hover-deepness: 1px;
@@ -55,6 +56,89 @@ $pressed-deepness: 2px;
 $press-deepness: 3px;
 
 
+window.Audio {
+  .AudioSlider {
+    border: $window_border;
+    min-width: 135px;
+    background-color: $accent;
+    border-radius: $radius;
+    padding: $inner-margin (
+      $inner-margin*3
+    );
+  margin: 10px;
+  margin-right: 18px;
+  box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
+
+  * {
+    all: unset;
+  }
+
+  button {
+    transition: $hover-time;
+    min-width: $font-size + 1pt + ($inner-margin * 2);
+    min-height: $font-size + 1pt + ($inner-margin * 2);
+    margin-top: 3px;
+    margin-bottom: 3px;
+    border-radius: $radius;
+
+    &:hover {
+      box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
+      background-color: color.adjust($fg, $alpha: -0.9);
+    }
+
+    &:active {
+      box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
+      background-color: color.adjust($fg, $alpha: -0.8);
+    }
+
+    &.muted {
+      box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
+      background-color: color.adjust($fg, $alpha: -0.8);
+
+      &:active {
+        box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
+      }
+    }
+
+
+    icon {
+      color: $bg;
+      font-size: 16px;
+    }
+  }
+
+
+  trough {
+    background-color: transparent;
+    border: 1px solid $bg;
+    border-radius: $radius;
+    margin: 0 5px;
+  }
+
+  highlight {
+    background-color: $bg;
+  }
+
+  slider {
+    background-color: $bg;
+    border-radius: $radius;
+    box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color;
+    min-height: 1em;
+    margin: -0.42em -0.3em;
+    transition: $hover-time;
+
+    &:hover {
+      background-color: $bg1;
+      box-shadow: none;
+    }
+
+    &:active {
+      background-color: $bg2;
+      box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
+    }
+  }
+}
+}
 
 window.Bar {
   border: none;
@@ -65,10 +149,12 @@ window.Bar {
   font-weight: bold;
 
   &>* {
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    margin-left: 30px;
+    margin-right: 30px;
 
     &>* {
-      border: 1px solid $fg;
+      border: $window_border;
       background-color: $bg;
       box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
       min-height: $bar-min-height;
@@ -154,7 +240,6 @@ window.Bar {
   }
 
   .LeftBox {
-    margin-left: $bar-side-margins;
     border-radius: $radius;
     padding: $inner-margin;
   }
@@ -204,89 +289,58 @@ window.Bar {
       margin-right: $space-between;
     }
 
+    icon {
+      -gtk-icon-theme: "WhiteSur-red";
+    }
+
     background-color: $bg2;
     box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
   }
 
-  .AudioSlider {
-    min-width: 270px;
+  .ShowAudio {
     background-color: $accent;
     border-radius: $radius;
-    padding: 0 ($inner-margin*3);
 
-    * {
-      all: unset;
+    &:hover>.Icons {
+      box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
+      background-color: color.adjust($fg, $alpha: -0.9);
     }
 
-    button {
+    &:active>.Icons {
+      box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
+      background-color: color.adjust($fg, $alpha: -0.8);
+    }
+
+    .Icons {
       transition: $hover-time;
-      min-width: $font-size + 1pt + ($inner-margin * 2);
-      margin-top: 3px;
-      margin-bottom: 3px;
-      border-radius: $radius;
-
-      &:hover {
-        box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
-        background-color: color.adjust($fg, $alpha: -0.9);
-      }
-
-      &:active {
-        box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
-        background-color: color.adjust($fg, $alpha: -0.8);
-      }
-
-      &.muted {
-        box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
-        background-color: color.adjust($fg, $alpha: -0.8);
-
-        &:active {
-          box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
-        }
-      }
-
+      padding: 0 5px;
 
       icon {
         color: $bg;
         font-size: 16px;
-      }
-    }
 
+        min-width: $font-size + 1pt + ($inner-margin * 2);
 
-    trough {
-      background-color: transparent;
-      border: 1px solid $bg;
-      border-radius: $radius;
-      margin: 0 5px;
-    }
+        margin-top: $inner-margin;
+        margin-bottom: $inner-margin;
+        margin-left: $inner-margin;
 
-    highlight {
-      background-color: $bg;
-    }
+        &:first-child {
+          margin-left: 0;
+        }
 
-    slider {
-      background-color: $bg;
-      border-radius: $radius;
-      box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color;
-      min-height: 1em;
-      margin: -0.42em -0.3em;
-      transition: $hover-time;
-
-      &:hover {
-        background-color: $bg1;
-        box-shadow: none;
-      }
-
-      &:active {
-        background-color: $bg2;
-        box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
+        &.muted {
+          box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
+          background-color: color.adjust($fg, $alpha: -0.8);
+        }
       }
     }
   }
 
+
   .RightBox {
     border-radius: $radius;
     padding: $inner-margin;
-    margin-right: $bar-side-margins;
 
     &>*:first-child {
       margin-left: 0;

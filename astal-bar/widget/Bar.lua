@@ -79,53 +79,106 @@ local function Ethernet()
 	})
 end
 
-local function AudioSlider()
-	local speaker = Wp.get_default().audio.default_speaker
-	local microphone = Wp.get_default().audio.default_microphone
+local speaker = Wp.get_default().audio.default_speaker
+local microphone = Wp.get_default().audio.default_microphone
 
+local function AudioSlider()
 	return Widget.Box({
 		class_name = "AudioSlider",
-		-- speaker
-		Widget.Button({
-			class_name = bind(speaker, "mute"):as(function(mute)
-				local mute_text = mute and "muted" or ""
-				return "Speaker" .. " " .. mute_text
-			end),
-			on_clicked = function()
-				speaker.mute = not speaker.mute
+		vertical = true,
+		Widget.Box({
+			-- speaker
+			Widget.Button({
+				class_name = bind(speaker, "mute"):as(function(mute)
+					local mute_text = mute and "muted" or ""
+					return "Speaker" .. " " .. mute_text
+				end),
+				on_clicked = function()
+					speaker.mute = not speaker.mute
+				end,
+				Widget.Icon({
+					class_name = "Speaker",
+					icon = bind(speaker, "volume-icon"),
+				}),
+			}),
+			Widget.Slider({
+				hexpand = true,
+				on_dragged = function(self)
+					speaker.volume = self.value
+				end,
+				value = bind(speaker, "volume"),
+			}),
+		}),
+		Widget.Box({
+			-- microphone
+			Widget.Button({
+				class_name = bind(microphone, "mute"):as(function(mute)
+					local mute_text = mute and "muted" or ""
+					return "Microphone" .. " " .. mute_text
+				end),
+				on_clicked = function()
+					microphone.mute = not microphone.mute
+				end,
+				Widget.Icon({
+					class_name = "Microphone",
+					icon = bind(microphone, "volume-icon"),
+				}),
+			}),
+			Widget.Slider({
+				hexpand = true,
+				on_dragged = function(self)
+					microphone.volume = self.value
+				end,
+				value = bind(microphone, "volume"),
+			}),
+		}),
+	})
+end
+
+local function ShowAudio(gdkmonitor)
+	local WindowAnchor = astal.require("Astal", "3.0").WindowAnchor
+	local audio_window = Widget.Window({
+		class_name = "Audio",
+		gdkmonitor = gdkmonitor,
+		layer = "TOP",
+		anchor = WindowAnchor.BOTTOM + WindowAnchor.RIGHT,
+		Widget.EventBox({
+			on_hover_lost = function(self)
+				local parent = self:get_parent()
+				if parent:is_visible() then
+					parent:hide()
+				end
 			end,
+			AudioSlider(),
+		}),
+	})
+	audio_window:hide()
+
+	return Widget.Button({
+		class_name = "ShowAudio",
+		on_clicked = function()
+			if audio_window:is_visible() then
+				audio_window:hide()
+			else
+				audio_window:show()
+			end
+		end,
+		Widget.Box({
+			class_name = "Icons",
 			Widget.Icon({
-				class_name = "Speaker",
+				class_name = bind(speaker, "mute"):as(function(mute)
+					local mute_text = mute and "muted" or ""
+					return "Speaker" .. " " .. mute_text
+				end),
 				icon = bind(speaker, "volume-icon"),
 			}),
-		}),
-		Widget.Slider({
-			hexpand = true,
-			on_dragged = function(self)
-				speaker.volume = self.value
-			end,
-			value = bind(speaker, "volume"),
-		}),
-		-- microphone
-		Widget.Button({
-			class_name = bind(microphone, "mute"):as(function(mute)
-				local mute_text = mute and "muted" or ""
-				return "Microphone" .. " " .. mute_text
-			end),
-			on_clicked = function()
-				microphone.mute = not microphone.mute
-			end,
 			Widget.Icon({
-				class_name = "Microphone",
+				class_name = bind(microphone, "mute"):as(function(mute)
+					local mute_text = mute and "muted" or ""
+					return "Microphone" .. " " .. mute_text
+				end),
 				icon = bind(microphone, "volume-icon"),
 			}),
-		}),
-		Widget.Slider({
-			hexpand = true,
-			on_dragged = function(self)
-				microphone.volume = self.value
-			end,
-			value = bind(microphone, "volume"),
 		}),
 	})
 end
@@ -214,7 +267,7 @@ local function MiniCalendar()
 		on_clicked = function()
 			print("calendar trigger")
 
-			-- TODO
+			-- TODO: change this for a window then inside the calendar
 			return Calendar({
 				setup = function(self)
 					self.class_name = "Calendar"
@@ -238,57 +291,64 @@ local function PowerOptions()
 	local show_options = Variable(false)
 	return Widget.Box({
 		class_name = "PowerOptions",
-		Widget.Box({
-			class_name = "Options",
-			visible = bind(show_options),
-			Widget.Button({
-				on_clicked = function()
-					astal.exec("systemctl suspend")
-				end,
-				Widget.Icon({
-					icon = "system-suspend-symbolic",
+		Widget.EventBox({
+			on_hover_lost = function()
+				show_options:set(false)
+			end,
+			Widget.Box({
+				Widget.Box({
+					class_name = "Options",
+					visible = bind(show_options),
+					Widget.Button({
+						on_clicked = function()
+							astal.exec("systemctl suspend")
+						end,
+						Widget.Icon({
+							icon = "system-suspend-symbolic",
+						}),
+					}),
+					Widget.Button({
+						on_clicked = function()
+							astal.exec("systemctl reboot")
+						end,
+						Widget.Icon({
+							icon = "system-reboot-symbolic",
+						}),
+					}),
+					Widget.Button({
+						on_clicked = function()
+							astal.exec("shutdown now")
+						end,
+						Widget.Icon({
+							icon = "system-shutdown-symbolic",
+						}),
+					}),
 				}),
-			}),
-			Widget.Button({
-				on_clicked = function()
-					astal.exec("systemctl reboot")
-				end,
-				Widget.Icon({
-					icon = "system-reboot-symbolic",
-				}),
-			}),
-			Widget.Button({
-				on_clicked = function()
-					astal.exec("shutdown now")
-				end,
-				Widget.Icon({
-					icon = "system-shutdown-symbolic",
-				}),
-			}),
-		}),
-		Widget.Box({
-			Widget.Button({
-				class_name = "CloseOptions",
-				visible = bind(show_options):as(function(value)
-					return value
-				end),
-				on_clicked = function()
-					show_options:set(not show_options:get())
-				end,
-				Widget.Icon({
-					icon = "close-symbolic",
-				}),
-			}),
-			Widget.Button({
-				class_name = "ShowOptions",
-				visible = bind(show_options):as(function(value)
-					return not value
-				end),
-				on_clicked = function()
-					show_options:set(not show_options:get())
-				end,
-				Widget.Icon({
-					icon = "system-shutdown-symbolic",
+				Widget.Box({
+					Widget.Button({
+						class_name = "CloseOptions",
+						visible = bind(show_options):as(function(value)
+							return value
+						end),
+						on_clicked = function()
+							show_options:set(not show_options:get())
+						end,
+						Widget.Icon({
+							icon = "close-symbolic",
+						}),
+					}),
+					Widget.Button({
+						class_name = "ShowOptions",
+						visible = bind(show_options):as(function(value)
+							return not value
+						end),
+						on_clicked = function()
+							show_options:set(not show_options:get())
+						end,
+						Widget.Icon({
+							icon = "system-shutdown-symbolic",
+						}),
+					}),
 				}),
 			}),
 		}),
@@ -320,7 +380,7 @@ return function(gdkmonitor)
 				halign = "END",
 				SysTray(),
 				Ethernet(),
-				AudioSlider(),
+				ShowAudio(gdkmonitor),
 				PowerOptions(),
 			}),
 		}),
