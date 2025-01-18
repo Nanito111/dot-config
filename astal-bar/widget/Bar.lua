@@ -44,21 +44,6 @@ local function SysTray()
 	})
 end
 
--- local function FocusedClient()
--- 	local hypr = Hyprland.get_default()
--- 	local focused = bind(hypr, "focused-client")
---
--- 	return Widget.Box({
--- 		class_name = "Focused",
--- 		visible = focused,
--- 		focused:as(function(client)
--- 			return client and Widget.Label({
--- 				label = bind(client, "title"):as(tostring),
--- 			})
--- 		end),
--- 	})
--- end
-
 local function Ethernet()
 	local ethernet = Network.get_default().wired
 
@@ -87,8 +72,21 @@ local function AudioSlider()
 	return Widget.Box({
 		class_name = "AudioSlider",
 		vertical = true,
+
+		-- speaker
+		Widget.Label({
+			class_name = "Speaker",
+			label = bind(speaker, "description"):as(function(name)
+				if name == "Family 17h/19h/1ah HD Audio Controller Analog Stereo" then
+					return "Motherboard Analog Stereo"
+				elseif name == "Renoir Radeon High Definition Audio Controller Digital Stereo (HDMI)" then
+					return "HDMI Digital Stereo"
+				else
+					return name
+				end
+			end),
+		}),
 		Widget.Box({
-			-- speaker
 			Widget.Button({
 				class_name = bind(speaker, "mute"):as(function(mute)
 					local mute_text = mute and "muted" or ""
@@ -110,8 +108,13 @@ local function AudioSlider()
 				value = bind(speaker, "volume"),
 			}),
 		}),
+
+		-- microphone
+		Widget.Label({
+			class_name = "Microphone",
+			label = bind(microphone, "description"),
+		}),
 		Widget.Box({
-			-- microphone
 			Widget.Button({
 				class_name = bind(microphone, "mute"):as(function(mute)
 					local mute_text = mute and "muted" or ""
@@ -138,6 +141,9 @@ end
 
 local function ShowAudio(gdkmonitor)
 	local audio_window = Widget.Window({
+		setup = function(self)
+			self:hide()
+		end,
 		class_name = "Audio",
 		gdkmonitor = gdkmonitor,
 		layer = "TOP",
@@ -152,7 +158,6 @@ local function ShowAudio(gdkmonitor)
 			AudioSlider(),
 		}),
 	})
-	audio_window:hide()
 
 	return Widget.Button({
 		class_name = "ShowAudio",
@@ -165,19 +170,35 @@ local function ShowAudio(gdkmonitor)
 		end,
 		Widget.Box({
 			class_name = "Icons",
-			Widget.Icon({
+			Widget.Box({
 				class_name = bind(speaker, "mute"):as(function(mute)
 					local mute_text = mute and "muted" or ""
 					return "Speaker" .. " " .. mute_text
 				end),
-				icon = bind(speaker, "volume-icon"),
+				Widget.Icon({
+					class_name = "Speaker",
+					icon = bind(speaker, "volume-icon"),
+				}),
+				Widget.Label({
+					label = bind(speaker, "volume"):as(function(volume)
+						return string.format("%.0f", volume * 100) .. " "
+					end),
+				}),
 			}),
-			Widget.Icon({
+			Widget.Box({
 				class_name = bind(microphone, "mute"):as(function(mute)
 					local mute_text = mute and "muted" or ""
 					return "Microphone" .. " " .. mute_text
 				end),
-				icon = bind(microphone, "volume-icon"),
+				Widget.Icon({
+					class_name = "Microphone",
+					icon = bind(microphone, "volume-icon"),
+				}),
+				Widget.Label({
+					label = bind(microphone, "volume"):as(function(volume)
+						return string.format("%.0f", volume * 100) .. " "
+					end),
+				}),
 			}),
 		}),
 	})
@@ -263,6 +284,9 @@ local function MiniCalendar(gdkmonitor)
 	end)
 
 	local calendar_window = Widget.Window({
+		setup = function(self)
+			self:hide()
+		end,
 		class_name = "Calendar",
 		gdkmonitor = gdkmonitor,
 		anchor = WindowAnchor.BOTTOM + WindowAnchor.LEFT,
@@ -281,7 +305,6 @@ local function MiniCalendar(gdkmonitor)
 			}),
 		}),
 	})
-	calendar_window:hide()
 
 	return Widget.Button({
 		class_name = "Date",

@@ -97,6 +97,11 @@ window.Audio {
     all: unset;
   }
 
+  >label {
+    color: $bg;
+    font-size: 16px;
+  }
+
   button {
     transition: $hover-time;
     min-width: $font-size + 1pt + ($inner-margin * 2);
@@ -123,7 +128,6 @@ window.Audio {
         box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
       }
     }
-
 
     icon {
       color: $bg;
@@ -190,7 +194,6 @@ window.Bar {
   }
 
   label {
-    transition: $hover-time;
     font-family: $font;
     font-weight: 400;
   }
@@ -213,6 +216,7 @@ window.Bar {
       min-width: $bar-min-height + ($inner-margin * 0.5);
 
       label {
+        transition: $hover-time;
         border-radius: $radius;
         color: $accent;
         font-size: 12pt;
@@ -318,35 +322,35 @@ window.Bar {
     &:hover>.Icons {
       box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
       background-color: color.adjust($fg, $alpha: -0.9);
+      color: $bg2;
     }
 
     &:active>.Icons {
       box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
       background-color: color.adjust($fg, $alpha: -0.8);
+      color: $bg3;
     }
 
     .Icons {
+      padding: 0 ($inner-margin*2);
       transition: $hover-time;
-      padding: 0 5px;
+      color: $bg;
 
-      icon {
-        color: $bg;
+      &>box {
+        transition: 0;
+        min-width: 55px;
         font-size: 16px;
 
-        min-width: $font-size + 1pt + ($inner-margin * 2);
+        &.muted {
+          color: color.adjust($bg, $alpha: -0.5);
+        }
+      }
 
+      icon {
         margin-top: $inner-margin;
         margin-bottom: $inner-margin;
         margin-left: $inner-margin;
-
-        &:first-child {
-          margin-left: 0;
-        }
-
-        &.muted {
-          box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
-          background-color: color.adjust($fg, $alpha: -0.8);
-        }
+        margin-right: 4px;
       }
     }
   }
