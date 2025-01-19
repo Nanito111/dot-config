@@ -46,8 +46,8 @@ $space-between: 4px;
 $bar-min-height: 28px;
 $font-size: 12pt;
 $shadow-distance: 4px;
-$shadow-outer-color: color.adjust($fg, $alpha: -0.1);
-$shadow-inner-color: color.adjust($fg, $alpha: -0.2);
+$shadow-outer-color: color.adjust(black, $alpha: -0.3);
+$shadow-inner-color: color.adjust(black, $alpha: -0.4);
 $window_border: 2px solid $fg;
 
 // buttons
@@ -56,7 +56,6 @@ $pressed-deepness: 2px;
 $press-deepness: 3px;
 
 window.Calendar {
-
   .Calendar {
     border: $window_border;
     box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
@@ -80,61 +79,68 @@ window.Calendar {
   }
 }
 
-window.Audio {
-  .AudioSlider {
-    border: $window_border;
-    min-width: 135px;
-    background-color: $accent;
-    border-radius: $radius;
-    padding: $inner-margin (
-      $inner-margin*3
-    );
-  margin: 10px;
-  margin-right: 18px;
-  box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
+window.Media {
+  $media-height: 500px;
+  $media-width: 3/5.2 * $media-height;
 
   * {
     all: unset;
   }
 
-  >label {
+  box.Media {
+    margin-right: 100px;
+    margin-bottom: 10px;
+    min-width: $media-width;
+    min-height: $media-height;
+
+    border: $window_border;
+    box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
     color: $bg;
-    font-size: 16px;
+    background-color: $bg;
+
+    &.offline {
+      min-height: $media-width;
+    }
   }
 
-  button {
-    transition: $hover-time;
-    min-width: $font-size + 1pt + ($inner-margin * 2);
-    min-height: $font-size + 1pt + ($inner-margin * 2);
-    margin-top: 3px;
-    margin-bottom: 3px;
-    border-radius: $radius;
+  .image {
+    $cover_margin: 20px;
+    $border_size: 2px;
+    border: $border_size solid $fg;
+    margin: $cover_margin $cover_margin;
+    min-height: $media-height * 0.58 - ($cover_margin * 2) - ($border_size * 2) - 1px;
+  }
 
-    &:hover {
-      box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
-      background-color: color.adjust($fg, $alpha: -0.9);
-    }
+  box.image {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
 
-    &:active {
-      box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
-      background-color: color.adjust($fg, $alpha: -0.8);
-    }
+  icon.image {
+    font-size: 128px;
+    background-color: $fg;
+    color: $accent;
+  }
 
-    &.muted {
-      box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
-      background-color: color.adjust($fg, $alpha: -0.8);
+  box.interface {
+    background-color: $accent;
+    min-height: $media-height * 0.42 + 1px;
 
-      &:active {
-        box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
+    &.offline {
+      min-height: $media-width;
+
+      icon {
+        font-size: 128px;
+        margin-top: 60px;
       }
     }
 
-    icon {
-      color: $bg;
-      font-size: 16px;
-    }
   }
 
+  box.slider-parent {
+    padding: $inner-margin*4;
+  }
 
   trough {
     background-color: transparent;
@@ -165,7 +171,140 @@ window.Audio {
       box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
     }
   }
+
+  .controls {
+    font-size: 24px;
+    margin-top: $inner-margin;
+    margin-bottom: $inner-margin*3;
+
+    >button {
+      transition: $hover-time;
+      background-color: $bg;
+      min-width: 30px;
+      margin: 0 $space-between;
+      box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color;
+      color: $accent;
+      // border: $window_border;
+
+      &:hover {
+        box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color;
+      }
+
+      &:active {
+        box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
+        background-color: $bg2;
+        color: $accentMuted;
+      }
+    }
+
+    icon {
+      padding: $inner-margin;
+    }
+  }
+
+  label {
+    margin: 0 $inner-margin*6;
+  }
+
+  label.title {
+    font-size: 14pt;
+    font-weight: bold;
+  }
+
+  label.artist {
+    font-size: 12pt;
+  }
+
+  label.album {
+    font-size: 10pt;
+    color: $bg2;
+  }
 }
+
+window.Audio {
+  .AudioSlider {
+    border: $window_border;
+    min-width: 135px;
+    background-color: $accent;
+    border-radius: $radius;
+    padding: $inner-margin $inner-margin*3 ;
+    margin: 10px;
+    margin-right: 18px;
+    box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
+
+    * {
+      all: unset;
+    }
+
+    >label {
+      color: $bg;
+      font-size: 16px;
+    }
+
+    button {
+      transition: $hover-time;
+      min-width: $font-size + 1pt + ($inner-margin * 2);
+      min-height: $font-size + 1pt + ($inner-margin * 2);
+      margin-top: 3px;
+      margin-bottom: 3px;
+      border-radius: $radius;
+
+      &:hover {
+        box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
+        background-color: color.adjust($fg, $alpha: -0.9);
+      }
+
+      &:active {
+        box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
+        background-color: color.adjust($fg, $alpha: -0.8);
+      }
+
+      &.muted {
+        box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
+        background-color: color.adjust($fg, $alpha: -0.8);
+
+        &:active {
+          box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
+        }
+      }
+
+      icon {
+        color: $bg;
+        font-size: 16px;
+      }
+    }
+
+
+    trough {
+      background-color: transparent;
+      border: 1px solid $bg;
+      border-radius: $radius;
+      margin: 0 5px;
+    }
+
+    highlight {
+      background-color: $bg;
+    }
+
+    slider {
+      background-color: $bg;
+      border-radius: $radius;
+      box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color;
+      min-height: 1em;
+      margin: -0.42em -0.3em;
+      transition: $hover-time;
+
+      &:hover {
+        background-color: $bg1;
+        box-shadow: none;
+      }
+
+      &:active {
+        background-color: $bg2;
+        box-shadow: $pressed-deepness $pressed-deepness 0px 0px $shadow-inner-color inset;
+      }
+    }
+  }
 }
 
 window.Bar {
@@ -353,6 +492,46 @@ window.Bar {
         margin-right: 4px;
       }
     }
+  }
+
+  button.Media {
+    background-color: $accent;
+    min-width: 30px;
+    color: $bg;
+    font-size: 16px;
+
+    @keyframes playing-media {
+      from {
+        -gtk-icon-transform: rotate(0deg);
+      }
+
+      to {
+        -gtk-icon-transform: rotate(360deg);
+      }
+    }
+
+    icon {
+      transition: $hover-time;
+      animation: playing-media 2s linear infinite;
+    }
+
+    &.offline icon {
+      animation: none;
+      -gtk-icon-transform: rotate(0deg);
+    }
+
+    &:hover>icon {
+      box-shadow: $hover-deepness $hover-deepness 0px 0px $shadow-inner-color inset;
+      background-color: color.adjust($fg, $alpha: -0.9);
+      color: $bg2;
+    }
+
+    &:active>icon {
+      box-shadow: $press-deepness $press-deepness 0px 0px $shadow-inner-color inset;
+      background-color: color.adjust($fg, $alpha: -0.8);
+      color: $bg3;
+    }
+
   }
 
 

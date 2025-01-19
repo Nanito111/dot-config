@@ -9,7 +9,7 @@ local Gtk = astal_gtk3.Gtk
 -- local Gdk = astal.require("Gdk", "3.0")
 local GLib = astal.require("GLib")
 local bind = astal.bind
--- local Mpris = astal.require("AstalMpris")
+local Mpris = astal.require("AstalMpris")
 local Wp = astal.require("AstalWp")
 local Network = astal.require("AstalNetwork")
 local Tray = astal.require("AstalTray")
@@ -204,26 +204,214 @@ local function ShowAudio(gdkmonitor)
 	})
 end
 
--- local function Media()
--- 	local player = Mpris.Player.new("spotify")
---
--- 	return Widget.Box({
--- 		class_name = "Media",
--- 		visible = bind(player, "available"),
--- 		Widget.Box({
--- 			class_name = "Cover",
--- 			valign = "CENTER",
--- 			css = bind(player, "cover-art"):as(function(cover)
--- 				return "background-image: url('" .. (cover or "") .. "');"
--- 			end),
--- 		}),
--- 		Widget.Label({
--- 			label = bind(player, "metadata"):as(function()
--- 				return (player.title or "") .. " - " .. (player.artist or "")
--- 			end),
--- 		}),
--- 	})
--- end
+local function MediaPlayer(mpris_instance)
+	return bind(mpris_instance, "players"):as(function(players)
+		local player = nil
+		if #players > 0 then
+			player = players[1]
+		end
+		if player == nil then
+			return Widget.Box({
+				class_name = "Media offline",
+				vertical = true,
+				Widget.Box({
+					class_name = "interface offline",
+					vertical = true,
+					Widget.Icon({
+						icon = "music-app-symbolic",
+					}),
+					Widget.Label({
+						label = "no media playing",
+					}),
+				}),
+			})
+		end
+
+		local play_button_icon = {
+			["PLAYING"] = "media-playback-pause-symbolic",
+			["PAUSED"] = "media-playback-start-symbolic",
+			["STOPPED"] = "media-playback-stop-symbolic",
+			_ = "media-playback-start-symbolic",
+		}
+
+		return Widget.Box({
+			class_name = "Media",
+			vertical = true,
+			bind(player, "cover-art"):as(function(cover_art)
+				if cover_art == nil or cover_art == "" then
+					return Widget.Icon({
+						class_name = "image",
+						icon = "music-app-symbolic",
+					})
+				end
+
+				return Widget.Box({
+					class_name = "image",
+					css = "background-image: url('" .. cover_art .. "');",
+				})
+			end),
+			Widget.Box({
+				class_name = "interface",
+				vertical = true,
+				Widget.Box({
+					class_name = "slider-parent",
+					visible = bind(player, "length"):as(function(length)
+						return length ~= nil and length > 0
+					end),
+					Widget.Slider({
+						hexpand = true,
+						value = bind(player, "position"):as(function(position)
+							return position
+						end),
+						min = 0,
+						max = bind(player, "length"):as(function(value)
+							return value
+						end),
+						on_dragged = function(self)
+							if player.position == nil then
+								return
+							end
+							player.position = self.value
+						end,
+					}),
+				}),
+				Widget.Box({
+					class_name = "controls",
+					halign = "CENTER",
+					Widget.Button({
+						on_clicked = function()
+							if player.can_go_previous then
+								player:previous()
+							end
+						end,
+						Widget.Icon({
+							icon = "media-skip-backward-symbolic",
+						}),
+					}),
+					Widget.Button({
+						on_clicked = function()
+							if player.can_play and player.can_pause then
+								player:play_pause()
+							end
+						end,
+						Widget.Icon({
+							icon = bind(player, "playback-status"):as(function(playback_status)
+								return play_button_icon[playback_status]
+							end),
+						}),
+					}),
+					Widget.Button({
+						on_clicked = function()
+							if player.can_go_next then
+								player:next()
+							end
+						end,
+						Widget.Icon({
+							icon = "media-skip-forward-symbolic",
+						}),
+					}),
+				}),
+				Widget.Label({
+					class_name = "title",
+					wrap = true,
+					justify = "CENTER",
+					visible = bind(player, "title"):as(function(title)
+						if title == nil or title == "" then
+							return false
+						end
+						return true
+					end),
+					label = bind(player, "title"):as(function(title)
+						if title == nil or title == "" then
+							return
+						end
+						if string.len(title) > 30 then
+							title = string.sub(title, 0, 30) .. "..."
+						end
+						return title
+					end),
+				}),
+				Widget.Label({
+					class_name = "artist",
+					wrap = true,
+					justify = "CENTER",
+					visible = bind(player, "artist"):as(function(artist)
+						if artist == nil or artist == "" then
+							return false
+						end
+						return true
+					end),
+					label = bind(player, "artist"):as(function(artist)
+						if artist == nil or artist == "" then
+							return
+						end
+						return artist
+					end),
+				}),
+				Widget.Label({
+					class_name = "album",
+					wrap = true,
+					justify = "CENTER",
+					visible = bind(player, "album"):as(function(album)
+						if album == nil or album == "" then
+							return false
+						end
+						return true
+					end),
+					label = bind(player, "album"):as(function(album)
+						if album == nil or album == "" then
+							return
+						end
+						return album
+					end),
+				}),
+			}),
+		})
+	end)
+end
+
+local function Media(gdkmonitor)
+	local default_media = Mpris.get_default()
+	local window_player = Widget.Window({
+		setup = function(self)
+			self:hide()
+		end,
+		class_name = "Media",
+		gdkmonitor = gdkmonitor,
+		layer = "TOP",
+		anchor = WindowAnchor.BOTTOM + WindowAnchor.RIGHT,
+		Widget.EventBox({
+			on_hover_lost = function(self)
+				local parent = self:get_parent()
+				if parent:is_visible() then
+					parent:hide()
+				end
+			end,
+			MediaPlayer(default_media),
+		}),
+	})
+
+	return Widget.Button({
+		class_name = bind(default_media, "players"):as(function(players)
+			if #players == 0 then
+				return "Media offline"
+			else
+				return "Media"
+			end
+		end),
+
+		on_clicked = function()
+			if window_player:is_visible() then
+				window_player:hide()
+			else
+				window_player:show()
+			end
+		end,
+		Widget.Icon({
+			icon = "music-app-symbolic",
+		}),
+	})
+end
 
 local function Workspaces()
 	local hypr = Hyprland.get_default()
@@ -413,6 +601,7 @@ return function(gdkmonitor)
 				halign = "END",
 				SysTray(),
 				Ethernet(),
+				Media(gdkmonitor),
 				ShowAudio(gdkmonitor),
 				PowerOptions(),
 			}),
