@@ -148,6 +148,8 @@ local function ShowAudio(gdkmonitor)
 		gdkmonitor = gdkmonitor,
 		layer = "TOP",
 		anchor = WindowAnchor.BOTTOM + WindowAnchor.RIGHT,
+		margin_bottom = 10,
+		margin_right = 20,
 		Widget.EventBox({
 			on_hover_lost = function(self)
 				local parent = self:get_parent()
@@ -380,6 +382,8 @@ local function Media(gdkmonitor)
 		gdkmonitor = gdkmonitor,
 		layer = "TOP",
 		anchor = WindowAnchor.BOTTOM + WindowAnchor.RIGHT,
+		margin_bottom = 10,
+		margin_right = 100,
 		Widget.EventBox({
 			on_hover_lost = function(self)
 				local parent = self:get_parent()
@@ -478,6 +482,8 @@ local function MiniCalendar(gdkmonitor)
 		class_name = "Calendar",
 		gdkmonitor = gdkmonitor,
 		anchor = WindowAnchor.BOTTOM + WindowAnchor.LEFT,
+		margin_bottom = 10,
+		margin_left = 20,
 		Widget.EventBox({
 			on_hover_lost = function(self)
 				local parent = self:get_parent()

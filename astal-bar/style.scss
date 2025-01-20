@@ -56,11 +56,11 @@ $pressed-deepness: 2px;
 $press-deepness: 3px;
 
 window.Calendar {
+
   .Calendar {
+    margin: $shadow-distance;
     border: $window_border;
     box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
-    margin: 10px;
-    margin-left: 18px;
     background-color: $bg;
 
     >* {
@@ -88,8 +88,7 @@ window.Media {
   }
 
   box.Media {
-    margin-right: 100px;
-    margin-bottom: 10px;
+    margin: $shadow-distance;
     min-width: $media-width;
     min-height: $media-height;
 
@@ -222,14 +221,14 @@ window.Media {
 }
 
 window.Audio {
+
   .AudioSlider {
+    margin: $shadow-distance;
     border: $window_border;
     min-width: 135px;
     background-color: $accent;
     border-radius: $radius;
     padding: $inner-margin $inner-margin*3 ;
-    margin: 10px;
-    margin-right: 18px;
     box-shadow: $shadow-distance $shadow-distance 0px 0px $shadow-outer-color;
 
     * {
