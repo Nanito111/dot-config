@@ -394,27 +394,48 @@ local function Media(gdkmonitor)
 			MediaPlayer(default_media),
 		}),
 	})
-
-	return Widget.Button({
-		class_name = bind(default_media, "players"):as(function(players)
-			if #players == 0 then
-				return "Media offline"
-			else
-				return "Media"
-			end
-		end),
-
-		on_clicked = function()
-			if window_player:is_visible() then
-				window_player:hide()
-			else
-				window_player:show()
-			end
-		end,
-		Widget.Icon({
-			icon = "music-app-symbolic",
-		}),
-	})
+	return bind(default_media, "players"):as(function(players)
+		if #players == 0 then
+			return Widget.Button({
+				class_name = "Media offline",
+				on_clicked = function()
+					if window_player:is_visible() then
+						window_player:hide()
+					else
+						window_player:show()
+					end
+				end,
+				Widget.Icon({
+					icon = "music-app-symbolic",
+				}),
+			})
+		else
+			local player = players[1]
+			return Widget.Button({
+				class_name = bind(player, "playback-status"):as(function(playback_status)
+					if playback_status == "PAUSED" then
+						return "Media paused"
+					end
+					return "Media"
+				end),
+				on_clicked = function()
+					if window_player:is_visible() then
+						window_player:hide()
+					else
+						window_player:show()
+					end
+				end,
+				Widget.Icon({
+					icon = bind(player, "playback-status"):as(function(playback_status)
+						if playback_status == "PAUSED" then
+							return "media-playback-pause-symbolic"
+						end
+						return "media-playback-start-symbolic"
+					end),
+				}),
+			})
+		end
+	end)
 end
 
 local function Workspaces()

@@ -500,10 +500,6 @@ window.Bar {
     font-size: 16px;
 
     @keyframes playing-media {
-      from {
-        -gtk-icon-transform: rotate(0deg);
-      }
-
       to {
         -gtk-icon-transform: rotate(360deg);
       }
@@ -512,11 +508,16 @@ window.Bar {
     icon {
       transition: $hover-time;
       animation: playing-media 2s linear infinite;
+      animation-play-state: running;
     }
 
     &.offline icon {
       animation: none;
       -gtk-icon-transform: rotate(0deg);
+    }
+
+    &.paused icon {
+      animation-play-state: paused;
     }
 
     &:hover>icon {
