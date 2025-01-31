@@ -18,7 +18,7 @@ $fill$git_state$git_status$git_metrics$git_branch$git_commit\
 ( $zig) \
 \n$character"""
 
-palette = "gruvbox_dark"
+palette = "flexoki"
 
 [palettes.gruvbox_dark]
 fg1 = '#ebdbb2'
@@ -44,6 +44,30 @@ dim_red = '#FB4934'
 dim_yellow = '#FABC2E'
 dim_gray = '#918273'
 
+[palettes.flexoki]
+fg1 = '#FFFCF0'
+bg1 = '#100F0F'
+bg2 = '#282726'
+bg3 = '#403E3C'
+
+blue = '#205EA6'
+aqua = '#24837B'
+green = '#66800B'
+orange = '#BC5215'
+purple = '#5E409D'
+red = '#AF3029'
+yellow = '#AD8301'
+gray = '#B7B5AC'
+
+dim_blue = '#4385BE'
+dim_aqua = '#3AA99F'
+dim_green = '#879A39'
+dim_orange = '#DA702C'
+dim_purple = '#8B7EC8'
+dim_red = '#D14D41'
+dim_yellow = '#D0A215'
+dim_gray = '#878580'
+
 [fill]
 style = "fg:fg1"
 symbol = " "
@@ -57,22 +81,22 @@ time_format = "%H:%M"
 use_12hr = false
 
 [sudo]
+disabled = false
 format = '([$symbol]($style))'
 style = "bold fg:yellow"
 symbol = "⋈┈"
-disabled = false
 
 [username]
 disabled = false
-format = "[](fg:orange)[$user]($style)[](fg:orange)"
+format = "[](fg:purple)[$user]($style)[](fg:purple)"
 show_always = true
-style_root = "bg:orange fg:fg1 bold italic"
-style_user = "bg:orange fg:fg1"
+style_root = "bg:purple fg:fg1 bold italic"
+style_user = "bg:purple fg:fg1"
 
 [directory]
 home_symbol = "⌂"
-format = "[](fg:yellow)[$path$read_only]($style)[](fg:yellow)"
-style = "bg:yellow fg:bg1"
+format = "[](fg:aqua)[$path$read_only]($style)[](fg:aqua)"
+style = "bg:aqua fg:bg1"
 truncation_length = 4
 truncation_symbol = "…/"
 use_logical_path=true
@@ -157,24 +181,24 @@ discharging_symbol = '󰁹'
 
 # ----------------------- GIT ------------------------
 [git_branch]
-format = "[](fg:dim_green bg:green)[$symbol $branch]($style)[](fg:dim_green)"
+format = "[](fg:dim_blue bg:blue)[$symbol $branch]($style)[](fg:dim_blue)"
 symbol = ""
-style = "bg:dim_green fg:bg2"
+style = "bg:dim_blue fg:bg2"
 truncation_symbol = "⋯"
 truncation_length = 30
 only_attached = true
 
 [git_metrics]
-format = '([▴$added]($added_style))([▿$deleted]($deleted_style))'
-added_style = 'fg:bg2 bg:green'
-deleted_style = 'fg:red bg:green'
+format = '([▴$added|]($added_style))([▿$deleted]($deleted_style))'
+added_style = 'fg:bg1 bg:blue'
+deleted_style = 'fg:fg1 bg:blue'
 only_nonzero_diffs = true
 ignore_submodules = true
 disabled = false
 
 [git_status]
 style = "fg:fg1 bg:bg3"
-format = '[](fg:bg3)[$all_status]($style)[](bg:bg3 fg:green)'
+format = '[](fg:bg3)[$all_status]($style)[](bg:bg3 fg:blue)'
 modified = '󰢪 '
 conflicted = '󰀩 '
 stashed = '󰘛 '

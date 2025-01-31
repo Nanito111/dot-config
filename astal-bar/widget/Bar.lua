@@ -352,8 +352,11 @@ local function MediaPlayer(mpris_instance)
 				}),
 				Widget.Label({
 					class_name = "album",
+					max_width_chars = 20,
+					width_chars = 8,
 					wrap = true,
 					justify = "CENTER",
+					halign = "CENTER",
 					visible = bind(player, "album"):as(function(album)
 						if album == nil or album == "" then
 							return false
