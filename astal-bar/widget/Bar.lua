@@ -315,23 +315,20 @@ local function MediaPlayer(mpris_instance)
 				}),
 				Widget.Label({
 					class_name = "title",
+					max_width_chars = 22,
+					lines = 2,
 					wrap = true,
+					ellipsize = "END",
 					justify = "CENTER",
+					halign = "CENTER",
 					visible = bind(player, "title"):as(function(title)
 						if title == nil or title == "" then
 							return false
 						end
 						return true
 					end),
-					label = bind(player, "title"):as(function(title)
-						if title == nil or title == "" then
-							return
-						end
-						if string.len(title) > 30 then
-							title = string.sub(title, 0, 30) .. "..."
-						end
-						return title
-					end),
+					label = bind(player, "title"),
+					tooltip_text = bind(player, "title"),
 				}),
 				Widget.Label({
 					class_name = "artist",
