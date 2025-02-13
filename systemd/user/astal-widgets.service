@@ -1,0 +1,13 @@
+[Unit]
+Description=Astal Widgets (Bar, AppLauncher, etc)
+After=wayland-wm@hyprland.desktop.service
+Requires=wayland-wm@hyprland.desktop.service
+
+[Service]
+ExecStart=/home/francisco/.config/astal-bar/start-astal.fish
+ExecReload=/home/francisco/.config/astal-bar/start-astal.fish
+Type=simple
+Restart=on-failure
+
+[Install]
+WantedBy=wayland-session@hyprland.desktop.target
