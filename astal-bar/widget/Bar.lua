@@ -611,6 +611,7 @@ return function(gdkmonitor)
 		gdkmonitor = gdkmonitor,
 		anchor = WindowAnchor.BOTTOM + WindowAnchor.LEFT + WindowAnchor.RIGHT,
 		exclusivity = "EXCLUSIVE",
+		layer = "BOTTOM",
 
 		Widget.CenterBox({
 			Widget.Box({
