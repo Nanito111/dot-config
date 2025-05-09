@@ -1,19 +1,15 @@
-@use "sass:string";
-
-@function gtkalpha($c, $a) {
-  @return string.unquote("alpha(#{$c},#{$a})");
-}
-
-// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
-$fg-color: #{"@theme_fg_color"};
-$bg-color: #{"@theme_bg_color"};
-$error: red;
+@use "../main" as main;
+@use 'sass:color';
 
 window.NotificationPopups {
   all: unset;
 }
 
 eventbox.Notification {
+
+  font-size: main.$font_size;
+  font-weight: 200;
+  letter-spacing: -1px;
 
   &:first-child>box {
     margin-top: 1rem;
@@ -26,31 +22,31 @@ eventbox.Notification {
   // eventboxes can not take margins so we style its inner box instead
   >box {
     min-width: 400px;
-    border-radius: 13px;
-    background-color: $bg-color;
+    border-radius: main.$radius;
+    background-color: color.adjust(main.$bg, $alpha: -0.4);
     margin: .5rem 1rem .5rem 1rem;
-    border: 1pt solid gtkalpha($fg-color, .03);
+    border: 1pt solid main.$accent;
   }
 
   &.critical>box {
-    border: 1pt solid gtkalpha($error, .4);
+    border: 1pt solid main.$red;
 
     .header {
 
       .app-name {
-        color: gtkalpha($error, .8);
+        color: main.$red;
 
       }
 
       .app-icon {
-        color: gtkalpha($error, .6);
+        color: main.$red;
       }
     }
   }
 
   .header {
-    padding: .5rem;
-    color: gtkalpha($fg-color, 0.5);
+    padding: .2rem;
+    color: main.$accent;
 
     .app-icon {
       margin: 0 .4rem;
@@ -58,7 +54,6 @@ eventbox.Notification {
 
     .app-name {
       margin-right: .3rem;
-      font-weight: bold;
 
       &:first-child {
         margin-left: .4rem;
@@ -73,45 +68,68 @@ eventbox.Notification {
       padding: .2rem;
       min-width: 0;
       min-height: 0;
+      background-color: transparent;
+
+      icon {
+        color: main.$fgMuted;
+      }
+    }
+
+    button:hover{
+      icon {
+        color: main.$fg;
+      }
+    }
+    button:active{
+      icon {
+        color: main.$accentMuted;
+      }
     }
   }
 
   separator {
     margin: 0 .4rem;
-    background-color: gtkalpha($fg-color, .1);
+    background-color: main.$bg2;
   }
 
   .content {
     margin: 1rem;
     margin-top: .5rem;
+    margin-bottom: .5rem;
 
     .summary {
-      font-size: 1.2em;
-      color: $fg-color;
+      font-weight: 400;
+      color: main.$fg;
     }
 
     .body {
-      color: gtkalpha($fg-color, 0.8);
+      font-weight: 200;
+      color: main.$fgMuted;
     }
 
     .image {
-      border: 1px solid gtkalpha($fg-color, .02);
+      border: 1px solid main.$accentMuted;
       margin-right: .5rem;
-      border-radius: 9px;
-      min-width: 100px;
-      min-height: 100px;
+      border-radius: main.$radius;
+      min-width: 80px;
+      min-height: 80px;
       background-size: cover;
       background-position: center;
     }
   }
 
   .actions {
-    margin: 1rem;
+    margin: 0.5rem;
     margin-top: 0;
     padding: .2rem;
 
     button {
       margin: 0 .3rem;
+      color: main.$accent;
+      border: 1px solid main.$accent;
+      background-color: transparent;
+      border-radius: main.$radius;
+      font-weight: 200;
 
       &:first-child {
         margin-left: 0;
@@ -120,6 +138,15 @@ eventbox.Notification {
       &:last-child {
         margin-right: 0;
       }
+    }
+
+    button:hover{
+      color: main.$fg;
+      border-color: main.$fg;
+    }
+    button:active{
+      color: main.$accentMuted;
+      border-color: main.$accentMuted;
     }
   }
 }

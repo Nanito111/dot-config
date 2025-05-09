@@ -1,10 +1,11 @@
 local astal = require("astal")
 local Widget = require("astal.gtk3").Widget
+local bind = astal.bind
 
 local Notifd = astal.require("AstalNotifd")
 local Notification = require("notifications.Notification")
+local Hyprland = astal.require("AstalHyprland")
 local timeout = astal.timeout
-
 local TIMEOUT_DELAY = 5000
 
 local varmap = require("../lib").varmap
@@ -24,15 +25,15 @@ local function NotificationMap()
 				-- in a notification center like widget
 				-- but clicking on the close button will close it
 				setup = function()
-					timeout(TIMEOUT_DELAY, function()
-						-- uncomment this if you want to "hide" the notifications
-						-- after TIMEOUT_DELAY
-
-						notif_map.delete(id)
-					end)
+					if notifd:get_notification(id).expire_timeout < 2 then
+						timeout(TIMEOUT_DELAY, function()
+							notif_map.delete(id)
+						end)
+					end
 				end,
 			})
 		)
+		-- end
 	end
 
 	notifd.on_resolved = function(_, id)
@@ -45,11 +46,15 @@ end
 return function(gdkmonitor)
 	local Anchor = astal.require("Astal").WindowAnchor
 	local notifs = NotificationMap()
+	local hypr = Hyprland.get_default()
 
 	return Widget.Window({
 		class_name = "NotificationPopups",
 		gdkmonitor = gdkmonitor,
 		anchor = Anchor.BOTTOM,
+		visible = bind(hypr, "focused-monitor"):as(function(monitor)
+			return monitor.model == gdkmonitor.model
+		end),
 		Widget.Box({
 			vertical = true,
 			notifs(),

@@ -1,86 +1,14 @@
-@use "sass:color";
-
-// colors
-//dark
-$bg: #100F0F;
-$bg1: #282726;
-$bg2: #403E3C;
-$bg3: #575653;
-$bg4: #6F6E69;
-$fg: #CECDC3;
-$fgMuted: #878580;
-
-$redMuted: #AF3029;
-$red: #D14D41;
-$blueMuted: #205EA6;
-$blue: #4385BE;
-$purpleMuted: #5E409D;
-$purple: #8B7EC8;
-$orangeMuted: #BC5215;
-$orange: #DA702C;
-$aquaMuted: #24837B;
-$aqua: #3AA99F;
-$yellowMuted: #AD8301;
-$yellow: #D0A215;
-$greenMuted: #66800B;
-$green: #879A39;
-
-//light
-// $bg: #FFFCF0;
-// $bg1: #E6E4D9;
-// $bg2: #CECDC3;
-// $bg3: #B7B5AC;
-// $bg4: #9F9D96;
-// $fg: #100F0F;
-// $fgMuted: #6F6E69;
-//
-// $red: #AF3029;
-// $redMuted: #D14D41;
-// $blue: #205EA6;
-// $blueMuted: #4385BE;
-// $purple: #5E409D;
-// $purpleMuted: #8B7EC8;
-// $orange: #BC5215;
-// $orangeMuted: #DA702C;
-// $aqua: #24837B;
-// $aquaMuted: #3AA99F;
-// $yellow: #AD8301;
-// $yellowMuted: #D0A215;
-// $green: #66800B;
-// $greenMuted: #879A39;
-
-$accent: $bg4;
-$accentMuted: $bg3;
-
-$font: "JetBrainsMono Nerd Font";
-$radius: 10px;
-$hover_time: 200ms;
-$bar_side_margins: 5px;
-$inner_margin: 3px;
-$space_between: 4px;
-$bar_min_height: 28px;
-$font_size: 12pt;
-$shadow_distance: 0;
-$shadow_blur: 4px;
-$shadow_scale: 0;
-$shadow_color: #000000;
-$shadow_outer_color: color.adjust($shadow_color, $alpha: -0.1);
-$shadow_inner_color: color.adjust($shadow_color, $alpha: -0.2);
-$window_border_settings: 1px solid;
-$window_border: $window_border_settings $accent;
-$window_border_alt: $window_border_settings $bg;
-
-// buttons
-$hover-deepness: 1px;
-$pressed-deepness: 2px;
-$press-deepness: 3px;
+// @use "sass:color" as color;
+@use "../main" as main;
+@use 'sass:math';
+@use 'sass:color';
 
 window.Calendar {
 
   .Calendar {
-    border: $window_border;
-    background-color: transparentize($color: $bg, $amount: 0.4);
-    border-radius: $radius;
+    border: main.$window_border;
+    background-color: color.adjust(main.$bg, $alpha: -0.4);
+    border-radius: main.$radius;
     margin-bottom: 10px;
     margin-left: 10px;
     margin-top: 10px;
@@ -94,16 +22,16 @@ window.Calendar {
   .CalendarPanel {
     background-color: transparent;
     border: none;
-    border-radius: $radius;
+    border-radius: main.$radius;
     font-size: 24px;
     font-weight: 200;
-    font-family: $font;
+    font-family: main.$font;
     letter-spacing: -1px;
     padding: 5px;
 
     &:selected {
-      color: $bg;
-      background-color: $accent;
+      color: main.$bg;
+      background-color: main.$accent;
       font-weight: bold;
     }
 
@@ -112,11 +40,11 @@ window.Calendar {
 
 window.Media {
   $media-height: 500px;
-  $media-width: 3/5.2 * $media-height;
+  $media-width: math.div(3, 5.2) * $media-height;
 
   * {
     all: unset;
-    font-family: $font;
+    font-family: main.$font;
     letter-spacing: -2px;
   }
 
@@ -129,10 +57,10 @@ window.Media {
     min-width: $media-width;
     min-height: $media-height;
 
-    border: $window_border;
-    color: $fgMuted;
-    background-color: transparentize($color: $bg, $amount: .4);
-    border-radius: $radius;
+    border: main.$window_border;
+    color: main.$fgMuted;
+    background-color: color.adjust(main.$bg, $alpha: -0.4);
+    border-radius: main.$radius;
 
     &.offline {
       min-height: $media-width;
@@ -140,11 +68,11 @@ window.Media {
   }
 
   .image {
-    border-radius: $radius;
-    background-color: $bg;
+    border-radius: main.$radius;
+    background-color: main.$bg;
     $cover_margin: 20px;
     $border_size: 2px;
-    border: $border_size solid $bg1;
+    border: $border_size solid main.$bg1;
     margin: $cover_margin;
     min-height: $media-height * 0.58 - ($cover_margin * 2) - ($border_size * 2) - 1px;
   }
@@ -158,18 +86,18 @@ window.Media {
   icon.image {
     font-size: 128px;
     background-color: transparent;
-    color: $accent;
+    color: main.$accent;
   }
 
   box.interface {
-    border-bottom-right-radius: $radius - 2px;
-    border-bottom-left-radius: $radius - 2px;
+    border-bottom-right-radius: main.$radius - 2px;
+    border-bottom-left-radius: main.$radius - 2px;
 
     background-color: transparent;
     min-height: $media-height * 0.42 + 1px;
 
     &.offline {
-      border-radius: $radius - 2px;
+      border-radius: main.$radius - 2px;
       min-height: $media-width;
 
       icon {
@@ -181,64 +109,64 @@ window.Media {
   }
 
   box.slider-parent {
-    padding: $inner_margin*4;
+    padding: main.$inner_margin*4;
   }
 
   trough {
     background-color: transparent;
-    border: 1px solid $accent;
-    border-radius: $radius;
+    border: 1px solid main.$accent;
+    border-radius: main.$radius;
     margin: 0 5px;
   }
 
   highlight {
-    background-color: $accent;
+    background-color: main.$accent;
   }
 
   slider {
-    background-color: $fgMuted;
-    border-radius: $radius;
+    background-color: main.$fgMuted;
+    border-radius: main.$radius;
     min-height: 1em;
     min-width: 1em;
     margin: -0.42em -0.3em;
-    transition: $hover_time;
+    transition: main.$hover_time;
 
     &:hover {
-      background-color: $fg;
+      background-color: main.$fg;
     }
 
     &:active {
-      background-color: $accentMuted;
+      background-color: main.$accentMuted;
     }
   }
 
   .controls {
     font-size: 24px;
-    margin-top: $inner_margin;
-    margin-bottom: $inner_margin*3;
+    margin-top: main.$inner_margin;
+    margin-bottom: main.$inner_margin*3;
 
     >button {
-      border-radius: $radius;
-      transition: $hover_time;
+      border-radius: main.$radius;
+      transition: main.$hover_time;
       background-color: transparent;
       min-width: 30px;
-      margin: 0 $space_between;
-      color: $fgMuted;
-      border: $window_border;
+      margin: 0 main.$space_between;
+      color: main.$fgMuted;
+      border: main.$window_border;
 
       &:hover {
-        color: $fg;
-        border-color: $fg;
+        color: main.$fg;
+        border-color: main.$fg;
       }
 
       &:active {
-        color: $accentMuted;
-        border-color: $accentMuted;
+        color: main.$accentMuted;
+        border-color: main.$accentMuted;
       }
     }
 
     icon {
-      padding: $inner_margin;
+      padding: main.$inner_margin;
     }
   }
 
@@ -250,29 +178,29 @@ window.Media {
   }
 
   label.artist {
-    margin: 0 $inner_margin*6;
+    margin: 0 main.$inner_margin*6;
     font-size: 12pt;
   }
 
   label.album {
     font-size: 10pt;
     letter-spacing: 0;
-    color: $accent;
-    background-color: $bg;
+    color: main.$accent;
+    background-color: main.$bg;
     margin-top: 7px;
     padding: 7px;
-    border-radius: $radius;
+    border-radius: main.$radius;
   }
 }
 
 window.Audio {
 
   .AudioSlider {
-    border: $window_border;
+    border: main.$window_border;
     min-width: 135px;
-    background-color: transparentize($color: $bg, $amount: .4);
-    border-radius: $radius;
-    padding: $inner_margin $inner_margin*3 ;
+    background-color: color.adjust(main.$bg, $alpha: -0.4);
+    border-radius: main.$radius;
+    padding: main.$inner_margin main.$inner_margin*3 ;
     margin-bottom: 10px;
     margin-left: 10px;
     margin-top: 10px;
@@ -280,48 +208,48 @@ window.Audio {
 
     * {
       all: unset;
-      font-family: $font;
+      font-family: main.$font;
       letter-spacing: -2px;
       font-weight: 200;
     }
 
     >label {
-      color: $fgMuted;
+      color: main.$fgMuted;
       font-size: 16px;
     }
 
     button {
-      transition: $hover_time;
-      min-width: $font_size + 1pt + ($inner_margin * 2);
-      min-height: $font_size + 1pt + ($inner_margin * 2);
+      transition: main.$hover_time;
+      min-width: main.$font_size + 1pt + (main.$inner_margin * 2);
+      min-height: main.$font_size + 1pt + (main.$inner_margin * 2);
       margin-top: 3px;
       margin-bottom: 3px;
-      border-radius: $radius;
+      border-radius: main.$radius;
 
       &:hover {
 
         icon {
-          color: $fg;
+          color: main.$fg;
         }
       }
 
       &:active {
 
         icon {
-          color: $accent;
+          color: main.$accent;
         }
       }
 
       &.muted {
 
         icon {
-          color: $accentMuted;
+          color: main.$accentMuted;
         }
 
       }
 
       icon {
-        color: $fgMuted;
+        color: main.$fgMuted;
         font-size: 16px;
       }
     }
@@ -329,29 +257,29 @@ window.Audio {
 
     trough {
       background-color: transparent;
-      border: 1px solid $accent;
-      border-radius: $radius;
+      border: 1px solid main.$accent;
+      border-radius: main.$radius;
       margin: 0 5px;
     }
 
     highlight {
-      background-color: $accent;
+      background-color: main.$accent;
     }
 
     slider {
-      background-color: $fgMuted;
-      border-radius: $radius;
+      background-color: main.$fgMuted;
+      border-radius: main.$radius;
       min-height: 1em;
       margin: -0.42em -0.3em;
-      transition: $hover_time;
+      transition: main.$hover_time;
 
       &:hover {
-        background-color: $fg;
+        background-color: main.$fg;
         box-shadow: none;
       }
 
       &:active {
-        background-color: $accent;
+        background-color: main.$accent;
       }
     }
   }
@@ -361,8 +289,8 @@ window.Bar {
   border: none;
   box-shadow: none;
   background-color: transparent;
-  color: $fg;
-  font-size: $font_size;
+  color: main.$fg;
+  font-size: main.$font_size;
   font-weight: bold;
 
   &>* {
@@ -373,7 +301,7 @@ window.Bar {
 
     &>* {
       background-color: transparent;
-      min-height: $bar_min_height;
+      min-height: main.$bar_min_height;
     }
   }
 
@@ -382,14 +310,14 @@ window.Bar {
   }
 
   label {
-    font-family: $font;
+    font-family: main.$font;
     font-weight: 200;
     letter-spacing: -1px;
   }
 
   .MiddleBox {
-    border-radius: $radius;
-    padding: $inner_margin;
+    border-radius: main.$radius;
+    padding: main.$inner_margin;
   }
 
   .Workspaces {
@@ -401,42 +329,42 @@ window.Bar {
       margin-top: 0;
       margin-bottom: 0;
       background-color: transparent;
-      margin-left: $inner_margin;
-      min-width: $bar_min_height + ($inner_margin * 0.5);
+      margin-left: main.$inner_margin;
+      min-width: main.$bar_min_height + (main.$inner_margin * 0.5);
 
       label {
-        transition: $hover_time;
-        border-radius: $radius;
-        color: $accent;
+        transition: main.$hover_time;
+        border-radius: main.$radius;
+        color: main.$accent;
         font-size: 12pt;
       }
 
       &:hover {
         label {
-          color: $fg;
+          color: main.$fg;
         }
       }
 
       &:active {
         label {
-          color: $accentMuted;
+          color: main.$accentMuted;
         }
       }
 
       &.focused {
         label {
-          color: $fgMuted;
+          color: main.$fgMuted;
           box-shadow: none;
-          border: 1px solid $accent;
+          border: 1px solid main.$accent;
         }
       }
 
       &.special {
         label {
-          background-color: $bg;
-          border: 1px solid $accent;
-          border-color: $accent;
-          color: $fgMuted;
+          background-color: main.$bg;
+          border: 1px solid main.$accent;
+          border-color: main.$accent;
+          color: main.$fgMuted;
         }
       }
     }
@@ -444,93 +372,92 @@ window.Bar {
   }
 
   .LeftBox {
-    border-radius: $radius;
-    padding: $inner_margin;
+    border-radius: main.$radius;
+    padding: main.$inner_margin;
   }
 
   .Time {
     background-color: transparent;
-    padding: 0 $inner_margin*2;
-    color: $fgMuted;
+    padding: 0 main.$inner_margin*2;
+    color: main.$fgMuted;
   }
 
   button.Date {
-    margin-left: $inner_margin;
+    margin-left: main.$inner_margin;
     background-color: transparent;
-    color: $fgMuted;
-    border-radius: $radius;
-    border: $window_border;
+    color: main.$fgMuted;
+    border-radius: main.$radius;
+    border: main.$window_border;
 
     >label {
-      border-radius: $radius;
-      transition: $hover_time;
+      border-radius: main.$radius;
+      transition: main.$hover_time;
       // min-width: 200px;
-      padding: 0 $inner_margin * 4;
+      padding: 0 main.$inner_margin * 4;
     }
 
     &:hover {
-      border-color: $fg;
+      border-color: main.$fg;
 
       >label {
-        color: $fg;
+        color: main.$fg;
       }
     }
 
     &:active {
-      border-color: $accentMuted;
+      border-color: main.$accentMuted;
 
       >label {
-        color: $accentMuted;
+        color: main.$accentMuted;
       }
     }
 
   }
 
   .SysTray {
-    padding-left: $space_between;
-    padding-right: $space_between;
+    padding-left: main.$space_between;
+    padding-right: main.$space_between;
+
+    border-bottom: main.$window_border;
+    border-radius: main.$radius;
+    background-color: transparent;
 
     >* {
-      margin-left: $space_between;
-      margin-right: $space_between;
+      margin-left: main.$space_between;
+      margin-right: main.$space_between;
     }
 
     icon {
       -gtk-icon-theme: "WhiteSur-grey";
     }
-
-
-    border-bottom: $window_border;
-    border-radius: $radius;
-    background-color: transparent;
   }
 
   .ShowAudio {
     background-color: transparent;
-    border-radius: $radius;
-    border: $window_border;
+    border-radius: main.$radius;
+    border: main.$window_border;
 
     &:hover {
-      border-color: $fg;
+      border-color: main.$fg;
 
       >.Icons {
-        color: $fg;
+        color: main.$fg;
       }
     }
 
     &:active {
-      border-color: $accentMuted;
+      border-color: main.$accentMuted;
 
       >.Icons {
-        color: $accentMuted;
+        color: main.$accentMuted;
       }
     }
 
     .Icons {
-      border-radius: $radius;
-      padding: 0 ($inner_margin*2);
-      transition: $hover_time;
-      color: $fgMuted;
+      border-radius: main.$radius;
+      padding: 0 (main.$inner_margin*2);
+      transition: main.$hover_time;
+      color: main.$fgMuted;
 
       &>box {
         transition: 0;
@@ -538,23 +465,23 @@ window.Bar {
         font-size: 16px;
 
         &.muted {
-          color: $accentMuted;
+          color: main.$accentMuted;
         }
       }
 
       icon {
-        margin-top: $inner_margin;
-        margin-bottom: $inner_margin;
-        margin-left: $inner_margin;
+        margin-top: main.$inner_margin;
+        margin-bottom: main.$inner_margin;
+        margin-left: main.$inner_margin;
         margin-right: 4px;
       }
     }
   }
 
   button.Media {
-    border-radius: $radius;
+    border-radius: main.$radius;
     background-color: transparent;
-    border: $window_border;
+    border: main.$window_border;
     min-width: 26px;
     font-size: 16px;
 
@@ -565,11 +492,11 @@ window.Bar {
     }
 
     icon {
-      transition: $hover_time;
+      transition: main.$hover_time;
       animation: playing-media 2s linear infinite;
       animation-play-state: running;
-      border-radius: $radius;
-      color: $fgMuted;
+      border-radius: main.$radius;
+      color: main.$fgMuted;
     }
 
     &.offline icon {
@@ -582,18 +509,18 @@ window.Bar {
     }
 
     &:hover {
-      border-color: $fg;
+      border-color: main.$fg;
 
       >icon {
-        color: $fg;
+        color: main.$fg;
       }
     }
 
     &:active {
-      border-color: $accentMuted;
+      border-color: main.$accentMuted;
 
       >icon {
-        color: $accentMuted;
+        color: main.$accentMuted;
       }
     }
 
@@ -601,50 +528,50 @@ window.Bar {
 
 
   .RightBox {
-    border-radius: $radius;
-    padding: $inner_margin;
+    border-radius: main.$radius;
+    padding: main.$inner_margin;
 
     &>*:first-child {
       margin-left: 0;
     }
 
     &>* {
-      margin-left: $space_between;
+      margin-left: main.$space_between;
     }
 
   }
 
   .PowerOptions {
     background-color: transparent;
-    border-radius: $radius;
-    border: $window_border;
+    border-radius: main.$radius;
+    border: main.$window_border;
 
     &:hover {
-      border-color: $fg;
+      border-color: main.$fg;
     }
 
     button {
-      min-width: $font_size + 4pt + ($inner_margin * 2);
-      // margin: $inner_margin;
-      border-radius: $radius;
-      transition: $hover_time;
+      min-width: main.$font_size + 4pt + (main.$inner_margin * 2);
+      // margin: main.$inner_margin;
+      border-radius: main.$radius;
+      transition: main.$hover_time;
 
       &:hover {
 
         icon {
-          color: $fg;
+          color: main.$fg;
         }
 
       }
 
       &:active {
         icon {
-          color: $accent;
+          color: main.$accent;
         }
       }
 
       icon {
-        color: $fgMuted;
+        color: main.$fgMuted;
         font-size: 16px;
       }
     }
@@ -652,47 +579,47 @@ window.Bar {
     .CloseOptions {
 
       icon {
-        color: $red;
+        color: main.$red;
       }
 
       &:hover icon {
-        color: $fg;
+        color: main.$fg;
       }
 
       &:active icon {
-        color: $fgMuted;
+        color: main.$fgMuted;
       }
     }
   }
 
   .Ethernet {
-    border-radius: $radius;
+    border-radius: main.$radius;
     font-size: 16px;
     min-width: 20pt;
     background-color: transparent;
-    border: $window_border;
-    color: $accent;
+    border: main.$window_border;
+    color: main.$accent;
 
     &.connected {
-      color: $green;
-      border-color: $green;
+      color: main.$green;
+      border-color: main.$green;
     }
 
     &.connecting {
-      color: $yellow;
-      border-color: yellow;
+      color: main.$yellow;
+      border-color: main.$yellow;
     }
 
     &.disconnected {
-      color: $orange;
-      border-color: $orange;
+      color: main.$orange;
+      border-color: main.$orange;
     }
 
     &.offline,
     &.failed,
     &.unavailable {
-      color: $red;
-      border-color: $red;
+      color: main.$red;
+      border-color: main.$red;
     }
   }
 }

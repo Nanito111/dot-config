@@ -1,14 +1,11 @@
 local Widget = require("astal.gtk3").Widget
 local Gtk = require("astal.gtk3").Gtk
 local Astal = require("astal.gtk3").Astal
+local bind = require("astal").bind
 
 local map = require("../lib").map
 local time = require("../lib").time
 local file_exists = require("../lib").file_exists
-
-local function is_icon(icon)
-	return Astal.Icon.lookup_icon(icon) ~= nil
-end
 
 ---@param props { setup?: function, on_hover_lost?: function, notification: any }
 return function(props)
@@ -16,10 +13,14 @@ return function(props)
 
 	local header = Widget.Box({
 		class_name = "header",
-		(n.app_icon or n.desktop_entry) and Widget.Icon({
-			class_name = "app-icon",
-			icon = n.app_icon or n.desktop_entry,
-		}),
+		bind(n, "app-icon"):as(function(app_icon)
+			if string.gsub(app_icon, "%s+", "") ~= "" then
+				return Widget.Icon({
+					class_name = "app-icon",
+					icon = app_icon,
+				})
+			end
+		end),
 		Widget.Label({
 			class_name = "app-name",
 			halign = "START",
@@ -46,17 +47,6 @@ return function(props)
 			valign = "START",
 			class_name = "image",
 			css = string.format("background-image: url('%s')", n.image),
-		}),
-		n.image and is_icon(n.image) and Widget.Box({
-			valign = "START",
-			class_name = "icon-image",
-			Widget.Icon({
-				icon = n.image,
-				hexpand = true,
-				vexpand = true,
-				halign = "CENTER",
-				valign = "CENTER",
-			}),
 		}),
 		Widget.Box({
 			vertical = true,
@@ -88,20 +78,22 @@ return function(props)
 			header,
 			Gtk.Separator({ visible = true }),
 			content,
-			#n.actions > 0 and Widget.Box({
+			Widget.Box({
 				class_name = "actions",
+				hexpand = true,
+				halign = "CENTER",
 				map(n.actions, function(action)
-					local label, id = action.label, action.id
+					local label, id = string.lower(action.label), action.id
 
 					return Widget.Button({
-						hexpand = true,
+						-- hexpand = true,
 						on_clicked = function()
 							return n:invoke(id)
 						end,
 						Widget.Label({
 							label = label,
 							halign = "CENTER",
-							hexpand = true,
+							-- hexpand = true,
 						}),
 					})
 				end),

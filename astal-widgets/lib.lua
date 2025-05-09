@@ -28,7 +28,6 @@ M.date = Variable(""):poll(1000, "date")
 ---@param path string
 ---@return boolean
 function M.file_exists(path)
-	print(path, GLib.file_test(path, "EXISTS"))
 	return GLib.file_test(path, "EXISTS")
 end
 
@@ -83,4 +82,15 @@ function M.time(time, format)
 	format = format or "%H:%M"
 	return GLib.DateTime.new_from_unix_local(time):format(format)
 end
+
+function M.reload_css(event, app, scss, css)
+	if event ~= 0 then
+		return
+	end
+	print("style changes detected, reloading CSS")
+	astal.exec("sass " .. scss .. " " .. css)
+	print("applying CSS to App")
+	app:apply_css(css)
+end
+
 return M

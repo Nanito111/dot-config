@@ -1,0 +1,75 @@
+@use "sass:color";
+// colors
+//dark
+$bg: #100F0F !default;
+$bg1: #282726 !default;
+$bg2: #403E3C !default;
+$bg3: #575653 !default;
+$bg4: #6F6E69 !default;
+$fg: #CECDC3 !default;
+$fgMuted: #878580 !default;
+
+$redMuted: #AF3029 !default;
+$red: #D14D41 !default;
+$blueMuted: #205EA6 !default;
+$blue: #4385BE !default;
+$purpleMuted: #5E409D !default;
+$purple: #8B7EC8 !default;
+$orangeMuted: #BC5215 !default;
+$orange: #DA702C !default;
+$aquaMuted: #24837B !default;
+$aqua: #3AA99F !default;
+$yellowMuted: #AD8301 !default;
+$yellow: #D0A215 !default;
+$greenMuted: #66800B !default;
+$green: #879A39 !default;
+
+//light
+// $bg: #FFFCF0 !default;
+// $bg1: #E6E4D9 !default;
+// $bg2: #CECDC3 !default;
+// $bg3: #B7B5AC !default;
+// $bg4: #9F9D96 !default;
+// $fg: #100F0F !default;
+// $fgMuted: #6F6E69 !default;
+//
+// $red: #AF3029 !default;
+// $redMuted: #D14D41 !default;
+// $blue: #205EA6 !default;
+// $blueMuted: #4385BE !default;
+// $purple: #5E409D !default;
+// $purpleMuted: #8B7EC8 !default;
+// $orange: #BC5215 !default;
+// $orangeMuted: #DA702C !default;
+// $aqua: #24837B !default;
+// $aquaMuted: #3AA99F !default;
+// $yellow: #AD8301 !default;
+// $yellowMuted: #D0A215 !default;
+// $green: #66800B !default;
+// $greenMuted: #879A39 !default;
+
+$accent: $bg4 !default;
+$accentMuted: $bg3 !default;
+
+$font: "JetBrainsMono Nerd Font" !default;
+$radius: 10px !default;
+$hover_time: 200ms !default;
+$bar_side_margins: 5px !default;
+$inner_margin: 3px !default;
+$space_between: 4px !default;
+$bar_min_height: 28px !default;
+$font_size: 12pt !default;
+$shadow_distance: 0 !default;
+$shadow_blur: 4px !default;
+$shadow_scale: 0 !default;
+$shadow_color: #000000 !default;
+$shadow_outer_color: color.adjust($shadow_color, $alpha: -0.1) !default;
+$shadow_inner_color: color.adjust($shadow_color, $alpha: -0.2) !default;
+$window_border_settings: 1px solid !default;
+$window_border: $window_border_settings $accent !default;
+$window_border_alt: $window_border_settings $bg !default;
+
+// buttons
+$hover-deepness: 1px !default;
+$pressed-deepness: 2px !default;
+$press-deepness: 3px !default;
