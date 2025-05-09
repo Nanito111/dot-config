@@ -94,7 +94,7 @@ style_root = "bg:purple fg:fg1 bold italic"
 style_user = "bg:purple fg:fg1"
 
 [directory]
-home_symbol = "⌂"
+home_symbol = ""
 format = "[](fg:aqua)[$path$read_only]($style)[](fg:aqua)"
 style = "bg:aqua fg:bg1"
 truncation_length = 4
