@@ -1,11 +1,11 @@
 [Unit]
-Description=Astal Widgets (Bar, AppLauncher, etc)
+Description=Astal Notifications
 After=wayland-wm@hyprland.desktop.service
 Requires=wayland-wm@hyprland.desktop.service
 
 [Service]
-ExecStart=/home/francisco/.config/astal-bar/start-astal.fish
-ExecReload=/home/francisco/.config/astal-bar/start-astal.fish
+ExecStart=/home/francisco/.config/astal-widgets/start.fish notifications
+ExecReload=/home/francisco/.config/astal-widgets/start.fish notifications
 Type=simple
 Restart=on-failure
 

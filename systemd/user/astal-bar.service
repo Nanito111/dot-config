@@ -1,0 +1,13 @@
+[Unit]
+Description=Astal Bar
+After=wayland-wm@hyprland.desktop.service
+Requires=wayland-wm@hyprland.desktop.service
+
+[Service]
+ExecStart=/home/francisco/.config/astal-widgets/start.fish bar
+ExecReload=/home/francisco/.config/astal-widgets/start.fish bar
+Type=simple
+Restart=on-failure
+
+[Install]
+WantedBy=wayland-session@hyprland.desktop.target
