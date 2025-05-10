@@ -12,6 +12,7 @@ local PowerOptions = require("bar.widgets.PowerOptions")
 local ShowAudio = require("bar.widgets.Audio").ShowAudio
 local MiniCalendar = require("bar.widgets.Calendar")
 local ShowMediaPlayer = require("bar.widgets.MediaPlayer").ShowMediaPlayer
+local ShowNotificationCenter = require("bar.widgets.NotificationCenter")
 
 return function(gdkmonitor)
 	return Widget.Window({
@@ -29,6 +30,7 @@ return function(gdkmonitor)
 				halign = "START",
 				Clock(),
 				MiniCalendar(gdkmonitor),
+				ShowNotificationCenter(gdkmonitor),
 			}),
 			Widget.Box({
 				class_name = "MiddleBox",

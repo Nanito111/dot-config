@@ -3,6 +3,182 @@
 @use 'sass:math';
 @use 'sass:color';
 
+window.NotificationCenter {
+  box.NotificationCenter-panel {
+    letter-spacing: -1px;
+    min-height: 430px;
+    min-width: 400px;
+    border: main.$window_border;
+    background-color: color.adjust(main.$bg, $alpha: -0.4);
+    border-radius: main.$radius;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 10px;
+
+    &>label.title {
+      font-size: main.$font_size;
+      font-weight: 200;
+      color: main.$accent;
+      margin-bottom: 10px;
+    }
+
+    &>label.no-notifications {
+      font-size: main.$font_size;
+      font-weight: 200;
+      color: main.$accent;
+    }
+  }
+
+  scrollable>viewport {
+    border: none;
+  }
+
+  scrollable box.scroll-content {
+    color: main.$accent;
+    font-weight: 200;
+  }
+
+  scrollable box.scroll-content>.notification-item {
+    border: main.$window_border;
+    border-radius: main.$radius;
+    margin-bottom: 1rem;
+    min-height: 100px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &.critical {
+      border: 1px solid main.$red;
+
+      .header {
+        .app-name {
+          color: main.$red;
+        }
+
+        .app-icon {
+          color: main.$red;
+        }
+      }
+    }
+
+    .header {
+      padding: .2rem;
+      color: main.$accent;
+
+      .app-icon {
+        margin: 0 .4rem;
+      }
+
+      .app-name {
+        margin-right: .3rem;
+
+        &:first-child {
+          margin-left: .4rem;
+        }
+      }
+
+      .time {
+        margin: 0 .4rem;
+      }
+
+      button {
+        padding: .2rem;
+        min-width: 0;
+        min-height: 0;
+        background-color: transparent;
+
+        icon {
+          color: main.$fgMuted;
+        }
+      }
+
+      button:hover {
+        icon {
+          color: main.$fg;
+        }
+      }
+
+      button:active {
+        icon {
+          color: main.$accentMuted;
+        }
+      }
+    }
+
+    separator {
+      margin: 0 .4rem;
+      background-color: main.$bg2;
+    }
+
+    .no-notifications {
+      font-size: 20pt;
+      color: main.$accent;
+    }
+
+    .content {
+      margin: 5px;
+
+      &>box {
+        margin-left: 5px;
+      }
+
+      .summary {
+        font-weight: 400;
+        color: main.$fg;
+      }
+
+      .body {
+        font-weight: 200;
+        color: main.$fgMuted;
+      }
+
+      .image {
+        border-radius: main.$radius;
+        min-width: 80px;
+        min-height: 80px;
+        background-size: cover;
+        background-position: center;
+      }
+    }
+
+    .actions {
+      margin: 0.5rem;
+      margin-top: 0;
+      padding: .2rem;
+
+      button {
+        margin: 0 .3rem;
+        color: main.$accent;
+        border: 1px solid main.$accent;
+        background-color: transparent;
+        border-radius: main.$radius;
+        font-weight: 200;
+
+        &:first-child {
+          margin-left: 0;
+        }
+
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+
+      button:hover {
+        color: main.$fg;
+        border-color: main.$fg;
+      }
+
+      button:active {
+        color: main.$accentMuted;
+        border-color: main.$accentMuted;
+      }
+    }
+  }
+}
+
 window.Calendar {
 
   .Calendar {
@@ -392,7 +568,6 @@ window.Bar {
     >label {
       border-radius: main.$radius;
       transition: main.$hover_time;
-      // min-width: 200px;
       padding: 0 main.$inner_margin * 4;
     }
 
@@ -412,6 +587,33 @@ window.Bar {
       }
     }
 
+  }
+
+  button.ShowNotificationCenter {
+    border: 1px solid main.$accent;
+    border-radius: main.$radius;
+    min-width: main.$bar_min_height;
+    margin-left: main.$inner_margin;
+
+    &>icon {
+      color: main.$accent;
+    }
+
+    &:hover {
+      border-color: main.$fg;
+
+      >icon {
+        color: main.$fg;
+      }
+    }
+
+    &:active {
+      border-color: main.$accentMuted;
+
+      >icon {
+        color: main.$accentMuted;
+      }
+    }
   }
 
   .SysTray {

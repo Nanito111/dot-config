@@ -1,6 +1,5 @@
 local Widget = require("astal.gtk3").Widget
 local Gtk = require("astal.gtk3").Gtk
-local Astal = require("astal.gtk3").Astal
 local bind = require("astal").bind
 
 local map = require("../lib").map
@@ -86,14 +85,12 @@ return function(props)
 					local label, id = string.lower(action.label), action.id
 
 					return Widget.Button({
-						-- hexpand = true,
 						on_clicked = function()
 							return n:invoke(id)
 						end,
 						Widget.Label({
 							label = label,
 							halign = "CENTER",
-							-- hexpand = true,
 						}),
 					})
 				end),
