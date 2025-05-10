@@ -184,7 +184,13 @@ return function(gdkmonitor)
 		}),
 	})
 	return Widget.Button({
-		class_name = "ShowNotificationCenter",
+		class_name = bind(notifd, "notifications"):as(function(n)
+			local style_class = "ShowNotificationCenter"
+			if #n < 1 then
+				style_class = style_class .. " " .. "no-notifications"
+			end
+			return style_class
+		end),
 		on_clicked = function()
 			if notification_center:is_visible() then
 				notification_center:hide()
@@ -202,7 +208,13 @@ return function(gdkmonitor)
 				end
 				return "no notifications"
 			end),
-			icon = "notifications-symbolic",
+			-- icon = "notifications-symbolic",
+			icon = bind(notifd, "notifications"):as(function(n)
+				if #n > 0 then
+					return "notifications-new-symbolic"
+				end
+				return "notifications-symbolic"
+			end),
 			-- icon = bind(notifd, "dont-disturb"):as(function(dnd)
 			-- 	if dnd then
 			-- 		return "notifications-disabled-symbolic"

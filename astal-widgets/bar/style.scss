@@ -590,30 +590,34 @@ window.Bar {
   }
 
   button.ShowNotificationCenter {
-    border: 1px solid main.$accent;
+    border: main.$window_border;
     border-radius: main.$radius;
     min-width: main.$bar_min_height;
     margin-left: main.$inner_margin;
+    font-size: 16px;
 
-    &>icon {
+    border-color: main.$yellowMuted;
+    color: main.$yellowMuted;
+
+    transition-property: border-color, color;
+    transition-duration: main.$hover_time;
+    transition-timing-function: ease;
+
+    &.no-notifications {
+      border-color: main.$accent;
       color: main.$accent;
     }
 
     &:hover {
       border-color: main.$fg;
-
-      >icon {
-        color: main.$fg;
-      }
+      color: main.$fg;
     }
 
     &:active {
       border-color: main.$accentMuted;
-
-      >icon {
-        color: main.$accentMuted;
-      }
+      color: main.$accentMuted;
     }
+
   }
 
   .SysTray {
