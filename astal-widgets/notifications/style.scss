@@ -1,41 +1,38 @@
 @use "../main" as main;
-@use 'sass:color';
+@use "sass:color";
 
 window.NotificationPopups {
   all: unset;
 }
 
 eventbox.Notification {
-
   font-size: main.$font_size;
   font-weight: 200;
   letter-spacing: -1px;
 
-  &:first-child>box {
+  &:first-child > box {
     margin-top: 1rem;
   }
 
-  &:last-child>box {
+  &:last-child > box {
     margin-bottom: 1rem;
   }
 
   // eventboxes can not take margins so we style its inner box instead
-  >box {
+  > box {
     min-width: 400px;
     border-radius: main.$radius;
     background-color: color.adjust(main.$bg, $alpha: -0.4);
-    margin: .5rem 1rem .5rem 1rem;
+    margin: 0.5rem 1rem 0.5rem 1rem;
     border: 1pt solid main.$accent;
   }
 
-  &.critical>box {
+  &.critical > box {
     border: 1pt solid main.$red;
 
     .header {
-
       .app-name {
         color: main.$red;
-
       }
 
       .app-icon {
@@ -45,27 +42,27 @@ eventbox.Notification {
   }
 
   .header {
-    padding: .2rem;
+    padding: 0.2rem;
     color: main.$accent;
 
     .app-icon {
-      margin: 0 .4rem;
+      margin: 0 0.4rem;
     }
 
     .app-name {
-      margin-right: .3rem;
+      margin-right: 0.3rem;
 
       &:first-child {
-        margin-left: .4rem;
+        margin-left: 0.4rem;
       }
     }
 
     .time {
-      margin: 0 .4rem;
+      margin: 0 0.4rem;
     }
 
     button {
-      padding: .2rem;
+      padding: 0.2rem;
       min-width: 0;
       min-height: 0;
       background-color: transparent;
@@ -75,12 +72,12 @@ eventbox.Notification {
       }
     }
 
-    button:hover{
+    button:hover {
       icon {
         color: main.$fg;
       }
     }
-    button:active{
+    button:active {
       icon {
         color: main.$accentMuted;
       }
@@ -88,14 +85,14 @@ eventbox.Notification {
   }
 
   separator {
-    margin: 0 .4rem;
+    margin: 0 0.4rem;
     background-color: main.$bg2;
   }
 
   .content {
     margin: 1rem;
-    margin-top: .5rem;
-    margin-bottom: .5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
 
     .summary {
       font-weight: 400;
@@ -109,7 +106,7 @@ eventbox.Notification {
 
     .image {
       border: 1px solid main.$accentMuted;
-      margin-right: .5rem;
+      margin-right: 0.5rem;
       border-radius: main.$radius;
       min-width: 80px;
       min-height: 80px;
@@ -121,10 +118,10 @@ eventbox.Notification {
   .actions {
     margin: 0.5rem;
     margin-top: 0;
-    padding: .2rem;
+    padding: 0.2rem;
 
     button {
-      margin: 0 .3rem;
+      margin: 0 0.3rem;
       color: main.$accent;
       border: 1px solid main.$accent;
       background-color: transparent;
@@ -140,11 +137,11 @@ eventbox.Notification {
       }
     }
 
-    button:hover{
+    button:hover {
       color: main.$fg;
       border-color: main.$fg;
     }
-    button:active{
+    button:active {
       color: main.$accentMuted;
       border-color: main.$accentMuted;
     }
