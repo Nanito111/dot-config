@@ -497,15 +497,17 @@ window.Bar {
     button {
       margin-top: 0;
       margin-bottom: 0;
-      background-color: transparent;
       margin-left: main.$inner_margin;
       min-width: main.$bar_min_height + (main.$inner_margin * 0.5);
 
       label {
-        transition: main.$hover_time;
+        transition-property: color;
+        transition-duration: main.$hover_time;
         border-radius: main.$radius;
+        border-color: transparent;
         color: main.$accent;
-        font-size: 12pt;
+        background-color: transparent;
+        font-size: main.$font_size;
       }
 
       &:hover {
@@ -523,6 +525,7 @@ window.Bar {
       &.focused {
         label {
           color: main.$fgMuted;
+          background-color: color.adjust(main.$bg, $alpha: -0.8);
           box-shadow: none;
           border: 1px solid main.$accent;
         }
@@ -552,7 +555,7 @@ window.Bar {
 
   button.Date {
     margin-left: main.$inner_margin;
-    background-color: transparent;
+    background-color: color.adjust(main.$bg, $alpha: -0.8);
     color: main.$fgMuted;
     border-radius: main.$radius;
     border: main.$window_border;
@@ -586,6 +589,7 @@ window.Bar {
     min-width: main.$bar_min_height;
     margin-left: main.$inner_margin;
     font-size: 16px;
+    background-color: color.adjust(main.$bg, $alpha: -0.8);
 
     border-color: main.$yellowMuted;
     color: main.$yellowMuted;
@@ -629,7 +633,7 @@ window.Bar {
   }
 
   .ShowAudio {
-    background-color: transparent;
+    background-color: color.adjust(main.$bg, $alpha: -0.8);
     border-radius: main.$radius;
     border: main.$window_border;
 
@@ -676,7 +680,7 @@ window.Bar {
 
   button.Media {
     border-radius: main.$radius;
-    background-color: transparent;
+    background-color: color.adjust(main.$bg, $alpha: -0.8);
     border: main.$window_border;
     min-width: 26px;
     font-size: 16px;
@@ -735,7 +739,7 @@ window.Bar {
   }
 
   .PowerOptions {
-    background-color: transparent;
+    background-color: color.adjust(main.$bg, $alpha: -0.8);
     border-radius: main.$radius;
     border: main.$window_border;
 
@@ -786,22 +790,25 @@ window.Bar {
     border-radius: main.$radius;
     font-size: 16px;
     min-width: 20pt;
-    background-color: transparent;
+    background-color: color.adjust(main.$bg, $alpha: -0.8);
     border: main.$window_border;
     color: main.$accent;
 
     &.connected {
       color: main.$green;
+      background-color: color.adjust(main.$greenMuted, $alpha: -0.8);
       border-color: main.$green;
     }
 
     &.connecting {
       color: main.$yellow;
+      background-color: color.adjust(main.$yellowMuted, $alpha: -0.8);
       border-color: main.$yellow;
     }
 
     &.disconnected {
       color: main.$orange;
+      background-color: color.adjust(main.$orangeMuted, $alpha: -0.8);
       border-color: main.$orange;
     }
 
@@ -809,6 +816,7 @@ window.Bar {
     &.failed,
     &.unavailable {
       color: main.$red;
+      background-color: color.adjust(main.$redMuted, $alpha: -0.8);
       border-color: main.$red;
     }
   }
