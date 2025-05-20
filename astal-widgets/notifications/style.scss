@@ -6,6 +6,7 @@ window.NotificationPopups {
 }
 
 eventbox.Notification {
+  font-family: main.$font;
   font-size: main.$font_size;
   font-weight: 200;
   letter-spacing: -1px;
