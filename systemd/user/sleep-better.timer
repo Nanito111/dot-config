@@ -1,0 +1,10 @@
+[Unit]
+Description=Shutdown system daily
+
+[Timer]
+OnCalendar=*-*-* 23:30:00
+OnCalendar=*-*-* 21:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
