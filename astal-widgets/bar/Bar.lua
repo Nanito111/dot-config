@@ -22,7 +22,7 @@ return function(gdkmonitor)
 		-- exclusivity: "NORMAL", "EXCLUSIVE", "IGNORE"
 		exclusivity = "EXCLUSIVE",
 		-- layers: "BOTTOM", "TOP", "OVERLAY", "BACKGROUND"
-		layer = "BACKGROUND",
+		layer = "BOTTOM",
 
 		Widget.CenterBox({
 			Widget.Box({
