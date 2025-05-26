@@ -243,6 +243,7 @@ symbol = " "
 [conda]
 style = "bg:aqua fg:bg1"
 format = "[](fg:aqua)[$environment]($style)[](fg:aqua)"
+ignore_base = false
 
 [docker_context]
 symbol = "◧ "
