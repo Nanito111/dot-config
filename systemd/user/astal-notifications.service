@@ -2,8 +2,7 @@
 Description=Astal Notifications
 PartOf=graphical-session.target
 Requires=graphical-session.target
-After=wireplumber.service hyprpaper.service wayland-session@hyprland.desktop.target app.slice
-Before=astal-bar.service
+After=graphical-session.target default.target
 
 [Service]
 Type=simple

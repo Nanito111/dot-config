@@ -2,8 +2,7 @@
 Description=Astal Bar
 PartOf=graphical-session.target
 Requires=graphical-session.target
-After=wireplumber.service hyprpaper.service wayland-session@hyprland.desktop.target app.slice
-# ConditionEnvironment=WAYLAND_DISPLAY
+After=graphical-session.target default.target
 
 [Service]
 Type=simple
