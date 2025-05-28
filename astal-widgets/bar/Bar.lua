@@ -34,7 +34,7 @@ return function(gdkmonitor)
 			}),
 			Widget.Box({
 				class_name = "MiddleBox",
-				Workspaces(),
+				Workspaces(gdkmonitor),
 			}),
 			Widget.Box({
 				class_name = "RightBox",
