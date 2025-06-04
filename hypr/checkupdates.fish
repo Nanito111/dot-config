@@ -1,6 +1,6 @@
 #!/bin/fish
 
-set -l updates_count $(checkupdates | wc -l)
+set -l updates_count $(count (yay -Qu))
 
 if test $updates_count -gt 0
   # send notification and read result of notification
@@ -10,7 +10,7 @@ if test $updates_count -gt 0
 
   if test "$update_confirmation" = "ok"
     echo "Update Confirmed"
-    uwsm app -- foot sudo pacman -Syu
+    uwsm app -- foot yay -Syu
   else
     echo "Update Cancelled"
   end
