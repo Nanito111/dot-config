@@ -73,6 +73,11 @@ return function(props)
 		setup = props.setup,
 		on_hover_lost = props.on_hover_lost,
 		Widget.Box({
+			setup = function(self)
+				self:hook(n, "invoked", function()
+					n:dismiss()
+				end)
+			end,
 			vertical = true,
 			header,
 			Gtk.Separator({ visible = true }),

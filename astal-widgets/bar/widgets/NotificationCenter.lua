@@ -91,6 +91,11 @@ local function NotificationItem(notification)
 	})
 
 	return Widget.Box({
+		setup = function(self)
+			self:hook(notification, "invoked", function()
+				notification:dismiss()
+			end)
+		end,
 		class_name = string.format("notification-item %s", string.lower(notification.urgency)),
 		vertical = true,
 		header,
