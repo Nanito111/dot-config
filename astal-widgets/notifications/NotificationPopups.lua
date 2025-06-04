@@ -45,7 +45,7 @@ return function(gdkmonitor)
 	return Widget.Window({
 		class_name = "NotificationPopups",
 		gdkmonitor = gdkmonitor,
-		anchor = Anchor.BOTTOM,
+		anchor = Anchor.TOP,
 		visible = bind(hypr, "focused-monitor"):as(function(monitor)
 			return monitor.model == gdkmonitor.model
 		end),
