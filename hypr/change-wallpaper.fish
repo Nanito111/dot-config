@@ -30,8 +30,8 @@ echo "# DO NOT EDIT, AUTO-EDITED BY change-wallpaper.fish" &> $hyprpaper_conf
 
 # this will save the current wallpaper, so it will not disappear-
 # with system shutdown
-echo "preload = '$argv'" >> $hyprpaper_conf
-echo "wallpaper = , '$argv'" >> $hyprpaper_conf
+echo "preload = $argv" >> $hyprpaper_conf
+echo "wallpaper =, $argv" >> $hyprpaper_conf
 
 set -e hyprpaper_conf
 
