@@ -1,17 +1,38 @@
 #!/bin/fish
 
+set -l hyprpaper_conf "$HYPR_CONFIG_DIR/hyprpaper.conf"
+
 if test -z "$argv"
-  echo "A wallpaper path is required"
+  echo "a wallpaper path is required"
   return 1
 end
 
-echo "Setting wallpaper from image at '$argv'"
-hyprctl hyprpaper reload , "$argv"
+echo "setting wallpaper from image at '$argv'"
+hyprctl hyprpaper reload , "$argv" | read -l change_confirmation
 
-echo "Saving wallpaper in hyprpaper.conf"
+if test "$change_confirmation" = "ok"
+  echo "wallpaper set!"
+  set -e $change_confirmation
 
-echo "#DO NOT EDIT, AUTO-EDITED BY change-wallpaper.fish" &> $HOME/.config/hypr/hyprpaper.conf
-echo "preload = '$argv'" >> $HOME/.config/hypr/hyprpaper.conf
-echo "wallpaper = , '$argv'" >> $HOME/.config/hypr/hyprpaper.conf
+else
+  echo "wallpaper set FAILED"
+  echo "$change_confirmation"
 
-echo "OK"
+  set -e $change_confirmation
+
+  return 1
+end
+
+echo "saving wallpaper in $hyprpaper_conf"
+
+# this line will override hyprpaper.conf
+echo "# DO NOT EDIT, AUTO-EDITED BY change-wallpaper.fish" &> $hyprpaper_conf
+
+# this will save the current wallpaper, so it will not disappear-
+# with system shutdown
+echo "preload = '$argv'" >> $hyprpaper_conf
+echo "wallpaper = , '$argv'" >> $hyprpaper_conf
+
+set -e hyprpaper_conf
+
+echo "wallpaper saved!"
