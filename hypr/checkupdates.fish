@@ -1,6 +1,6 @@
 #!/bin/fish
 
-set -l updates_count $(count (yay -Qu))
+set -l updates_count $(count (checkupdates && yay -Qua))
 
 if test $updates_count -gt 0
   # send notification and read result of notification
