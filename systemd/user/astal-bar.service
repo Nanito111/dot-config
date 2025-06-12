@@ -6,7 +6,7 @@ After=graphical-session.target default.target
 
 [Service]
 Type=simple
-ExecStart=/home/francisco/.config/astal-widgets/start.fish bar
+ExecStart=/home/francisco/.config/astal-widgets/start.bash bar
 Slice=session.slice
 Restart=on-failure
 RestartSec=1
