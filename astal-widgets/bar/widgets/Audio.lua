@@ -113,6 +113,7 @@ function M.AudioSlider()
 					speaker.volume = self.value
 				end,
 				value = bind(speaker, "volume"),
+				step = 1,
 			}),
 		}),
 
@@ -141,6 +142,7 @@ function M.AudioSlider()
 					microphone.volume = self.value
 				end,
 				value = bind(microphone, "volume"),
+				step = 1,
 			}),
 		}),
 	})
