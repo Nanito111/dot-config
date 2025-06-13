@@ -1,0 +1,5 @@
+alias l1='ls -1'
+alias ll='ls -l'
+alias la='ls -a'
+alias lla='ls -la'
+alias la1='ls -a1'
