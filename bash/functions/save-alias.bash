@@ -1,11 +1,28 @@
 save-alias() {
-  local alias_dir="$HOME/.config/bash/"
-  local alias_file="$alias_dir/aliases.bash"
+    local alias_dir="$HOME/.config/bash"
+    local alias_file="$alias_dir/aliases.bash"
+    local name="$1"
+    shift
+    local command="$*"
 
-  # append the alias to the file
-  echo "alias $*" >> "$alias_file"
+    # check if alias name is empty
+    if [[ -z "$name" ]]; then
+        echo "alias name can't be empty"
+        return 1
+    fi
 
-  echo "Alias saved to $alias_file"
+    # check if alias command is empty
+    if [[ -z "$command" ]]; then
+        echo "alias command can't be empty"
+        return 1
+    fi
+
+    mkdir -p "$alias_dir"
+    echo "alias $name='$command'" >> "$alias_file"
+
+    echo "alias '$name' saved to $alias_file"
+
+    source $alias_file
 }
 
 # usage
