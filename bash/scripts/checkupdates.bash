@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Count available updates
-updates_count=$($(checkupdates && yay -Qua) | wc -l)
-
+updates_count=$( (checkupdates && yay -Qua) | wc -l )
 
 # Check if there are updates
 if [ $updates_count -gt 0 ]; then
