@@ -1,3 +1,0 @@
-[Service]
-Type=oneshot
-ExecStart=/home/francisco/.config/bash/scripts/sleep-better/sleep-better.bash
