@@ -20,12 +20,12 @@ eventbox.Notification {
   }
 
   // eventboxes can not take margins so we style its inner box instead
-  > box {
+  & > box {
     min-width: 400px;
     border-radius: main.$radius;
-    background-color: color.adjust(main.$bg, $alpha: -0.4);
+    background-color: color.adjust(main.$bg, $alpha: -0.25);
     margin: 0.5rem 1rem 0.5rem 1rem;
-    border: 1pt solid main.$accent;
+    // border: main.$window_border;
   }
 
   &.critical > box {
@@ -87,7 +87,7 @@ eventbox.Notification {
 
   separator {
     margin: 0 0.4rem;
-    background-color: main.$bg2;
+    background-color: main.$bg4;
   }
 
   .content {

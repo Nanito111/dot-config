@@ -1,9 +1,12 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "type": "small",
+    "source": "/home/francisco/Pictures/profiles-pictures/bird-profile-picture-circle.sixel",
+    "preserveAspectRatio": true,
+    "width": 30,
+    "type": "raw",
     "padding": {
-      "top": 8
+      "right": 10
     },
     "position": "right"
   },
@@ -16,127 +19,133 @@
     {
       "type": "os",
       "key": " OS",
-      "keyColor": "magenta",
+      "keyColor": "red",
       "format": "{2}"
     },
     {
       "type": "os",
       "key": "├",
-      "keyColor": "magenta"
+      "keyColor": "red"
     },
     {
       "type": "kernel",
       "key": "├",
-      "keyColor": "magenta"
+      "keyColor": "red"
     },
     {
       "type": "packages",
       "key": "├󰏖",
-      "keyColor": "magenta"
+      "keyColor": "red"
     },
     {
       "type": "shell",
       "key": "└",
-      "keyColor": "magenta"
+      "keyColor": "blink_red"
     },
     "break",
     {
       "type": "wm",
       "key": " DE/WM",
-      "keyColor": "blue"
+      "keyColor": "light_magenta"
     },
     {
       "type": "lm",
       "key": "├󱅞",
-      "keyColor": "blue"
+      "keyColor": "light_magenta"
     },
     {
       "type": "theme",
       "key": "├󰉼",
-      "keyColor": "blue"
+      "keyColor": "light_magenta"
     },
     {
       "type": "icons",
       "key": "├",
-      "keyColor": "blue"
+      "keyColor": "light_magenta"
     },
     {
       "type": "cursor",
       "key": "├󰇀",
-      "keyColor": "blue"
+      "keyColor": "light_magenta"
     },
     {
       "type": "font",
       "key": "├",
-      "keyColor": "blue"
+      "keyColor": "light_magenta"
     },
     {
       "type": "terminal",
       "key": "├",
-      "keyColor": "blue"
+      "keyColor": "light_magenta"
     },
     "break",
     {
       "type": "host",
       "key": " PC",
-      "keyColor": "green"
+      "keyColor": "light_yellow"
     },
     {
       "type": "cpu",
-      "key": "├󰻠", "keyColor": "green"
+      "key": "├󰻠",
+      "keyColor": "light_yellow"
     },
     {
       "type": "gpu",
       "key": "├󰍛",
-      "keyColor": "green"
+      "keyColor": "light_yellow"
     },
     {
       "type": "disk",
       "key": "├",
-      "keyColor": "green"
+      "keyColor": "light_yellow"
     },
     {
       "type": "memory",
       "key": "├",
-      "keyColor": "green"
+      "keyColor": "light_yellow"
     },
     {
       "type": "swap",
       "key": "├",
-      "keyColor": "green"
+      "keyColor": "light_yellow"
     },
     {
       "type": "display",
       "key": "├󰍹",
-      "keyColor": "green"
+      "keyColor": "light_yellow"
     },
     {
       "type": "localip",
       "key": "├󰩠",
-      "keyColor": "green"
+      "keyColor": "light_yellow"
+    },
+    {
+      "type": "bluetooth",
+      "key": "├󰂯",
+      "keyColor": "light_yellow"
     },
     {
       "type": "uptime",
       "key": "└󰅐",
-      "keyColor": "green"
+      "keyColor": "light_yellow"
     },
     "break",
     {
       "type": "sound",
       "key": "󰗅 SOUND",
-      "keyColor": "cyan"
+      "keyColor": "light_cyan"
     },
     {
       "type": "player",
       "key": "├󰥠",
-      "keyColor": "cyan"
+      "keyColor": "light_cyan"
     },
     {
       "type": "media",
       "key": "└󰝚",
-      "keyColor": "cyan"
+      "keyColor": "light_cyan"
     },
     "break",
-    "colors"
+    //"colors"
   ]
 }

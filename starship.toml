@@ -1,260 +1,290 @@
-# version: 1.0.0
+add_newline = true
 
-add_newline = false
-continuation_prompt = "[▸▹ ](dimmed white)"
-
-format = """ $time $sudo$username $directory$cmd_duration\n\
-$fill$git_state$git_status$git_metrics$git_branch$git_commit\
-( $c)\
-( $cmake)\
-( $dotnet)\
-( $golang)\
-( $java)\
-( $lua)\
-( $nodejs)\
-( $python)\
-( $conda)\
-( $rust)\
-( $zig) \
-\n$character"""
-
-palette = "flexoki"
-
-[palettes.gruvbox_dark]
-fg1 = '#ebdbb2'
-bg1 = '#282828'
-bg2 = '#423E3C'
-bg3 = '#665c54'
-
-blue = '#458588'
-aqua = '#689d6a'
-green = '#98971a'
-orange = '#d65d0e'
-purple = '#b16286'
-red = '#cc241d'
-yellow = '#d79921'
-gray = '#A79883'
-
-dim_blue = '#82A497'
-dim_aqua = '#8DBF7B'
-dim_green = '#B7BA25'
-dim_orange = '#FE7F18'
-dim_purple = '#D2859A'
-dim_red = '#FB4934'
-dim_yellow = '#FABC2E'
-dim_gray = '#918273'
-
-[palettes.flexoki]
-fg1 = '#FFFCF0'
-bg1 = '#100F0F'
-bg2 = '#282726'
-bg3 = '#403E3C'
-
-blue = '#205EA6'
-aqua = '#24837B'
-green = '#66800B'
-orange = '#BC5215'
-purple = '#5E409D'
-red = '#AF3029'
-yellow = '#AD8301'
-gray = '#B7B5AC'
-
-dim_blue = '#4385BE'
-dim_aqua = '#3AA99F'
-dim_green = '#879A39'
-dim_orange = '#DA702C'
-dim_purple = '#8B7EC8'
-dim_red = '#D14D41'
-dim_yellow = '#D0A215'
-dim_gray = '#878580'
-
-[fill]
-style = "fg:fg1"
-symbol = " "
-
-# ----------------------- SYSTEM ------------------------
-[time]
-disabled = false
-format = "[](fg:bg2)[$time]($style)[](fg:bg2)"
-style = "bg:bg2 fg:fg1"
-time_format = "%H:%M"
-use_12hr = false
-
-[sudo]
-disabled = false
-format = '([$symbol]($style))'
-style = "bold fg:yellow"
-symbol = "⋈┈"
-
-[username]
-disabled = false
-format = "[](fg:purple)[$user]($style)[](fg:purple)"
-show_always = true
-style_root = "bg:purple fg:fg1 bold italic"
-style_user = "bg:purple fg:fg1"
-
-[directory]
-home_symbol = ""
-format = "[](fg:aqua)[$path$read_only]($style)[](fg:aqua)"
-style = "bg:aqua fg:bg1"
-truncation_length = 4
-truncation_symbol = "…/"
-use_logical_path=true
-read_only = " ◈"
-use_os_path_sep = true
-
-[cmd_duration]
-format = "[ ◄$duration](italic bright-black)"
+format = """
+$username\
+$hostname\
+$localip\
+$shlvl\
+$singularity\
+$kubernetes\
+$directory\
+$vcsh\
+$fossil_branch\
+$fossil_metrics\
+$hg_branch\
+$pijul_channel\
+$docker_context\
+$package\
+$c\
+$cmake\
+$cobol\
+$daml\
+$dart\
+$deno\
+$dotnet\
+$elixir\
+$elm\
+$erlang\
+$fennel\
+$gleam\
+$golang\
+$guix_shell\
+$haskell\
+$haxe\
+$helm\
+$java\
+$julia\
+$kotlin\
+$gradle\
+$lua\
+$nim\
+$nodejs\
+$ocaml\
+$opa\
+$perl\
+$php\
+$pulumi\
+$purescript\
+$python\
+$quarto\
+$raku\
+$rlang\
+$red\
+$ruby\
+$rust\
+$scala\
+$solidity\
+$swift\
+$terraform\
+$typst\
+$vlang\
+$vagrant\
+$zig\
+$buf\
+$nix_shell\
+$conda\
+$meson\
+$spack\
+$memory_usage\
+$aws\
+$gcloud\
+$openstack\
+$azure\
+$nats\
+$direnv\
+$env_var\
+$mise\
+$crystal\
+$custom
+$git_branch\
+$git_commit\
+$git_state\
+$git_metrics\
+$git_status\
+$sudo\
+$cmd_duration\
+$line_break\
+$jobs\
+$battery\
+$time\
+$status\
+$os\
+$container\
+$netns\
+$shell\
+$character"""
 
 [character]
-format = " $symbol "
-success_symbol = "[◎](bold bright-yellow)"
-error_symbol = "[○](purple)"
-vimcmd_symbol = "[■](dimmed green)"
-# not supported in zsh
-vimcmd_replace_one_symbol = "◌"
-vimcmd_replace_symbol = "□"
-vimcmd_visual_symbol = "▼"
+success_symbol = "[>](bright-black)"
+error_symbol = "[>](bright-red)"
 
-# ----------------------- BATTERY ------------------------
-[battery]
-style = "bg:bg2 fg:fg1"
-format = "[ $percentage $symbol]($style)"
-full_symbol = "󰁹"
-unknown_symbol = "󱉝"
-empty_symbol = "󰂎"
-disabled = true
+[aws]
+symbol = "  "
 
-[[battery.display]]
-threshold = 10
-charging_symbol = '󰢜'
-discharging_symbol = '󰁺'
+[buf]
+symbol = " "
 
-[[battery.display]]
-threshold = 20
-style = "red"
-charging_symbol = '󰂆'
-discharging_symbol = '󰁻'
-
-[[battery.display]]
-threshold = 30
-charging_symbol = '󰂇'
-discharging_symbol = '󰁼'
-
-[[battery.display]]
-threshold = 40
-style = "orange"
-charging_symbol = '󰂈'
-discharging_symbol = '󰁽'
-
-[[battery.display]]
-threshold = 50
-charging_symbol = '󰢝'
-discharging_symbol = '󰁾'
-
-[[battery.display]]
-threshold = 60
-charging_symbol = '󰂉'
-discharging_symbol = '󰁿'
-
-[[battery.display]]
-threshold = 70
-style = "yellow"
-charging_symbol = '󰢞'
-discharging_symbol = '󰂀'
-
-[[battery.display]]
-threshold = 80
-charging_symbol = '󰂊'
-discharging_symbol = '󰂁'
-
-[[battery.display]]
-threshold = 90
-charging_symbol = '󰂋'
-discharging_symbol = '󰂂'
-
-[[battery.display]]
-threshold = 100
-style = "green"
-charging_symbol = '󰂅'
-discharging_symbol = '󰁹'
-
-# ----------------------- GIT ------------------------
-[git_branch]
-format = "[](fg:dim_blue bg:blue)[$symbol $branch]($style)[](fg:dim_blue)"
-symbol = ""
-style = "bg:dim_blue fg:bg2"
-truncation_symbol = "⋯"
-truncation_length = 30
-only_attached = true
-
-[git_metrics]
-format = '([▴$added|]($added_style))([▿$deleted]($deleted_style))'
-added_style = 'fg:bg1 bg:blue'
-deleted_style = 'fg:fg1 bg:blue'
-only_nonzero_diffs = true
-ignore_submodules = true
-disabled = false
-
-[git_status]
-style = "fg:fg1 bg:bg3"
-format = '[](fg:bg3)[$all_status]($style)[](bg:bg3 fg:blue)'
-modified = '󰢪 '
-conflicted = '󰀩 '
-stashed = '󰘛 '
-staged = '󰐗 '
-deleted = '󰩹 '
-untracked = '󰡯 '
-renamed = '󱇧 '
-disabled = false
-
-# ----------------------- PROGRAMING ------------------------
-[lua]
-format = " [lua](italic) [${symbol}${version}]($style)"
-version_format = "${raw}"
-symbol = "󰢱 "
-style = "bold bright-yellow"
-
-[nodejs]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = "󰎙 "
-
-[python]
-style = "bg:blue fg:bg1"
-version_format = "${raw}"
-format = '[](fg:blue)[$symbol$version( \($virtualenv\))]($style)[](fg:blue)'
-disabled = false
-symbol = '󰌠 '
-
-[rust]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = "󱘗 "
+[bun]
+symbol = " "
 
 [c]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
 symbol = " "
 
+[cpp]
+symbol = " "
+
+[cmake]
+symbol = " "
+
 [conda]
-style = "bg:aqua fg:bg1"
-format = "[](fg:aqua)[$environment]($style)[](fg:aqua)"
-ignore_base = false
+symbol = " "
+
+[crystal]
+symbol = " "
+
+[dart]
+symbol = " "
+
+[deno]
+symbol = " "
+
+[directory]
+read_only = " 󰌾"
 
 [docker_context]
-symbol = "◧ "
-format = " docker [$symbol$context]($style)"
+symbol = " "
+
+[elixir]
+symbol = " "
+
+[elm]
+symbol = " "
+
+[fennel]
+symbol = " "
+
+[fossil_branch]
+symbol = " "
+
+[gcloud]
+symbol = "  "
+
+[git_branch]
+symbol = " "
+
+[git_commit]
+tag_symbol = '  '
 
 [golang]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
-disabled = false
-symbol = "󰟓 "
+symbol = " "
+
+[guix_shell]
+symbol = " "
+
+[haskell]
+symbol = " "
+
+[haxe]
+symbol = " "
+
+[hg_branch]
+symbol = " "
+
+[hostname]
+ssh_symbol = " "
 
 [java]
-style = "bg:bg1 fg:blue"
-format = "[](fg:bg1)[$symbol$version]($style)[](fg:bg1) "
+symbol = " "
+
+[julia]
+symbol = " "
+
+[kotlin]
+symbol = " "
+
+[lua]
+symbol = " "
+
+[memory_usage]
+symbol = "󰍛 "
+
+[meson]
+symbol = "󰔷 "
+
+[nim]
+symbol = "󰆥 "
+
+[nix_shell]
+symbol = " "
+
+[nodejs]
+symbol = " "
+
+[ocaml]
+symbol = " "
+
+[os.symbols]
+Alpaquita = " "
+Alpine = " "
+AlmaLinux = " "
+Amazon = " "
+Android = " "
+Arch = " "
+Artix = " "
+CachyOS = " "
+CentOS = " "
+Debian = " "
+DragonFly = " "
+Emscripten = " "
+EndeavourOS = " "
+Fedora = " "
+FreeBSD = " "
+Garuda = "󰛓 "
+Gentoo = " "
+HardenedBSD = "󰞌 "
+Illumos = "󰈸 "
+Kali = " "
+Linux = " "
+Mabox = " "
+Macos = " "
+Manjaro = " "
+Mariner = " "
+MidnightBSD = " "
+Mint = " "
+NetBSD = " "
+NixOS = " "
+Nobara = " "
+OpenBSD = "󰈺 "
+openSUSE = " "
+OracleLinux = "󰌷 "
+Pop = " "
+Raspbian = " "
+Redhat = " "
+RedHatEnterprise = " "
+RockyLinux = " "
+Redox = "󰀘 "
+Solus = "󰠳 "
+SUSE = " "
+Ubuntu = " "
+Unknown = " "
+Void = " "
+Windows = "󰍲 "
+
+[package]
+symbol = "󰏗 "
+
+[perl]
+symbol = " "
+
+[php]
+symbol = " "
+
+[pijul_channel]
+symbol = " "
+
+[pixi]
+symbol = "󰏗 "
+
+[python]
+symbol = " "
+
+[rlang]
+symbol = "󰟔 "
+
+[ruby]
+symbol = " "
+
+[rust]
+symbol = "󱘗 "
+
+[scala]
+symbol = " "
+
+[swift]
+symbol = " "
+
+[zig]
+symbol = " "
+
+[gradle]
+symbol = " "

@@ -10,7 +10,7 @@ local timeout = astal.timeout
 local varmap = require("../lib").varmap
 local notifd = Notifd.get_default()
 
-notifd.ignore_timeout = true
+-- notifd.ignore_timeout = true
 local TIMEOUT_DELAY = 4000
 
 local function NotificationMap()
@@ -22,9 +22,16 @@ local function NotificationMap()
 			Notification({
 				notification = notifd:get_notification(id),
 				setup = function()
-					timeout(TIMEOUT_DELAY, function()
-						notif_map.delete(id)
-					end)
+					local notification = notifd:get_notification(id)
+					if notification.expire_timeout < 1000 then
+						timeout(TIMEOUT_DELAY, function()
+							notif_map.delete(id)
+						end)
+					else
+						timeout(notification.expire_timeout, function()
+							notif_map.delete(id)
+						end)
+					end
 				end,
 			})
 		)

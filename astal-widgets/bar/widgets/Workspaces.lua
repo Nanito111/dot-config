@@ -18,7 +18,7 @@ return function(gdkmonitor)
 			end
 
 			table.sort(filtered_workspaces, function(a, b)
-				return a.id > b.id
+				return a.id < b.id
 			end)
 
 			return map(filtered_workspaces, function(ws)

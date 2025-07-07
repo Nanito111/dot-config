@@ -1,6 +1,5 @@
 save-alias() {
-    local alias_dir="$HOME/.config/bash"
-    local alias_file="$alias_dir/aliases.bash"
+    local alias_file="$BASH_CONFIG_DIR/aliases.bash"
     local name="$1"
     shift
     local command="$*"
@@ -17,7 +16,6 @@ save-alias() {
         return 1
     fi
 
-    mkdir -p "$alias_dir"
     echo "alias $name='$command'" >> "$alias_file"
 
     echo "alias '$name' saved to $alias_file"

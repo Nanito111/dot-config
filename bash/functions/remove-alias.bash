@@ -1,6 +1,5 @@
 remove-alias() {
-    local alias_dir="$HOME/.config/bash"
-    local alias_file="$alias_dir/aliases.bash"
+    local alias_file="$BASH_CONFIG_DIR/aliases.bash"
     local alias_name="$1"
 
     if [[ -z "$alias_name" ]]; then

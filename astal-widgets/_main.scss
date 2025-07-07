@@ -25,28 +25,28 @@ $greenMuted: #66800b !default;
 $green: #879a39 !default;
 
 //light
-// $bg: #FFFCF0 !default;
-// $bg1: #E6E4D9 !default;
-// $bg2: #CECDC3 !default;
-// $bg3: #B7B5AC !default;
-// $bg4: #9F9D96 !default;
-// $fg: #100F0F !default;
-// $fgMuted: #6F6E69 !default;
+// $bg: #fffcf0 !default;
+// $bg1: #e6e4d9 !default;
+// $bg2: #cecdc3 !default;
+// $bg3: #b7b5ac !default;
+// $bg4: #9f9d96 !default;
+// $fg: #100f0f !default;
+// $fgMuted: #6f6e69 !default;
 //
-// $red: #AF3029 !default;
-// $redMuted: #D14D41 !default;
-// $blue: #205EA6 !default;
-// $blueMuted: #4385BE !default;
-// $purple: #5E409D !default;
-// $purpleMuted: #8B7EC8 !default;
-// $orange: #BC5215 !default;
-// $orangeMuted: #DA702C !default;
-// $aqua: #24837B !default;
-// $aquaMuted: #3AA99F !default;
-// $yellow: #AD8301 !default;
-// $yellowMuted: #D0A215 !default;
-// $green: #66800B !default;
-// $greenMuted: #879A39 !default;
+// $red: #af3029 !default;
+// $redMuted: #d14d41 !default;
+// $blue: #205ea6 !default;
+// $blueMuted: #4385be !default;
+// $purple: #5e409d !default;
+// $purpleMuted: #8b7ec8 !default;
+// $orange: #bc5215 !default;
+// $orangeMuted: #da702c !default;
+// $aqua: #24837b !default;
+// $aquaMuted: #3aa99f !default;
+// $yellow: #ad8301 !default;
+// $yellowMuted: #d0a215 !default;
+// $green: #66800b !default;
+// $greenMuted: #879a39 !default;
 
 $accent: $bg4 !default;
 $accentMuted: $bg3 !default;
@@ -67,7 +67,7 @@ $shadow_outer_color: color.adjust($shadow_color, $alpha: -0.1) !default;
 $shadow_inner_color: color.adjust($shadow_color, $alpha: -0.2) !default;
 $window_border_settings: 1px solid !default;
 $window_border: $window_border_settings $accent !default;
-$window_border_alt: $window_border_settings $bg !default;
+$window_border_alt: $window_border_settings transparent !default;
 
 // buttons
 $hover-deepness: 1px !default;

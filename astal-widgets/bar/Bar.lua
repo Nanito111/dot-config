@@ -31,6 +31,7 @@ return function(gdkmonitor)
 				Clock(),
 				MiniCalendar(gdkmonitor),
 				ShowNotificationCenter(gdkmonitor),
+				SysTray(),
 			}),
 			Widget.Box({
 				class_name = "MiddleBox",
@@ -39,7 +40,6 @@ return function(gdkmonitor)
 			Widget.Box({
 				class_name = "RightBox",
 				halign = "END",
-				SysTray(),
 				Ethernet(),
 				ShowMediaPlayer(gdkmonitor),
 				ShowAudio(gdkmonitor),
