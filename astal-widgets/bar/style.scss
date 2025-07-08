@@ -267,14 +267,14 @@ window.Media {
   }
 
   box.interface {
-    border-bottom-right-radius: main.$radius - 2px;
-    border-bottom-left-radius: main.$radius - 2px;
+    // border-bottom-right-radius: main.$radius - 2px;
+    // border-bottom-left-radius: main.$radius - 2px;
 
     background-color: transparent;
     min-height: $media-height * 0.42 + 1px;
 
     &.offline {
-      border-radius: main.$radius - 2px;
+      // border-radius: main.$radius - 2px;
       min-height: $media-width;
 
       icon {
@@ -564,6 +564,7 @@ window.Bar {
     color: main.$fg;
     border-radius: main.$radius;
     border: main.$window_border_alt;
+    border-color: transparent;
 
     > label {
       border-radius: main.$radius;
@@ -641,6 +642,7 @@ window.Bar {
     background-color: color.adjust(main.$bg, $alpha: -0.25);
     border-radius: main.$radius;
     border: main.$window_border_alt;
+    border-color: transparent;
 
     &:hover {
       border-color: main.$fg;
@@ -687,6 +689,7 @@ window.Bar {
     border-radius: main.$radius;
     background-color: color.adjust(main.$bg, $alpha: -0.25);
     border: main.$window_border_alt;
+    border-color: transparent;
     min-width: main.$bar_min_height + main.$inner_margin;
     font-size: 16px;
 
@@ -734,14 +737,26 @@ window.Bar {
     background-color: color.adjust(main.$bg, $alpha: -0.25);
     border-radius: main.$radius;
     border: main.$window_border_alt;
+    border-color: transparent;
+    &.show {
+      border-color: main.$accent;
+    }
 
-    &:hover {
-      border-color: main.$fg;
+    .ShowOptions {
+      icon {
+        color: main.$fg;
+      }
+
+      border: main.$window_border_alt;
+      border-color: transparent;
+      border-radius: main.$radius;
+      &:hover {
+        border-color: main.$fg;
+      }
     }
 
     button {
       padding: 0 main.$inner_margin * 2;
-      border-radius: main.$radius;
       transition: main.$hover_time;
 
       &:hover {
@@ -752,12 +767,12 @@ window.Bar {
 
       &:active {
         icon {
-          color: main.$accent;
+          color: main.$accentMuted;
         }
       }
 
       icon {
-        color: main.$fg;
+        color: main.$fgMuted;
         font-size: 16px;
       }
     }

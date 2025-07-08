@@ -6,14 +6,19 @@ local bind = astal.bind
 return function()
 	local show_options = Variable(false)
 	return Widget.Box({
-		class_name = "PowerOptions",
+		class_name = bind(show_options):as(function(value)
+			if value then
+				return "PowerOptions show"
+			else
+				return "PowerOptions"
+			end
+		end),
 		Widget.EventBox({
 			on_hover_lost = function()
 				show_options:set(false)
 			end,
 			Widget.Box({
 				Widget.Box({
-					class_name = "Options",
 					visible = bind(show_options),
 					Widget.Button({
 						on_clicked = function()
