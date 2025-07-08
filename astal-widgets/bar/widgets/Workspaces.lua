@@ -31,7 +31,18 @@ return function(gdkmonitor)
 							ws:focus()
 						end,
 						label = bind(ws, "id"):as(function(v)
+							if v == 5 then
+								return nil
+							end
 							return string.format("%.0f", v)
+						end),
+						bind(ws, "id"):as(function(v)
+							if v ~= 5 then
+								return
+							end
+							return Widget.Icon({
+								icon = "applications-games-symbolic",
+							})
 						end),
 					})
 				else

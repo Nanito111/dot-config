@@ -510,7 +510,8 @@ window.Bar {
       min-width: main.$bar_min_height - (main.$inner_margin);
       min-height: main.$bar_min_height - (main.$inner_margin * 1.5);
 
-      label {
+      label,
+      icon {
         transition-property: color;
         transition-duration: main.$hover_time;
         border-radius: main.$radius * 0.8;
@@ -521,19 +522,22 @@ window.Bar {
       }
 
       &:hover {
-        label {
+        label,
+        icon {
           color: main.$fg;
         }
       }
 
       &:active {
-        label {
+        label,
+        icon {
           color: main.$accentMuted;
         }
       }
 
       &.focused {
-        label {
+        label,
+        icon {
           color: main.$bg;
           background-color: main.$fg;
           box-shadow: none;
