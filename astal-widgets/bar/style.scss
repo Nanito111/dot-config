@@ -740,10 +740,11 @@ window.Bar {
   .PowerOptions {
     background-color: color.adjust(main.$bg, $alpha: -0.25);
     border-radius: main.$radius;
-    border: main.$window_border_alt;
-    border-color: transparent;
+    border: none;
+
     &.show {
-      border-color: main.$accent;
+      border: main.$window_border_alt;
+      border-color: main.$orange;
     }
 
     .ShowOptions {
