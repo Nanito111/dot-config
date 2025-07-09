@@ -13,7 +13,7 @@ if [ $updates_count -gt 0 ]; then
     # Confirm update
     if [ "$update_confirmation" = "ok" ]; then
         echo "Update Confirmed"
-        uwsm app -- foot yay -Syu --noconfirm
+        uwsm app -- $TERMINAL -T "System Update" yay -Syu --noconfirm
     else
         echo "Update Cancelled"
     fi
