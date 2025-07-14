@@ -167,15 +167,16 @@ local function NotificationCenter()
 	})
 end
 
-return function(gdkmonitor)
+return function(gdkmonitor, vertical_anchor, layer_namespace)
 	local notification_center = Widget.Window({
 		setup = function(self)
 			self:hide()
 		end,
 		class_name = "NotificationCenter",
 		gdkmonitor = gdkmonitor,
+		namespace = layer_namespace,
 		layer = "TOP",
-		anchor = WindowAnchor.BOTTOM + WindowAnchor.LEFT,
+		anchor = vertical_anchor + WindowAnchor.LEFT,
 		margin_bottom = -10,
 		margin_left = 95,
 		Widget.EventBox({

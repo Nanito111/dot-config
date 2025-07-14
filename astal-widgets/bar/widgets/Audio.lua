@@ -8,15 +8,16 @@ local M = {}
 local speaker = Wp.get_default().audio.default_speaker
 local microphone = Wp.get_default().audio.default_microphone
 
-function M.ShowAudio(gdkmonitor)
+function M.ShowAudio(gdkmonitor, vertical_anchor, layer_namespace)
 	local audio_window = Widget.Window({
 		setup = function(self)
 			self:hide()
 		end,
 		class_name = "Audio",
 		gdkmonitor = gdkmonitor,
+		namespace = layer_namespace,
 		layer = "TOP",
-		anchor = WindowAnchor.BOTTOM + WindowAnchor.RIGHT,
+		anchor = vertical_anchor + WindowAnchor.RIGHT,
 		margin_bottom = -10,
 		margin_right = 20,
 		Widget.EventBox({

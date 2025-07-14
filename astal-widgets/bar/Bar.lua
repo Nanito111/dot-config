@@ -14,11 +14,15 @@ local MiniCalendar = require("bar.widgets.Calendar")
 local ShowMediaPlayer = require("bar.widgets.MediaPlayer").ShowMediaPlayer
 local ShowNotificationCenter = require("bar.widgets.NotificationCenter")
 
+local vertical_anchor = WindowAnchor.TOP
+local layer_namespace = "astal-bar"
+
 return function(gdkmonitor)
 	return Widget.Window({
 		class_name = "Bar",
 		gdkmonitor = gdkmonitor,
-		anchor = WindowAnchor.BOTTOM + WindowAnchor.LEFT + WindowAnchor.RIGHT,
+		namespace = layer_namespace,
+		anchor = vertical_anchor + WindowAnchor.LEFT + WindowAnchor.RIGHT,
 		-- exclusivity: "NORMAL", "EXCLUSIVE", "IGNORE"
 		exclusivity = "EXCLUSIVE",
 		-- layers: "BOTTOM", "TOP", "OVERLAY", "BACKGROUND"
@@ -29,8 +33,8 @@ return function(gdkmonitor)
 				class_name = "LeftBox",
 				halign = "START",
 				Clock(),
-				MiniCalendar(gdkmonitor),
-				ShowNotificationCenter(gdkmonitor),
+				MiniCalendar(gdkmonitor, vertical_anchor, layer_namespace),
+				ShowNotificationCenter(gdkmonitor, vertical_anchor, layer_namespace),
 				SysTray(),
 			}),
 			Widget.Box({
@@ -41,8 +45,8 @@ return function(gdkmonitor)
 				class_name = "RightBox",
 				halign = "END",
 				Ethernet(),
-				ShowMediaPlayer(gdkmonitor),
-				ShowAudio(gdkmonitor),
+				ShowMediaPlayer(gdkmonitor, vertical_anchor, layer_namespace),
+				ShowAudio(gdkmonitor, vertical_anchor, layer_namespace),
 				PowerOptions(),
 			}),
 		}),

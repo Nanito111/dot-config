@@ -9,7 +9,7 @@ local GLib = astal.require("GLib")
 local WindowAnchor = astal.require("Astal", "3.0").WindowAnchor
 local bind = astal.bind
 
-return function(gdkmonitor)
+return function(gdkmonitor, vertical_anchor, layer_namespace)
 	local date = Variable(""):poll(1000, function()
 		return GLib.DateTime.new_now_local():format("%A %d-%m-%Y")
 	end)
@@ -20,7 +20,8 @@ return function(gdkmonitor)
 		end,
 		class_name = "Calendar",
 		gdkmonitor = gdkmonitor,
-		anchor = WindowAnchor.BOTTOM + WindowAnchor.LEFT,
+		namespace = layer_namespace,
+		anchor = vertical_anchor + WindowAnchor.LEFT,
 		margin_bottom = -10,
 		margin_left = 20,
 		Widget.EventBox({

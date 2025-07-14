@@ -171,7 +171,7 @@ function M.MediaPlayer(mpris_instance)
 	end)
 end
 
-function M.ShowMediaPlayer(gdkmonitor)
+function M.ShowMediaPlayer(gdkmonitor, vertical_anchor, layer_namespace)
 	local default_media = Mpris.get_default()
 	local window_player = Widget.Window({
 		setup = function(self)
@@ -179,8 +179,9 @@ function M.ShowMediaPlayer(gdkmonitor)
 		end,
 		class_name = "Media",
 		gdkmonitor = gdkmonitor,
+		namespace = layer_namespace,
 		layer = "TOP",
-		anchor = WindowAnchor.BOTTOM + WindowAnchor.RIGHT,
+		anchor = vertical_anchor + WindowAnchor.RIGHT,
 		margin_bottom = -10,
 		margin_right = 70,
 		Widget.EventBox({
