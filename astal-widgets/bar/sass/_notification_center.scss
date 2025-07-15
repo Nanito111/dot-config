@@ -1,0 +1,262 @@
+@use "sass:math";
+@use "sass:color";
+@use "../../main.scss" as main;
+@use "bar" as bar;
+
+window.Bar button.ShowNotificationCenter {
+  border: main.$window_border_alt;
+  border-radius: main.$radius;
+  min-width: main.$bar_min_height;
+  font-size: 16px;
+
+  background-color: bar.$bar_color;
+  border-color: main.$bg;
+  color: main.$accent;
+
+  @keyframes new-notifications {
+    0% {
+      -gtk-icon-transform: rotate(0);
+    }
+    10% {
+      -gtk-icon-transform: rotate(20deg);
+    }
+    20% {
+      -gtk-icon-transform: rotate(-20deg);
+    }
+    30% {
+      -gtk-icon-transform: rotate(0);
+    }
+    100% {
+      -gtk-icon-transform: rotate(0);
+    }
+  }
+
+  icon {
+    animation: new-notifications 1.5s linear infinite;
+    animation-play-state: running;
+  }
+
+  transition-property: border-color, color;
+  transition-duration: main.$hover_time;
+  transition-timing-function: ease;
+
+  &.no-notifications {
+    background-color: bar.$bar_color;
+    border-color: transparent;
+    color: main.$accent;
+    icon {
+      animation: none;
+      -gtk-icon-transform: rotate(0deg);
+    }
+  }
+
+  &:hover {
+    border-color: main.$fg;
+    color: main.$fg;
+  }
+
+  &:active {
+    border-color: main.$accentMuted;
+    color: main.$accentMuted;
+  }
+}
+
+window.NotificationCenter {
+  box.NotificationCenter-panel {
+    font-family: main.$font;
+    letter-spacing: 0px;
+    min-height: 430px;
+    min-width: 400px;
+    border: main.$window_border_alt;
+    background-color: bar.$window_color;
+    border-radius: main.$radius;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    padding: 10px;
+
+    & > label.title {
+      font-size: main.$font_size;
+      font-weight: 200;
+      color: main.$fgMuted;
+      margin-bottom: 10px;
+    }
+
+    & > label.no-notifications {
+      font-size: main.$font_size;
+      font-weight: 200;
+      color: main.$fgMuted;
+    }
+  }
+
+  .trash {
+    transition-property: color, border-color;
+    transition-timing-function: ease-in-out;
+    transition-duration: main.$hover_time;
+    margin-top: main.$inner_margin * 2;
+
+    border-radius: main.$radius;
+    background-color: transparent;
+    color: main.$bg2;
+    border: 1px solid transparent;
+    &.full {
+      border-color: main.$redMuted;
+      color: main.$red;
+      &:hover {
+        border-color: main.$fg;
+        color: main.$fg;
+      }
+      &:active {
+        border-color: main.$fgMuted;
+        color: main.$fgMuted;
+      }
+    }
+  }
+  scrollable > viewport {
+    border: none;
+  }
+
+  scrollable box.scroll-content {
+    color: main.$accent;
+    font-weight: 200;
+  }
+
+  scrollable box.scroll-content > .notification-item {
+    border: main.$window_border_alt;
+    border-radius: main.$radius * 0.9;
+    margin-bottom: 1rem;
+    min-height: 100px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &.critical {
+      border: 1px solid main.$red;
+
+      .header {
+        .app-name {
+          color: main.$red;
+        }
+
+        .app-icon {
+          color: main.$red;
+        }
+      }
+    }
+
+    .header {
+      padding: 0.2rem;
+      color: main.$accent;
+
+      .app-icon {
+        margin: 0 0.4rem;
+      }
+
+      .app-name {
+        margin-right: 0.3rem;
+
+        &:first-child {
+          margin-left: 0.4rem;
+        }
+      }
+
+      .time {
+        margin: 0 0.4rem;
+      }
+
+      button {
+        padding: 0.2rem;
+        min-width: 0;
+        min-height: 0;
+        background-color: transparent;
+
+        icon {
+          color: main.$fg;
+        }
+      }
+
+      button:hover {
+        icon {
+          color: main.$fg;
+        }
+      }
+
+      button:active {
+        icon {
+          color: main.$accentMuted;
+        }
+      }
+    }
+
+    separator {
+      margin: 0 0.4rem;
+      background-color: color.adjust(main.$accentMuted, $alpha: -0.8);
+    }
+
+    .no-notifications {
+      font-size: 20pt;
+      color: main.$accent;
+    }
+
+    .content {
+      margin: 5px;
+
+      & > box {
+        margin-left: 5px;
+      }
+
+      .summary {
+        font-weight: 400;
+        color: main.$fg;
+      }
+
+      .body {
+        font-weight: 200;
+        color: main.$fg;
+      }
+
+      .image {
+        border-radius: main.$radius;
+        min-width: 80px;
+        min-height: 80px;
+        background-size: cover;
+        background-position: center;
+      }
+    }
+
+    .actions {
+      margin: 0.5rem;
+      margin-top: 0;
+      padding: 0.2rem;
+
+      button {
+        margin: 0 0.3rem;
+        color: main.$accent;
+        border: 1px solid main.$accent;
+        background-color: transparent;
+        border-radius: main.$radius;
+        font-weight: 200;
+
+        &:first-child {
+          margin-left: 0;
+        }
+
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+
+      button:hover {
+        color: main.$fg;
+        border-color: main.$fg;
+      }
+
+      button:active {
+        color: main.$accentMuted;
+        border-color: main.$accentMuted;
+      }
+    }
+  }
+}

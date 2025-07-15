@@ -1,0 +1,48 @@
+// _power_options.scss
+@use "sass:color";
+@use "../../main" as main;
+@use "bar" as bar;
+
+window.Bar .PowerOptions {
+  transition-property: min-width;
+  transition-duration: main.$hover_time;
+
+  background-color: bar.$bar_color;
+  border-radius: main.$radius;
+  border: main.$window_border_alt;
+  border-color: transparent;
+  min-width: main.$bar_min_height;
+
+  &.show {
+    border-color: unset;
+    min-width: main.$bar_min_height * 3;
+  }
+
+  button {
+    transition-property: color, min-width, font-size;
+    transition-timing-function: linear;
+    transition-duration: main.$hover_time;
+    color: main.$accent;
+    font-size: 16px;
+
+    &.Option {
+      font-size: 1px;
+      min-width: 0px;
+      color: transparent;
+    }
+
+    &.show {
+      min-width: main.$bar_min_height;
+      font-size: 16px;
+      color: main.$accent;
+    }
+
+    &:hover {
+      color: main.$fg;
+    }
+
+    &:active {
+      color: main.$accentMuted;
+    }
+  }
+}

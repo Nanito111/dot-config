@@ -14,7 +14,7 @@ return function()
 			Widget.Label({
 				halign = "START",
 				label = bind(ethernet, "internet"):as(function(state)
-					return string.lower(state)
+					return string.upper(state)
 				end),
 			}),
 			Widget.Icon({
@@ -26,7 +26,7 @@ return function()
 		class_name = "Ethernet offline",
 		Widget.Label({
 			halign = "START",
-			label = "offline",
+			label = "OFFLINE",
 		}),
 		Widget.Icon({
 			icon = "network-wired-offline-symbolic",

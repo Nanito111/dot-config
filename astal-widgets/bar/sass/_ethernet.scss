@@ -1,0 +1,53 @@
+// _ethernet.scss
+@use "sass:color";
+@use "../../main" as main;
+@use "bar" as bar;
+
+window.Bar .Ethernet {
+  border-radius: main.$radius;
+  padding: 0 main.$inner_margin * 2;
+  font-size: 16px;
+  min-width: main.$bar_min_height + main.$inner_margin;
+  background-color: bar.$bar_color;
+  border: main.$window_border_alt;
+  color: main.$fgMuted;
+
+  & > label {
+    font-family: main.$font_digits;
+    font-size: 13px;
+    font-weight: 400;
+    padding-left: main.$inner_margin * 2;
+    letter-spacing: 0;
+  }
+
+  & > icon {
+    padding: 0 main.$inner_margin * 2;
+  }
+
+  &.connected {
+    color: main.$green;
+    text-shadow: bar.$text_ilumination;
+    // background-color: main.$accent;
+    // border-color: main.$accent;
+  }
+
+  &.connecting {
+    color: main.$yellow;
+    // background-color: main.$yellow;
+    // border-color: main.$yellowMuted;
+  }
+
+  &.disconnected {
+    color: main.$orange;
+    // background-color: main.$bg4;
+    // border-color: main.$bg3;
+  }
+
+  &.offline,
+  &.failed,
+  &.unavailable {
+    color: main.$red;
+    // background-color: main.$red;
+    // border-color: main.$redMuted;
+  }
+}

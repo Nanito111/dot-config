@@ -1,0 +1,64 @@
+// _workspaces.scss
+@use "sass:math";
+@use "../../main" as main;
+@use "bar" as bar;
+
+$focused_ws_width: main.$bar_min_height + main.$inner_margin;
+$regular_ws_width: main.$bar_min_height * 0.25 + main.$inner_margin;
+
+window.Bar .Workspaces {
+  padding: 0 main.$inner_margin * 3;
+  min-width: $focused_ws_width + ($regular_ws_width * 4) +
+    (main.$inner_margin * 4);
+  margin: 0;
+
+  button:first-child {
+    margin-left: 0;
+  }
+
+  button {
+    margin-left: main.$inner_margin * 2.5;
+    min-width: $regular_ws_width;
+    min-height: $regular_ws_width;
+    font-size: 12px;
+
+    &,
+    icon {
+      transition-property: color, min-width;
+      transition-duration: main.$hover_time;
+      transition-timing-function: linear;
+
+      border-radius: main.$radius * 0.8;
+      border-color: transparent;
+      color: main.$accentMuted;
+      background-color: main.$bg1;
+    }
+
+    &:hover,
+    &:hover > icon {
+      color: main.$fg;
+    }
+
+    &:active,
+    &:active > icon {
+      color: main.$accentMuted;
+    }
+
+    &.focused {
+      box-shadow: main.$shadow_distance main.$shadow_distance main.$shadow_blur
+        main.$shadow_scale main.$accentMuted;
+    }
+
+    &.focused,
+    &.focused > icon {
+      color: main.$bg;
+      background-color: main.$accent;
+      min-width: $focused_ws_width;
+    }
+
+    &.special {
+      background-color: transparent;
+      border: 1px solid main.$accent;
+    }
+  }
+}

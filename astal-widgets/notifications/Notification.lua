@@ -6,7 +6,7 @@ local map = require("../lib").map
 local time = require("../lib").time
 local file_exists = require("../lib").file_exists
 
----@param props { setup?: function, on_hover_lost?: function, notification: any }
+---@param props { setup?: function, on_hover_lost?: function, notification: any, in_bar: boolean }
 return function(props)
 	local n = props.notification
 
@@ -68,38 +68,45 @@ return function(props)
 		}),
 	})
 
+	local notification_content = Widget.Box({
+		setup = function(self)
+			self:hook(n, "invoked", function()
+				n:dismiss()
+			end)
+		end,
+		class_name = props.in_bar and string.format("notification-item %s", string.lower(n.urgency)) or "",
+		vertical = true,
+		header,
+		Gtk.Separator({ visible = true }),
+		content,
+		Widget.Box({
+			class_name = "actions",
+			hexpand = true,
+			halign = "CENTER",
+			map(n.actions, function(action)
+				local label, id = string.lower(action.label), action.id
+
+				return Widget.Button({
+					on_clicked = function()
+						return n:invoke(id)
+					end,
+					Widget.Label({
+						label = label,
+						halign = "CENTER",
+					}),
+				})
+			end),
+		}),
+	})
+
+	if props.in_bar == true then
+		return notification_content
+	end
+
 	return Widget.EventBox({
 		class_name = string.format("Notification %s", string.lower(n.urgency)),
 		setup = props.setup,
 		on_hover_lost = props.on_hover_lost,
-		Widget.Box({
-			setup = function(self)
-				self:hook(n, "invoked", function()
-					n:dismiss()
-				end)
-			end,
-			vertical = true,
-			header,
-			Gtk.Separator({ visible = true }),
-			content,
-			Widget.Box({
-				class_name = "actions",
-				hexpand = true,
-				halign = "CENTER",
-				map(n.actions, function(action)
-					local label, id = string.lower(action.label), action.id
-
-					return Widget.Button({
-						on_clicked = function()
-							return n:invoke(id)
-						end,
-						Widget.Label({
-							label = label,
-							halign = "CENTER",
-						}),
-					})
-				end),
-			}),
-		}),
+		notification_content,
 	})
 end

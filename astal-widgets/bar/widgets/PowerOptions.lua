@@ -14,61 +14,73 @@ return function()
 			end
 		end),
 		Widget.EventBox({
+			on_hover = function()
+				show_options:set(true)
+			end,
 			on_hover_lost = function()
 				show_options:set(false)
 			end,
-			Widget.Box({
-				Widget.Box({
+			Widget.CenterBox({
+				halign = "FILL",
+				hexpand = true,
+				Widget.Button({
+					class_name = bind(show_options):as(function(value)
+						if value then
+							return "Options show"
+						else
+							return "Options"
+						end
+					end),
 					visible = bind(show_options),
-					Widget.Button({
-						on_clicked = function()
-							astal.exec("systemctl suspend")
-						end,
-						Widget.Icon({
-							icon = "system-suspend-symbolic",
-						}),
-					}),
-					Widget.Button({
-						on_clicked = function()
-							astal.exec("systemctl reboot")
-						end,
-						Widget.Icon({
-							icon = "system-reboot-symbolic",
-						}),
-					}),
-					Widget.Button({
-						on_clicked = function()
-							astal.exec("shutdown now")
-						end,
-						Widget.Icon({
-							icon = "system-shutdown-symbolic",
-						}),
+					halign = "FILL",
+					hexpand = false,
+					vexpand = false,
+					on_clicked = function()
+						astal.exec("systemctl suspend")
+					end,
+					Widget.Icon({
+						hexpand = false,
+						vexpand = false,
+						icon = "system-suspend-symbolic",
 					}),
 				}),
-				Widget.Box({
-					Widget.Button({
-						class_name = "CloseOptions",
-						visible = bind(show_options):as(function(value)
-							return value
-						end),
-						on_clicked = function()
-							show_options:set(not show_options:get())
-						end,
-						Widget.Icon({
-							icon = "close-symbolic",
-						}),
+				Widget.Button({
+					class_name = bind(show_options):as(function(value)
+						if value then
+							return "Options show"
+						else
+							return "Options"
+						end
+					end),
+					visible = bind(show_options),
+					halign = "FILL",
+					hexpand = false,
+					vexpand = false,
+					on_clicked = function()
+						astal.exec("systemctl reboot")
+					end,
+					Widget.Icon({
+						hexpand = false,
+						vexpand = false,
+						icon = "system-reboot-symbolic",
 					}),
-					Widget.Button({
-						class_name = "ShowOptions",
-						visible = bind(show_options):as(function(value)
-							return not value
-						end),
-						on_clicked = function()
-							show_options:set(not show_options:get())
-						end,
-						Widget.Icon({
-							icon = "system-shutdown-symbolic",
-						}),
+				}),
+				Widget.Button({
+					class_name = bind(show_options):as(function(value)
+						if value then
+							return "show"
+						else
+							return ""
+						end
+					end),
+					halign = "FILL",
+					hexpand = true,
+					vexpand = false,
+					on_clicked = function()
+						astal.exec("shutdown now")
+					end,
+					Widget.Icon({
+						icon = "system-shutdown-symbolic",
 					}),
 				}),
 			}),

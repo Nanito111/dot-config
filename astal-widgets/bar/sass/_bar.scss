@@ -1,0 +1,52 @@
+// @use "sass:color" as color;
+@use "sass:math";
+@use "sass:color";
+
+@use "../../_main.scss" as main;
+
+$bar_color: main.$bg;
+$window_color: color.adjust(main.$bg, $alpha: -0.2);
+$text_ilumination: 0 0 1.5px main.$accentMuted;
+
+window.Bar {
+  border: none;
+  background-color: transparent;
+  color: main.$accent;
+  font-size: main.$font_size;
+  font-weight: bold;
+
+  & > centerbox {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  .LeftBox,
+  .RightBox {
+    margin-top: 4px;
+  }
+
+  .LeftBox,
+  .RightBox,
+  .MiddleBox {
+    min-height: main.$bar_min_height;
+
+    // space between elements
+    & > *:first-child,
+    & > .Notch {
+      margin-left: 0;
+    }
+
+    & > * {
+      margin-left: main.$space_between;
+    }
+  }
+
+  button {
+    all: unset;
+  }
+
+  label {
+    font-family: main.$font;
+    font-weight: 200;
+    letter-spacing: 0px;
+  }
+}

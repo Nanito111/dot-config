@@ -1,0 +1,140 @@
+// _audio.scss
+@use "../../main" as main;
+@use "bar" as bar;
+
+window.Bar .ShowAudio {
+  background-color: bar.$bar_color;
+  border-radius: main.$radius;
+  border: main.$window_border_alt;
+  border-color: transparent;
+
+  &:hover {
+    border-color: main.$fg;
+
+    > .Icons {
+      color: main.$fg;
+    }
+  }
+
+  &:active {
+    border-color: main.$accentMuted;
+
+    > .Icons {
+      color: main.$accentMuted;
+    }
+  }
+
+  .Icons {
+    border-radius: main.$radius;
+    padding: 0 (main.$inner_margin * 2);
+    transition: main.$hover_time;
+    color: main.$accent;
+
+    label {
+      font-family: main.$font_digits;
+    }
+
+    & > box {
+      transition: 0;
+      min-width: 55px;
+      font-size: 16px;
+
+      &.muted {
+        color: main.$fgMuted;
+      }
+    }
+
+    icon {
+      margin-top: main.$inner_margin;
+      margin-bottom: main.$inner_margin;
+      margin-left: main.$inner_margin;
+      margin-right: 4px;
+    }
+  }
+}
+
+window.Audio {
+  .AudioSlider {
+    border: main.$window_border_alt;
+    min-width: 135px;
+    background-color: bar.$window_color;
+    border-radius: main.$radius;
+    padding: main.$inner_margin main.$inner_margin * 3;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+
+    * {
+      all: unset;
+      font-family: main.$font;
+      letter-spacing: 0px;
+      font-weight: 200;
+    }
+
+    > label {
+      color: main.$fg;
+      font-size: 16px;
+    }
+
+    button {
+      transition: main.$hover_time;
+      min-width: main.$font_size + 1pt + (main.$inner_margin * 2);
+      min-height: main.$font_size + 1pt + (main.$inner_margin * 2);
+      margin-top: 3px;
+      margin-bottom: 3px;
+      border-radius: main.$radius;
+
+      &:hover {
+        icon {
+          color: main.$fg;
+        }
+      }
+
+      &:active {
+        icon {
+          color: main.$accent;
+        }
+      }
+
+      &.muted {
+        icon {
+          color: main.$fgMuted;
+        }
+      }
+
+      icon {
+        color: main.$fg;
+        font-size: 16px;
+      }
+    }
+
+    trough {
+      background-color: transparent;
+      border: 1px solid main.$accent;
+      border-radius: main.$radius;
+      margin: 0 5px;
+    }
+
+    highlight {
+      background-color: main.$accent;
+    }
+
+    slider {
+      background-color: main.$fg;
+      border-radius: main.$radius;
+      min-height: 1em;
+      margin: -0.42em -0.3em;
+      transition: main.$hover_time;
+
+      &:hover {
+        background-color: main.$fg;
+        box-shadow: none;
+      }
+
+      &:active {
+        background-color: main.$accent;
+      }
+    }
+  }
+}

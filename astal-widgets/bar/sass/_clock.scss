@@ -1,0 +1,16 @@
+// _clock.scss
+@use "sass:math";
+@use "sass:color";
+@use "../../main" as main;
+@use "bar" as bar;
+
+window.Bar .Time {
+  background-color: bar.$bar_color;
+  border-radius: main.$radius;
+  padding: 0 main.$inner_margin * 4;
+  color: main.$accent;
+  text-shadow: bar.$text_ilumination;
+  font-family: main.$font_digits;
+  font-weight: normal;
+  letter-spacing: 2px;
+}

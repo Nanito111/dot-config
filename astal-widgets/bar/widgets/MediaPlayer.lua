@@ -181,9 +181,7 @@ function M.ShowMediaPlayer(gdkmonitor, vertical_anchor, layer_namespace)
 		gdkmonitor = gdkmonitor,
 		namespace = layer_namespace,
 		layer = "TOP",
-		anchor = vertical_anchor + WindowAnchor.RIGHT,
-		margin_bottom = -10,
-		margin_right = 70,
+		anchor = vertical_anchor,
 		Widget.EventBox({
 			on_hover_lost = function(self)
 				local parent = self:get_parent()

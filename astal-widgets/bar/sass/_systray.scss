@@ -1,0 +1,20 @@
+// _systray.scss
+@use "sass:math";
+@use "../../main" as main;
+@use "bar" as bar;
+
+window.Bar .SysTray {
+  padding: 0 main.$inner_margin * 3;
+  background-color: bar.$bar_color;
+  border-radius: main.$radius;
+  button {
+    margin-left: main.$space_between;
+    &:first-child {
+      margin-left: 0;
+    }
+  }
+  icon {
+    -gtk-icon-theme: "WhiteSur-grey";
+    font-size: 16px;
+  }
+}

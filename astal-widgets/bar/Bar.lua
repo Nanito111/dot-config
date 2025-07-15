@@ -15,13 +15,14 @@ local ShowMediaPlayer = require("bar.widgets.MediaPlayer").ShowMediaPlayer
 local ShowNotificationCenter = require("bar.widgets.NotificationCenter")
 
 local vertical_anchor = WindowAnchor.TOP
-local layer_namespace = "astal-bar"
+local bar_namespace = "astal-bar"
+local blur_namespace = "astal-bar-blur"
 
 return function(gdkmonitor)
 	return Widget.Window({
 		class_name = "Bar",
 		gdkmonitor = gdkmonitor,
-		namespace = layer_namespace,
+		namespace = bar_namespace,
 		anchor = vertical_anchor + WindowAnchor.LEFT + WindowAnchor.RIGHT,
 		-- exclusivity: "NORMAL", "EXCLUSIVE", "IGNORE"
 		exclusivity = "EXCLUSIVE",
@@ -33,20 +34,29 @@ return function(gdkmonitor)
 				class_name = "LeftBox",
 				halign = "START",
 				Clock(),
-				MiniCalendar(gdkmonitor, vertical_anchor, layer_namespace),
-				ShowNotificationCenter(gdkmonitor, vertical_anchor, layer_namespace),
+				MiniCalendar(gdkmonitor, vertical_anchor, blur_namespace),
 				SysTray(),
 			}),
 			Widget.Box({
 				class_name = "MiddleBox",
-				Workspaces(gdkmonitor),
+				Widget.Box({
+					class_name = "Notch Left",
+					ShowNotificationCenter(gdkmonitor, vertical_anchor, blur_namespace),
+				}),
+				Widget.Box({
+					class_name = "Notch",
+					Workspaces(gdkmonitor),
+				}),
+				Widget.Box({
+					class_name = "Notch Right",
+					ShowMediaPlayer(gdkmonitor, vertical_anchor, blur_namespace),
+				}),
 			}),
 			Widget.Box({
 				class_name = "RightBox",
 				halign = "END",
 				Ethernet(),
-				ShowMediaPlayer(gdkmonitor, vertical_anchor, layer_namespace),
-				ShowAudio(gdkmonitor, vertical_anchor, layer_namespace),
+				ShowAudio(gdkmonitor, vertical_anchor, blur_namespace),
 				PowerOptions(),
 			}),
 		}),

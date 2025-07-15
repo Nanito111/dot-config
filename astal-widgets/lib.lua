@@ -87,10 +87,35 @@ function M.reload_css(event, app, scss, css)
 	if event ~= 0 then
 		return
 	end
-	print("style changes detected, reloading CSS")
-	astal.exec("sass " .. scss .. " " .. css)
+	print("style changes detected in" .. scss .. ", reloading CSS")
+	M.create_css_from_sass(scss, css)
 	print("applying CSS to App")
 	app:apply_css(css)
+end
+
+function M.create_css_from_sass(scss, css)
+	astal.exec("sass " .. scss .. " " .. css)
+end
+
+function M.sort_by_key(tbl, sort_fn)
+	local keys = {}
+
+	for k in pairs(tbl) do
+		table.insert(keys, k)
+	end
+
+	if sort_fn then
+		table.sort(keys, sort_fn)
+	else
+		table.sort(keys)
+	end
+
+	local sorted = {}
+	for _, k in ipairs(keys) do
+		sorted[k] = tbl[k]
+	end
+
+	return sorted
 end
 
 return M

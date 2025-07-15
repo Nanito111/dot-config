@@ -21,6 +21,7 @@ local function NotificationMap()
 			id,
 			Notification({
 				notification = notifd:get_notification(id),
+				in_bar = false,
 				setup = function()
 					local notification = notifd:get_notification(id)
 					if notification.expire_timeout < 1000 then
@@ -52,7 +53,7 @@ return function(gdkmonitor)
 	return Widget.Window({
 		class_name = "NotificationPopups",
 		gdkmonitor = gdkmonitor,
-		namespace = "astal-notification",
+		namespace = "astal-notification-blur",
 		anchor = Anchor.TOP,
 		visible = bind(hypr, "focused-monitor"):as(function(monitor)
 			return monitor.model == gdkmonitor.model

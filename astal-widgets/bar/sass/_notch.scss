@@ -1,0 +1,41 @@
+// _notch.scss
+@use "sass:math";
+@use "../../main" as main;
+@use "bar" as bar;
+
+$corners_width: 20px;
+$notch_radius: main.$radius + 2px;
+
+.Notch {
+  background-color: bar.$bar_color;
+
+  border-bottom-left-radius: $notch_radius;
+  border-bottom-right-radius: $notch_radius;
+}
+.Notch.Left,
+.Notch.Right {
+  min-width: $corners_width;
+  min-height: $corners_width;
+  background-color: transparent;
+
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  & > * {
+    margin-top: main.$inner_margin;
+  }
+}
+
+.Notch.Left {
+  border-top-right-radius: main.$radius;
+  box-shadow: 0 ($corners_width * -0.8) 0 0 bar.$bar_color;
+  & > * {
+    margin-right: main.$inner_margin;
+  }
+}
+.Notch.Right {
+  border-top-left-radius: main.$radius;
+  box-shadow: 0 ($corners_width * -0.8) 0 0 bar.$bar_color;
+  & > * {
+    margin-left: main.$inner_margin;
+  }
+}

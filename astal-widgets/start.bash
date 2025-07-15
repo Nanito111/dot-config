@@ -6,19 +6,19 @@ widget_path="$astal_path$1/"
 
 # Check if directory name is provided
 if [ -z "$1" ]; then
-  echo "missing directory name"
-  exit 1
+    echo "missing directory name"
+    exit 1
 fi
 
 # Check if the directory exists
 if [ ! -e "$widget_path" ]; then
-  echo "directory does not exist"
-  exit 1
+    echo "directory does not exist"
+    exit 1
 fi
 
-# Check if the widget is already installed
+# Check if the widget is already started
 if [ "ok" = "$(astal -i "$1")" ]; then
-  astal -i "$1" -q
+    astal -i "$1" -q
 fi
 
 # Change to the astal path and execute the Lua script

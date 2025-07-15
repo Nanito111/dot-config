@@ -7,11 +7,10 @@ local Calendar = astalify(Gtk.Calendar)
 local Variable = astal.Variable
 local GLib = astal.require("GLib")
 local WindowAnchor = astal.require("Astal", "3.0").WindowAnchor
-local bind = astal.bind
 
 return function(gdkmonitor, vertical_anchor, layer_namespace)
 	local date = Variable(""):poll(1000, function()
-		return GLib.DateTime.new_now_local():format("%A %d-%m-%Y")
+		return GLib.DateTime.new_now_local():format("%A %d.%m.%Y")
 	end)
 
 	local calendar_window = Widget.Window({

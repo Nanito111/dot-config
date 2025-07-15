@@ -9,7 +9,7 @@ eventbox.Notification {
   font-family: main.$font;
   font-size: main.$font_size;
   font-weight: 200;
-  letter-spacing: -1px;
+  letter-spacing: 0px;
 
   &:first-child > box {
     margin-top: 1rem;
@@ -87,7 +87,7 @@ eventbox.Notification {
 
   separator {
     margin: 0 0.4rem;
-    background-color: main.$bg4;
+    background-color: color.adjust(main.$accentMuted, $alpha: -0.8);
   }
 
   .content {

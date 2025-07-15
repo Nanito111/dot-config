@@ -27,15 +27,13 @@ return function(gdkmonitor)
 						class_name = bind(hypr, "focused-workspace"):as(function(fw)
 							return fw == ws and "focused" or ""
 						end),
+						halign = "CENTER",
+						valign = "CENTER",
+						hexpand = true,
+						vexpand = false,
 						on_clicked = function()
 							ws:focus()
 						end,
-						label = bind(ws, "id"):as(function(v)
-							if v == 5 then
-								return nil
-							end
-							return string.format("%.0f", v)
-						end),
 						bind(ws, "id"):as(function(v)
 							if v ~= 5 then
 								return
@@ -50,10 +48,13 @@ return function(gdkmonitor)
 						class_name = bind(hypr, "focused-workspace"):as(function(fw)
 							return fw == ws and "focused special" or "special"
 						end),
+						halign = "CENTER",
+						valign = "CENTER",
+						hexpand = true,
+						vexpand = false,
 						on_clicked = function()
 							ws:focus()
 						end,
-						label = "S",
 					})
 				end
 			end)
