@@ -1,6 +1,6 @@
 @use "sass:math";
 @use "sass:color";
-@use "../../main.scss" as main;
+@use "../../main" as main;
 @use "bar" as bar;
 
 window.Bar button.ShowNotificationCenter {

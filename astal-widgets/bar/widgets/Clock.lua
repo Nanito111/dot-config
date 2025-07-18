@@ -1,18 +1,18 @@
 local astal = require("astal")
 local Widget = require("astal.gtk3").Widget
-local Variable = astal.Variable
 local GLib = astal.require("GLib")
 
 return function()
-	local time = Variable(""):poll(1000, function()
-		return GLib.DateTime.new_now_local():format("%H:%M:%S")
-	end)
+    local clock = Widget.Label()
+    clock.class_name = "Time"
 
-	return Widget.Label({
-		class_name = "Time",
-		on_destroy = function()
-			time:drop()
-		end,
-		label = time(),
-	})
+    local interval = astal.interval(1000, function()
+        clock.label = GLib.DateTime.new_now_local():format("%H:%M:%S")
+    end)
+
+    clock.on_destroy = function()
+        interval:cancel()
+    end
+
+    return clock
 end

@@ -19,8 +19,17 @@ eventbox.Notification {
     margin-bottom: 1rem;
   }
 
+  &.close > box {
+    opacity: 0;
+  }
+
   // eventboxes can not take margins so we style its inner box instead
   & > box {
+    transition-property: opacity;
+    transition-duration: 100ms;
+    transition-timing-function: linear;
+    opacity: 1;
+
     min-width: 400px;
     border-radius: main.$radius;
     background-color: color.adjust(main.$bg, $alpha: -0.25);

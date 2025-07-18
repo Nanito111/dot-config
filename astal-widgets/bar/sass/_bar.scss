@@ -2,7 +2,7 @@
 @use "sass:math";
 @use "sass:color";
 
-@use "../../_main.scss" as main;
+@use "../../main" as main;
 
 $bar_color: main.$bg;
 $window_color: color.adjust(main.$bg, $alpha: -0.2);
