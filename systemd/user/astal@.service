@@ -1,0 +1,13 @@
+[Unit]
+Description=astal-%i
+After=graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/bash %h/.config/astal-widgets/start.bash %i
+Restart=on-failure
+Slice=app-graphical.slice
+
+[Install]
+WantedBy=graphical-session.target
