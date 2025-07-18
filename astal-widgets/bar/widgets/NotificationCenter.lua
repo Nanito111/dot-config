@@ -230,7 +230,7 @@ return function(gdkmonitor, vertical_anchor, layer_namespace)
             end
             return style_class
         end),
-        on_click = function(_, event)
+        on_click_release = function(_, event)
             if event.button == "PRIMARY" then
                 if notification_center:is_visible() then
                     notification_center:hide()
