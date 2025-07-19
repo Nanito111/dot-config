@@ -14,7 +14,7 @@ return function()
             Widget.Label({
                 halign = "START",
                 label = bind(ethernet, "internet"):as(function(state)
-                    return string.upper(state)
+                    return string.lower(state)
                 end),
             }),
             Widget.Icon({

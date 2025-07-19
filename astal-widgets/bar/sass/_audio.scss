@@ -1,6 +1,7 @@
 // _audio.scss
 @use "../../main" as main;
 @use "bar" as bar;
+@use "sass:color";
 
 window.Bar .ShowAudio {
   background-color: bar.$bar_color;
@@ -56,14 +57,18 @@ window.Bar .ShowAudio {
 window.Audio {
   .AudioSlider {
     border: main.$window_border_alt;
-    min-width: 135px;
+    min-width: 200px;
     background-color: bar.$window_color;
     border-radius: main.$radius;
-    padding: main.$inner_margin main.$inner_margin * 3;
+    padding: main.$bar_min_height * 0.5 main.$inner_margin * 6;
     margin-bottom: 10px;
     margin-left: 10px;
     margin-top: 10px;
     margin-right: 10px;
+
+    & > separator {
+      background-color: color.adjust(main.$accent, $alpha: -0.6);
+    }
 
     * {
       all: unset;
@@ -72,16 +77,15 @@ window.Audio {
       font-weight: 200;
     }
 
-    > label {
+    & > label {
       color: main.$fg;
-      font-size: 16px;
+      font-size: main.$font_size;
     }
 
     button {
       transition: main.$hover_time;
-      min-width: main.$font_size + 1pt + (main.$inner_margin * 2);
-      min-height: main.$font_size + 1pt + (main.$inner_margin * 2);
-      margin-top: 3px;
+      min-width: main.$font_size + 1pt + (main.$inner_margin * 4);
+      min-height: main.$font_size + 1pt + (main.$inner_margin * 4);
       margin-bottom: 3px;
       border-radius: main.$radius;
 
@@ -124,6 +128,7 @@ window.Audio {
       background-color: main.$fg;
       border-radius: main.$radius;
       min-height: 1em;
+      min-width: 1em;
       margin: -0.42em -0.3em;
       transition: main.$hover_time;
 

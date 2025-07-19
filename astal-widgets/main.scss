@@ -23,18 +23,18 @@ $yellow: #d0a215 !default;
 $greenMuted: #66800b !default;
 $green: #879a39 !default;
 
-$accent: $green !default;
-$accentMuted: $greenMuted !default;
+$accent: $red !default;
+$accentMuted: $redMuted !default;
 
-$font: "Kode Mono" !default;
-$font_digits: "Kode Mono" !default;
+$font: "Major Mono Display" !default;
+$font_digits: "Major Mono Display" !default;
+$font_size: 11pt !default;
 $radius: 16px !default;
 $hover_time: 200ms !default;
 $bar_side_margins: 5px !default;
 $inner_margin: 3px !default;
 $space_between: 4px !default;
 $bar_min_height: 32px !default;
-$font_size: 12pt !default;
 $shadow_distance: 0 !default;
 $shadow_blur: 4px !default;
 $shadow_scale: 0 !default;

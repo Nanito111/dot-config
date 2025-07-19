@@ -1,5 +1,6 @@
 local astal = require("astal")
 local Widget = require("astal.gtk3").Widget
+local Gtk = require("astal.gtk3").Gtk
 local bind = astal.bind
 local Wp = astal.require("AstalWp")
 local WindowAnchor = astal.require("Astal", "3.0").WindowAnchor
@@ -77,6 +78,10 @@ function M.ShowAudio(gdkmonitor, vertical_anchor, layer_namespace)
 end
 
 function M.AudioSlider()
+    local speakers_descriptions = {
+        motherboard = "Family 17h/19h/1ah HD Audio Controller Analog Stereo",
+        hdmi = "Renoir Radeon High Definition Audio Controller Digital Stereo (HDMI)",
+    }
     return Widget.Box({
         class_name = "AudioSlider",
         vertical = true,
@@ -84,12 +89,14 @@ function M.AudioSlider()
         -- speaker
         Widget.Label({
             class_name = "Speaker",
+            max_width_chars = 40,
+            wrap = true,
+            lines = 2,
+            justify = "CENTER",
             label = bind(speaker, "description"):as(function(name)
-                if name == "Family 17h/19h/1ah HD Audio Controller Analog Stereo" then
+                if name == speakers_descriptions.motherboard then
                     return "Motherboard Analog Stereo"
-                elseif
-                    name == "Renoir Radeon High Definition Audio Controller Digital Stereo (HDMI)"
-                then
+                elseif name == speakers_descriptions.hdmi then
                     return "HDMI Digital Stereo"
                 else
                     return name
@@ -120,9 +127,19 @@ function M.AudioSlider()
             }),
         }),
 
+        Gtk.Separator({
+            visible = true,
+            margin_top = 15,
+            margin_bottom = 20,
+        }),
+
         -- microphone
         Widget.Label({
             class_name = "Microphone",
+            max_width_chars = 40,
+            wrap = true,
+            lines = 2,
+            justify = "CENTER",
             label = bind(microphone, "description"),
         }),
         Widget.Box({
