@@ -7,8 +7,7 @@ window.NotificationPopups {
 
 eventbox.Notification {
   font-family: main.$font;
-  font-size: main.$font_size;
-  font-weight: 200;
+  font-size: main.$font_size * 0.8;
   letter-spacing: 0px;
 
   &:first-child > box {
@@ -19,16 +18,11 @@ eventbox.Notification {
     margin-bottom: 1rem;
   }
 
-  &.close > box {
-    opacity: 0;
-  }
-
   // eventboxes can not take margins so we style its inner box instead
   & > box {
     transition-property: opacity;
     transition-duration: 100ms;
     transition-timing-function: linear;
-    opacity: 1;
 
     min-width: 400px;
     border-radius: main.$radius;
@@ -53,7 +47,8 @@ eventbox.Notification {
 
   .header {
     padding: 0.2rem;
-    color: main.$accent;
+    color: main.$accentMuted;
+    font-weight: normal;
 
     .app-icon {
       margin: 0 0.4rem;
@@ -68,6 +63,7 @@ eventbox.Notification {
     }
 
     .time {
+      font-family: main.$font_digits;
       margin: 0 0.4rem;
     }
 
@@ -78,7 +74,7 @@ eventbox.Notification {
       background-color: transparent;
 
       icon {
-        color: main.$fgMuted;
+        color: main.$accent;
       }
     }
 
@@ -105,13 +101,13 @@ eventbox.Notification {
     margin-bottom: 0.5rem;
 
     .summary {
-      font-weight: 400;
-      color: main.$fg;
+      font-weight: 500;
+      color: main.$fgMuted;
     }
 
     .body {
-      font-weight: 200;
-      color: main.$fgMuted;
+      font-weight: 400;
+      color: main.$fg;
     }
 
     .image {

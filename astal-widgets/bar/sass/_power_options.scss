@@ -4,7 +4,7 @@
 @use "bar" as bar;
 
 window.Bar .PowerOptions {
-  transition-property: min-width;
+  transition-property: min-width, border-color;
   transition-duration: main.$hover_time;
 
   background-color: bar.$bar_color;
@@ -14,7 +14,7 @@ window.Bar .PowerOptions {
   min-width: main.$bar_min_height;
 
   &.show {
-    border-color: unset;
+    border-color: main.$fg;
     min-width: main.$bar_min_height * 3;
   }
 

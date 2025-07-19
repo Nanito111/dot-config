@@ -5,28 +5,23 @@
 
 window.Bar .Ethernet {
   border-radius: main.$radius;
-  padding: 0 main.$inner_margin * 2;
-  font-size: 16px;
-  min-width: main.$bar_min_height + main.$inner_margin;
+  padding: 0 main.$font_size;
   background-color: bar.$bar_color;
   border: main.$window_border_alt;
   color: main.$fgMuted;
 
   & > label {
-    font-family: main.$font_digits;
-    font-size: 13px;
-    font-weight: 400;
-    padding-left: main.$inner_margin * 2;
+    font-family: main.$font;
     letter-spacing: 0;
   }
 
   & > icon {
-    padding: 0 main.$inner_margin * 2;
+    padding-left: main.$inner_margin * 2;
+    font-size: 16px;
   }
 
   &.connected {
     color: main.$accent;
-    text-shadow: bar.$text_ilumination;
     // background-color: main.$accent;
     // border-color: main.$accent;
   }

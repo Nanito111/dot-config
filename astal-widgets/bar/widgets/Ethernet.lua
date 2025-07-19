@@ -26,7 +26,7 @@ return function()
         class_name = "Ethernet offline",
         Widget.Label({
             halign = "START",
-            label = "OFFLINE",
+            label = "offline",
         }),
         Widget.Icon({
             icon = "network-wired-offline-symbolic",

@@ -5,31 +5,38 @@
 
 window.Bar button.Date {
   background-color: bar.$bar_color;
-  color: main.$accent;
   border-radius: main.$radius;
   border: main.$window_border_alt;
   border-color: transparent;
+  min-height: bar.$with_border_height;
+  padding: 0 main.$font_size;
 
-  > label {
-    border-radius: main.$radius;
-    transition: main.$hover_time;
-    padding: 0 main.$inner_margin * 4;
+  transition-property: color, border-color, font-weight;
+  transition-duration: main.$hover_time;
+
+  label {
+    font-family: main.$font_digits;
+    font-weight: 400;
+    color: main.$accent;
+  }
+  label.Weekday {
+    font-family: main.$font;
+    padding-right: main.$font_size * 0.5;
   }
 
   &:hover {
     border-color: main.$fg;
+    color: main.$fg;
 
-    > label {
-      color: main.$fg;
-    }
+    // label {
+    // }
   }
 
   &:active {
     border-color: main.$accentMuted;
-
-    > label {
-      color: main.$accentMuted;
-    }
+    color: main.$accentMuted;
+    // label {
+    // }
   }
 }
 
@@ -44,24 +51,19 @@ window.Calendar {
     margin-right: 10px;
 
     > * {
-      padding: 30px;
+      padding: 40px;
     }
   }
 
   .CalendarPanel {
     background-color: transparent;
-    border: none;
     border-radius: main.$radius;
-    font-size: 24px;
-    font-weight: 200;
-    font-family: main.$font;
-    letter-spacing: 0px;
-    padding: 5px;
-    color: main.$fg;
+    font-size: 20pt;
+    font-family: main.$font_mono;
 
     &:selected {
       color: main.$bg;
-      background-color: main.$fg;
+      background-color: main.$accent;
       font-weight: bold;
     }
   }

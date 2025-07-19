@@ -8,6 +8,8 @@ window.Bar .ShowAudio {
   border-radius: main.$radius;
   border: main.$window_border_alt;
   border-color: transparent;
+  min-height: bar.$with_border_height;
+  padding: 0 main.$font_size * 0.75;
 
   &:hover {
     border-color: main.$fg;
@@ -25,31 +27,28 @@ window.Bar .ShowAudio {
     }
   }
 
-  .Icons {
-    border-radius: main.$radius;
-    padding: 0 (main.$inner_margin * 2);
+  .Speaker,
+  .Microphone {
     transition: main.$hover_time;
     color: main.$accent;
 
-    label {
-      font-family: main.$font_digits;
+    &:first-child > label {
+      margin-right: main.$font_size * 0.5;
     }
 
-    & > box {
-      transition: 0;
-      min-width: 55px;
-      font-size: 16px;
+    label {
+      font-family: main.$font_digits;
+      font-weight: normal;
+      font-size: main.$font_size;
+    }
 
-      &.muted {
-        color: main.$fgMuted;
-      }
+    &.muted {
+      color: main.$accentMuted;
     }
 
     icon {
-      margin-top: main.$inner_margin;
-      margin-bottom: main.$inner_margin;
-      margin-left: main.$inner_margin;
-      margin-right: 4px;
+      font-size: 16px;
+      margin-right: main.$inner_margin * 2;
     }
   }
 }
@@ -57,10 +56,10 @@ window.Bar .ShowAudio {
 window.Audio {
   .AudioSlider {
     border: main.$window_border_alt;
-    min-width: 200px;
+    min-width: 250px;
     background-color: bar.$window_color;
     border-radius: main.$radius;
-    padding: main.$bar_min_height * 0.5 main.$inner_margin * 6;
+    padding: main.$font_size * 0.5 main.$font_size;
     margin-bottom: 10px;
     margin-left: 10px;
     margin-top: 10px;
@@ -72,14 +71,14 @@ window.Audio {
 
     * {
       all: unset;
-      font-family: main.$font;
-      letter-spacing: 0px;
-      font-weight: 200;
     }
 
     & > label {
       color: main.$fg;
-      font-size: main.$font_size;
+      font-family: main.$font;
+      font-size: main.$font_size * 0.9;
+      font-weight: 300;
+      letter-spacing: 0px;
     }
 
     button {
@@ -122,6 +121,7 @@ window.Audio {
 
     highlight {
       background-color: main.$accent;
+      border-radius: main.$radius * 0.2;
     }
 
     slider {
@@ -129,7 +129,7 @@ window.Audio {
       border-radius: main.$radius;
       min-height: 1em;
       min-width: 1em;
-      margin: -0.42em -0.3em;
+      margin: -0.2em -0.3em;
       transition: main.$hover_time;
 
       &:hover {

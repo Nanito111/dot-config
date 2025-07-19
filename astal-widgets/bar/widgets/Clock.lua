@@ -5,6 +5,8 @@ local GLib = astal.require("GLib")
 return function()
     local clock = Widget.Label()
     clock.class_name = "Time"
+    clock.valign = "CENTER"
+    clock.halign = "CENTER"
 
     local interval = astal.interval(1000, function()
         clock.label = GLib.DateTime.new_now_local():format("%H:%M:%S")

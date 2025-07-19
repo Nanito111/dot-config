@@ -3,7 +3,7 @@
 @use "../../main" as main;
 @use "bar" as bar;
 
-$media-height: 500px;
+$media-height: 600px;
 $media-width: math.div(3, 5.2) * $media-height;
 
 window.Bar button.Media {
@@ -11,7 +11,8 @@ window.Bar button.Media {
   background-color: bar.$bar_color;
   border: main.$window_border_alt;
   border-color: transparent;
-  min-width: main.$bar_min_height;
+  min-width: bar.$with_border_height;
+  min-height: bar.$with_border_height;
   font-size: 16px;
 
   @keyframes playing-media {
@@ -182,7 +183,7 @@ window.Media {
   label.title {
     margin: 7px;
     font-size: 14pt;
-    font-weight: bold;
+    font-weight: normal;
     letter-spacing: 0px;
   }
 

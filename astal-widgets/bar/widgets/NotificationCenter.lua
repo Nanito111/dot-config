@@ -159,8 +159,10 @@ local function NotificationCenter()
                 end
                 return "trash"
             end),
-            halign = "END",
+            halign = "CENTER",
+            valign = "CENTER",
             hexpand = false,
+            vexpand = false,
             on_clicked = function()
                 if #notifd.notifications > 1 then
                     for _, n in pairs(notifd.notifications) do
@@ -169,6 +171,10 @@ local function NotificationCenter()
                 end
             end,
             Widget.Icon({
+                halign = "CENTER",
+                valign = "CENTER",
+                hexpand = false,
+                vexpand = false,
                 icon = bind(notifd, "notifications"):as(function(notifications)
                     if #notifications > 0 then
                         return "budgie-trash-full-symbolic"

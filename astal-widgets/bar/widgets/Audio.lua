@@ -32,49 +32,63 @@ function M.ShowAudio(gdkmonitor, vertical_anchor, layer_namespace)
         }),
     })
 
-    return Widget.Button({
-        class_name = "ShowAudio",
-        on_clicked = function()
-            if audio_window:is_visible() then
-                audio_window:hide()
-            else
-                audio_window:show()
-            end
-        end,
-        Widget.Box({
-            class_name = "Icons",
-            Widget.Box({
-                class_name = bind(speaker, "mute"):as(function(mute)
-                    local mute_text = mute and "muted" or ""
-                    return "Speaker" .. " " .. mute_text
-                end),
-                Widget.Icon({
-                    class_name = "Speaker",
-                    icon = bind(speaker, "volume-icon"),
-                }),
-                Widget.Label({
-                    label = bind(speaker, "volume"):as(function(volume)
-                        return string.format("%.0f", volume * 100) .. " "
-                    end),
-                }),
-            }),
-            Widget.Box({
-                class_name = bind(microphone, "mute"):as(function(mute)
-                    local mute_text = mute and "muted" or ""
-                    return "Microphone" .. " " .. mute_text
-                end),
-                Widget.Icon({
-                    class_name = "Microphone",
-                    icon = bind(microphone, "volume-icon"),
-                }),
-                Widget.Label({
-                    label = bind(microphone, "volume"):as(function(volume)
-                        return string.format("%.0f", volume * 100) .. " "
-                    end),
-                }),
-            }),
+    local show_button = Widget.Button()
+    show_button.class_name = "ShowAudio"
+    show_button.on_clicked = function()
+        if audio_window:is_visible() then
+            audio_window:hide()
+        else
+            audio_window:show()
+        end
+    end
+
+    local display_format = "%03.0f"
+
+    local speaker_display = Widget.Box({
+        class_name = bind(speaker, "mute"):as(function(mute)
+            local mute_text = mute and "muted" or ""
+            return "Speaker" .. " " .. mute_text
+        end),
+        halign = "CENTER",
+        Widget.Icon({
+            class_name = "Speaker",
+            icon = bind(speaker, "volume-icon"),
+        }),
+        Widget.Label({
+            halign = "CENTER",
+            justify = "RIGHT",
+            label = bind(speaker, "volume"):as(function(volume)
+                return string.format(display_format, volume * 100)
+            end),
         }),
     })
+
+    local microphone_display = Widget.Box({
+        class_name = bind(microphone, "mute"):as(function(mute)
+            local mute_text = mute and "muted" or ""
+            return "Microphone" .. " " .. mute_text
+        end),
+        halign = "CENTER",
+        Widget.Icon({
+            class_name = "Microphone",
+            icon = bind(microphone, "volume-icon"),
+        }),
+        Widget.Label({
+            halign = "CENTER",
+            justify = "CENTER",
+            label = bind(microphone, "volume"):as(function(volume)
+                return string.format(display_format, volume * 100)
+            end),
+        }),
+    })
+
+    local button_content = Widget.Box({
+        speaker_display,
+        microphone_display,
+    })
+
+    show_button.child = button_content
+    return show_button
 end
 
 function M.AudioSlider()

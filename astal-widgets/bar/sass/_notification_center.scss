@@ -6,9 +6,8 @@
 window.Bar button.ShowNotificationCenter {
   border: main.$window_border_alt;
   border-radius: main.$radius;
-  min-width: main.$bar_min_height;
-  font-size: 16px;
-
+  min-width: bar.$with_border_height;
+  min-height: bar.$with_border_height;
   background-color: bar.$bar_color;
   border-color: main.$bg;
   color: main.$accent;
@@ -34,6 +33,7 @@ window.Bar button.ShowNotificationCenter {
   icon {
     animation: new-notifications 1.5s linear infinite;
     animation-play-state: running;
+    font-size: 16px;
   }
 
   transition-property: border-color, color;
@@ -63,6 +63,7 @@ window.Bar button.ShowNotificationCenter {
 
 window.NotificationCenter {
   box.NotificationCenter-panel {
+    font-size: main.$font_size * 0.8;
     font-family: main.$font;
     letter-spacing: 0px;
     min-height: 430px;
@@ -78,15 +79,15 @@ window.NotificationCenter {
 
     & > label.title {
       font-size: main.$font_size;
-      font-weight: 200;
-      color: main.$fgMuted;
+      font-weight: 300;
+      color: main.$accentMuted;
       margin-bottom: 10px;
     }
 
     & > label.no-notifications {
       font-size: main.$font_size;
-      font-weight: 200;
-      color: main.$fgMuted;
+      font-weight: 400;
+      color: main.$accent;
     }
   }
 
@@ -94,22 +95,27 @@ window.NotificationCenter {
     transition-property: color, border-color;
     transition-timing-function: ease-in-out;
     transition-duration: main.$hover_time;
-    margin-top: main.$inner_margin * 2;
+    margin-top: main.$inner_margin * 4;
+
+    min-height: bar.$no_border_height;
+    min-width: bar.$no_border_height;
+    padding: 0;
 
     border-radius: main.$radius;
     background-color: transparent;
     color: main.$bg2;
     border: 1px solid transparent;
+
     &.full {
-      border-color: main.$redMuted;
-      color: main.$red;
+      border-color: main.$accent;
+      color: main.$accent;
       &:hover {
         border-color: main.$fg;
         color: main.$fg;
       }
       &:active {
-        border-color: main.$fgMuted;
-        color: main.$fgMuted;
+        border-color: main.$accentMuted;
+        color: main.$accentMuted;
       }
     }
   }
@@ -148,7 +154,8 @@ window.NotificationCenter {
 
     .header {
       padding: 0.2rem;
-      color: main.$accent;
+      color: main.$accentMuted;
+      font-weight: normal;
 
       .app-icon {
         margin: 0 0.4rem;
@@ -163,6 +170,7 @@ window.NotificationCenter {
       }
 
       .time {
+        font-family: main.$font_digits;
         margin: 0 0.4rem;
       }
 
@@ -173,7 +181,7 @@ window.NotificationCenter {
         background-color: transparent;
 
         icon {
-          color: main.$fg;
+          color: main.$accent;
         }
       }
 
@@ -195,11 +203,6 @@ window.NotificationCenter {
       background-color: color.adjust(main.$accentMuted, $alpha: -0.8);
     }
 
-    .no-notifications {
-      font-size: 20pt;
-      color: main.$accent;
-    }
-
     .content {
       margin: 5px;
 
@@ -208,12 +211,12 @@ window.NotificationCenter {
       }
 
       .summary {
-        font-weight: 400;
-        color: main.$fg;
+        font-weight: 500;
+        color: main.$fgMuted;
       }
 
       .body {
-        font-weight: 200;
+        font-weight: 400;
         color: main.$fg;
       }
 

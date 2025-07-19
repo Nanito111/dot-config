@@ -36,9 +36,24 @@ return function(gdkmonitor, vertical_anchor, layer_namespace)
 
     local calendar_button = Widget.Button()
     calendar_button.class_name = "Date"
+    calendar_button.valign = "CENTER"
+    calendar_button.halign = "CENTER"
+
+    local weekday_label = Widget.Label()
+    weekday_label.class_name = "Weekday"
+
+    local date_label = Widget.Label()
+
+    local label_container = Widget.Box({
+        weekday_label,
+        date_label,
+    })
+
+    calendar_button.child = label_container
 
     local interval = astal.interval(1000, function()
-        calendar_button.label = GLib.DateTime.new_now_local():format("%A %d.%m.%Y")
+        weekday_label.label = GLib.DateTime.new_now_local():format("%A"):lower()
+        date_label.label = GLib.DateTime.new_now_local():format("%d.%m.%Y")
     end)
 
     calendar_button.on_clicked = function()
