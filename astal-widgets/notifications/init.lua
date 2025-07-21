@@ -8,7 +8,7 @@ local reload_css = utils.reload_css
 local create_css = utils.create_css_from_sass
 
 local main = "main.scss"
-local scss = src("./style.scss")
+local scss = src("style.scss")
 local css = "/tmp/astal-notifications.css"
 local INSTANCE_NAME = "notifications"
 

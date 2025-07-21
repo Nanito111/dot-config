@@ -9,18 +9,18 @@ window.Bar .PowerOptions {
 
   background-color: bar.$bar_color;
   border-radius: main.$radius;
-  border: main.$window_border_alt;
+  border: main.$button_border;
   border-color: transparent;
-  min-width: main.$bar_min_height;
+  min-width: bar.$with_border_height;
 
   &.show {
-    border-color: main.$fg;
-    min-width: main.$bar_min_height * 3;
+    border-color: main.$fgMuted;
+    min-width: bar.$with_border_height * 3;
   }
 
   button {
     transition-property: color, min-width, font-size;
-    transition-timing-function: linear;
+    transition-timing-function: ease-out;
     transition-duration: main.$hover_time;
     color: main.$accent;
     font-size: 16px;
@@ -32,13 +32,13 @@ window.Bar .PowerOptions {
     }
 
     &.show {
-      min-width: main.$bar_min_height;
+      min-width: bar.$no_border_height;
       font-size: 16px;
       color: main.$accent;
     }
 
     &:hover {
-      color: main.$fg;
+      color: main.$fgMuted;
     }
 
     &:active {

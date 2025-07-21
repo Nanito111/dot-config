@@ -4,12 +4,12 @@
 @use "bar" as bar;
 
 window.Bar button.ShowNotificationCenter {
-  border: main.$window_border_alt;
+  border: main.$button_border;
   border-radius: main.$radius;
   min-width: bar.$with_border_height;
   min-height: bar.$with_border_height;
   background-color: bar.$bar_color;
-  border-color: main.$bg;
+  border-color: transparent;
   color: main.$accent;
 
   @keyframes new-notifications {
@@ -51,8 +51,8 @@ window.Bar button.ShowNotificationCenter {
   }
 
   &:hover {
-    border-color: main.$fg;
-    color: main.$fg;
+    border-color: main.$fgMuted;
+    color: main.$fgMuted;
   }
 
   &:active {
@@ -68,7 +68,7 @@ window.NotificationCenter {
     letter-spacing: 0px;
     min-height: 430px;
     min-width: 400px;
-    border: main.$window_border_alt;
+    border: main.$window_border;
     background-color: bar.$window_color;
     border-radius: main.$radius;
     margin-bottom: 10px;
@@ -129,7 +129,7 @@ window.NotificationCenter {
   }
 
   scrollable box.scroll-content > .notification-item {
-    border: main.$window_border_alt;
+    border: main.$window_border;
     border-radius: main.$radius * 0.9;
     margin-bottom: 1rem;
     min-height: 100px;

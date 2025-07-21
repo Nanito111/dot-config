@@ -29,23 +29,24 @@ $accentMuted: $redMuted !default;
 $font: "Bitcount Prop Single" !default;
 $font_mono: "Bitcount Grid Single" !default;
 $font_digits: "Bitcount Single" !default;
-$font_size: 16pt !default;
-$radius: 12px !default;
+$font_size: 14pt !default;
+$radius: 16px !default;
 $hover_time: 200ms !default;
 $bar_side_margins: 5px !default;
 $inner_margin: 3px !default;
 $space_between: 4px !default;
-$shadow_distance: 0 !default;
+$shadow_distance: 2px !default;
 $shadow_blur: 4px !default;
-$shadow_scale: 0 !default;
+$shadow_scale: -1px !default;
 $shadow_color: #000000 !default;
-$shadow_outer_color: color.adjust($shadow_color, $alpha: -0.1) !default;
+$shadow_outer_color: color.adjust($shadow_color, $alpha: -0.2) !default;
 $shadow_inner_color: color.adjust($shadow_color, $alpha: -0.2) !default;
 
 $window_border_size: 1px;
-$window_border_settings: $window_border_size solid !default;
-$window_border: $window_border_settings $accent !default;
-$window_border_alt: $window_border_settings color.adjust($accent, $alpha: -0.5) !default;
+$window_border: $window_border_size solid $accent !default;
+
+$button_border_size: 2px;
+$button_border: $button_border_size dotted color.adjust($accent, $alpha: -0.5) !default;
 
 $bar_min_height: 32px !default;
 

@@ -7,7 +7,6 @@ window.Bar .Ethernet {
   border-radius: main.$radius;
   padding: 0 main.$font_size;
   background-color: bar.$bar_color;
-  border: main.$window_border_alt;
   color: main.$fgMuted;
 
   & > label {

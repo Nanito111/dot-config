@@ -11,6 +11,7 @@ window.Bar .Time {
   padding: 0 main.$font_size;
   color: main.$accent;
   font-family: main.$font_digits;
-  font-weight: normal;
+  font-size: main.$font_size * 1.1;
+  font-weight: 300;
   letter-spacing: 0px;
 }

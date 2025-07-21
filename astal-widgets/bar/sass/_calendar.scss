@@ -6,43 +6,49 @@
 window.Bar button.Date {
   background-color: bar.$bar_color;
   border-radius: main.$radius;
-  border: main.$window_border_alt;
+  border: main.$button_border;
   border-color: transparent;
   min-height: bar.$with_border_height;
   padding: 0 main.$font_size;
 
-  transition-property: color, border-color, font-weight;
+  transition-property: border-color;
   transition-duration: main.$hover_time;
 
   label {
+    transition-property: color;
+    transition-duration: main.$hover_time;
+
     font-family: main.$font_digits;
-    font-weight: 400;
+    font-size: main.$font_size * 1.1;
+    font-weight: 300;
     color: main.$accent;
   }
   label.Weekday {
     font-family: main.$font;
+    font-size: main.$font_size;
+    font-weight: normal;
     padding-right: main.$font_size * 0.5;
   }
 
   &:hover {
-    border-color: main.$fg;
-    color: main.$fg;
+    border-color: main.$fgMuted;
 
-    // label {
-    // }
+    label {
+      color: main.$fgMuted;
+    }
   }
 
   &:active {
     border-color: main.$accentMuted;
-    color: main.$accentMuted;
-    // label {
-    // }
+    label {
+      color: main.$accentMuted;
+    }
   }
 }
 
 window.Calendar {
   .Calendar {
-    border: main.$window_border_alt;
+    border: main.$window_border;
     background-color: bar.$window_color;
     border-radius: main.$radius;
     margin-bottom: 10px;

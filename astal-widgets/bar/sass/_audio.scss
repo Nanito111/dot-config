@@ -4,42 +4,47 @@
 @use "sass:color";
 
 window.Bar .ShowAudio {
+  transition-property: border-color;
+  transition-duration: main.$hover_time;
+
   background-color: bar.$bar_color;
   border-radius: main.$radius;
-  border: main.$window_border_alt;
+  border: main.$button_border;
   border-color: transparent;
   min-height: bar.$with_border_height;
   padding: 0 main.$font_size * 0.75;
 
   &:hover {
-    border-color: main.$fg;
-
-    > .Icons {
-      color: main.$fg;
+    border-color: main.$fgMuted;
+    .Speaker,
+    .Microphone {
+      color: main.$fgMuted;
     }
   }
 
   &:active {
     border-color: main.$accentMuted;
 
-    > .Icons {
+    .Speaker,
+    .Microphone {
       color: main.$accentMuted;
     }
   }
 
   .Speaker,
   .Microphone {
-    transition: main.$hover_time;
-    color: main.$accent;
+    transition-property: color;
+    transition-duration: main.$hover_time;
 
+    color: main.$accent;
     &:first-child > label {
       margin-right: main.$font_size * 0.5;
     }
 
     label {
       font-family: main.$font_digits;
-      font-weight: normal;
-      font-size: main.$font_size;
+      font-weight: 300;
+      font-size: main.$font_size * 1.1;
     }
 
     &.muted {
@@ -55,7 +60,7 @@ window.Bar .ShowAudio {
 
 window.Audio {
   .AudioSlider {
-    border: main.$window_border_alt;
+    border: main.$window_border;
     min-width: 250px;
     background-color: bar.$window_color;
     border-radius: main.$radius;

@@ -7,7 +7,7 @@ window.NotificationPopups {
 
 eventbox.Notification {
   font-family: main.$font;
-  font-size: main.$font_size * 0.8;
+  font-size: main.$font_size * 0.9;
   letter-spacing: 0px;
 
   &:first-child > box {
@@ -28,7 +28,7 @@ eventbox.Notification {
     border-radius: main.$radius;
     background-color: color.adjust(main.$bg, $alpha: -0.25);
     margin: 0.5rem 1rem 0.5rem 1rem;
-    border: main.$window_border_alt;
+    border: main.$window_border;
   }
 
   &.critical > box {

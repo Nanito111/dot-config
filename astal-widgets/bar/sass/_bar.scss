@@ -6,7 +6,7 @@
 
 $bar_color: main.$bg;
 $no_border_height: main.$bar_min_height;
-$with_border_height: main.$bar_min_height - main.$window_border_size - 1px;
+$with_border_height: main.$bar_min_height - main.$button_border_size - 1px;
 $window_color: color.adjust(main.$bg, $alpha: -0.2);
 $text_ilumination: 0 0 1.5px main.$accentMuted;
 
@@ -20,10 +20,17 @@ window.Bar {
   & > centerbox {
     margin-left: 10px;
     margin-right: 10px;
+    margin-bottom: 1px + main.$shadow_distance + main.$shadow_blur +
+      main.$shadow_scale;
   }
+
   .LeftBox,
   .RightBox {
     margin-top: 4px;
+    & > * {
+      box-shadow: 0 main.$shadow_distance main.$shadow_blur main.$shadow_scale
+        main.$shadow_outer_color;
+    }
   }
 
   .LeftBox,
@@ -36,6 +43,9 @@ window.Bar {
     & > *:first-child,
     & > .Notch {
       margin-left: 0;
+      > .Notch {
+        box-shadow: unset;
+      }
     }
 
     & > * {

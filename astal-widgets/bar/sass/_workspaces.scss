@@ -58,7 +58,8 @@ window.Bar .Workspaces {
 
     &.special {
       background-color: transparent;
-      border: 1px solid main.$accent;
+      border: main.$button_border;
+      // border: 1px solid main.$accent;
     }
   }
 }

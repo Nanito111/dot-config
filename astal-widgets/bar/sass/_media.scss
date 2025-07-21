@@ -7,9 +7,13 @@ $media-height: 600px;
 $media-width: math.div(3, 5.2) * $media-height;
 
 window.Bar button.Media {
+  transition-property: border-color, color;
+  transition-duration: main.$hover_time;
+  transition-timing-function: ease;
+
   border-radius: main.$radius;
   background-color: bar.$bar_color;
-  border: main.$window_border_alt;
+  border: main.$button_border;
   border-color: transparent;
   min-width: bar.$with_border_height;
   min-height: bar.$with_border_height;
@@ -22,11 +26,9 @@ window.Bar button.Media {
   }
 
   icon {
-    transition: main.$hover_time;
     animation: playing-media 2s linear infinite;
     animation-play-state: running;
     border-radius: main.$radius;
-    color: main.$accent;
   }
 
   &.offline icon {
@@ -39,19 +41,19 @@ window.Bar button.Media {
   }
 
   &:hover {
-    border-color: main.$fg;
+    border-color: main.$fgMuted;
+    color: main.$fgMuted;
 
-    > icon {
-      color: main.$fg;
-    }
+    // > icon {
+    // }
   }
 
   &:active {
     border-color: main.$accentMuted;
+    color: main.$accentMuted;
 
-    > icon {
-      color: main.$accentMuted;
-    }
+    // > icon {
+    // }
   }
 }
 
@@ -71,7 +73,7 @@ window.Media {
     min-width: $media-width;
     min-height: $media-height;
 
-    border: main.$window_border_alt;
+    border: main.$window_border;
     color: main.$fg;
     background-color: bar.$window_color;
     border-radius: main.$radius;
@@ -162,7 +164,7 @@ window.Media {
       min-width: 30px;
       margin: 0 main.$space_between;
       color: main.$accent;
-      border: main.$window_border;
+      border: main.$button_border;
 
       &:hover {
         color: main.$fg;
