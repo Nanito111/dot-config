@@ -81,51 +81,58 @@ window.Audio {
     & > label {
       color: main.$fg;
       font-family: main.$font;
-      font-size: main.$font_size * 0.9;
+      font-size: main.$font_size;
       font-weight: 300;
       letter-spacing: 0px;
     }
 
     button {
-      transition: main.$hover_time;
-      min-width: main.$font_size + 1pt + (main.$inner_margin * 4);
-      min-height: main.$font_size + 1pt + (main.$inner_margin * 4);
-      margin-bottom: 3px;
+      transition-property: border-color;
+      transition-duration: main.$hover_time;
+      min-width: bar.$with_border_height;
+      min-height: bar.$with_border_height;
       border-radius: main.$radius;
 
+      border: main.$button_border;
+
+      icon {
+        transition-property: color;
+        transition-duration: main.$hover_time;
+        color: main.$accent;
+        font-size: 14px;
+      }
+
       &:hover {
-        icon {
-          color: main.$fg;
-        }
-      }
-
-      &:active {
-        icon {
-          color: main.$accent;
-        }
-      }
-
-      &.muted {
+        border-color: main.$fgMuted;
         icon {
           color: main.$fgMuted;
         }
       }
 
-      icon {
-        color: main.$fg;
-        font-size: 16px;
+      &:active {
+        border-color: main.$accentMuted;
+        icon {
+          color: main.$accentMuted;
+        }
+      }
+
+      &.muted {
+        border-color: main.$accentMuted;
+        icon {
+          color: main.$accentMuted;
+        }
       }
     }
 
     trough {
       background-color: transparent;
-      border: 1px solid main.$accent;
+      border: main.$button_border;
       border-radius: main.$radius;
       margin: 0 5px;
     }
 
     highlight {
-      background-color: main.$accent;
+      background: main.$accentMuted;
       border-radius: main.$radius * 0.2;
     }
 
