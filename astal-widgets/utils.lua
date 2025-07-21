@@ -93,7 +93,7 @@ function M.reload_css(event, app, scss, css)
 end
 
 function M.create_css_from_sass(scss, css)
-    astal.exec("sass " .. scss .. " " .. css)
+    print(astal.exec("sass " .. scss .. " " .. css))
 end
 
 function M.sort_by_key(tbl, sort_fn)
