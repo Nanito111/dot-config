@@ -28,9 +28,9 @@ return function()
                 Widget.Button({
                     class_name = bind(show_options):as(function(value)
                         if value then
-                            return "Options show"
+                            return "Option show"
                         else
-                            return "Options"
+                            return "Option"
                         end
                     end),
                     visible = bind(show_options),
@@ -49,9 +49,9 @@ return function()
                 Widget.Button({
                     class_name = bind(show_options):as(function(value)
                         if value then
-                            return "Options show"
+                            return "Option show"
                         else
-                            return "Options"
+                            return "Option"
                         end
                     end),
                     visible = bind(show_options),
@@ -75,8 +75,8 @@ return function()
                             return ""
                         end
                     end),
-                    halign = "FILL",
-                    hexpand = true,
+                    halign = "END",
+                    hexpand = false,
                     vexpand = false,
                     on_clicked = function()
                         astal.exec("shutdown now")

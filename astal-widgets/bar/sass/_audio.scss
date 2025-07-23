@@ -15,19 +15,19 @@ window.Bar .ShowAudio {
   padding: 0 main.$font_size * 0.75;
 
   &:hover {
-    border-color: main.$fgMuted;
+    border-color: main.$accent_greyscale;
     .Speaker,
     .Microphone {
-      color: main.$fgMuted;
+      color: main.$accent_greyscale;
     }
   }
 
   &:active {
-    border-color: main.$accentMuted;
+    border-color: main.$accent_muted;
 
     .Speaker,
     .Microphone {
-      color: main.$accentMuted;
+      color: main.$accent_muted;
     }
   }
 
@@ -48,7 +48,7 @@ window.Bar .ShowAudio {
     }
 
     &.muted {
-      color: main.$accentMuted;
+      color: main.$accent_muted;
     }
 
     icon {
@@ -103,23 +103,23 @@ window.Audio {
       }
 
       &:hover {
-        border-color: main.$fgMuted;
+        border-color: main.$accent_greyscale;
         icon {
-          color: main.$fgMuted;
+          color: main.$accent_greyscale;
         }
       }
 
       &:active {
-        border-color: main.$accentMuted;
+        border-color: main.$accent_muted;
         icon {
-          color: main.$accentMuted;
+          color: main.$accent_muted;
         }
       }
 
       &.muted {
-        border-color: main.$accentMuted;
+        border-color: main.$accent_muted;
         icon {
-          color: main.$accentMuted;
+          color: main.$accent_muted;
         }
       }
     }
@@ -132,7 +132,7 @@ window.Audio {
     }
 
     highlight {
-      background: main.$accentMuted;
+      background: main.$accent_muted;
       border-radius: main.$radius * 0.2;
     }
 

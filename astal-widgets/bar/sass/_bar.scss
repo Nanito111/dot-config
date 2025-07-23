@@ -8,7 +8,7 @@ $bar_color: main.$bg;
 $no_border_height: main.$bar_min_height;
 $with_border_height: main.$bar_min_height - main.$button_border_size - 1px;
 $window_color: color.adjust(main.$bg, $alpha: -0.2);
-$text_ilumination: 0 0 1.5px main.$accentMuted;
+$text_ilumination: 0 0 1.5px main.$accent_muted;
 
 window.Bar {
   border: none;

@@ -3,8 +3,9 @@
 @use "../../main" as main;
 @use "bar" as bar;
 
-$focused_ws_width: main.$bar_min_height + main.$inner_margin;
-$regular_ws_width: main.$bar_min_height * 0.25 + main.$inner_margin;
+$focused_ws_width: bar.$no_border_height + main.$inner_margin;
+$regular_ws_width: bar.$no_border_height * 0.25 + main.$inner_margin;
+$special_ws_width: bar.$with_border_height * 0.25 + main.$inner_margin - 2px;
 
 window.Bar .Workspaces {
   padding: 0 main.$inner_margin * 3;
@@ -30,7 +31,7 @@ window.Bar .Workspaces {
 
       border-radius: main.$radius * 0.8;
       border-color: transparent;
-      color: main.$accentMuted;
+      color: main.$accent_muted;
       background-color: main.$bg1;
     }
 
@@ -41,12 +42,12 @@ window.Bar .Workspaces {
 
     &:active,
     &:active > icon {
-      color: main.$accentMuted;
+      color: main.$accent_muted;
     }
 
     &.focused {
       box-shadow: main.$shadow_distance main.$shadow_distance main.$shadow_blur
-        main.$shadow_scale main.$accentMuted;
+        main.$shadow_scale main.$accent_muted;
     }
 
     &.focused,
@@ -59,7 +60,8 @@ window.Bar .Workspaces {
     &.special {
       background-color: transparent;
       border: main.$button_border;
-      // border: 1px solid main.$accent;
+      min-width: $special_ws_width;
+      min-height: $special_ws_width;
     }
   }
 }

@@ -6,25 +6,27 @@ $bg2: #403e3c !default;
 $bg3: #575653 !default;
 $bg4: #6f6e69 !default;
 $fg: #cecdc3 !default;
-$fgMuted: #878580 !default;
+$fg_muted: #878580 !default;
 
-$redMuted: #af3029 !default;
+$red_muted: #af3029 !default;
 $red: #d14d41 !default;
-$blueMuted: #205ea6 !default;
+$blue_muted: #205ea6 !default;
 $blue: #4385be !default;
-$purpleMuted: #5e409d !default;
+$purple_muted: #5e409d !default;
 $purple: #8b7ec8 !default;
-$orangeMuted: #bc5215 !default;
+$orange_muted: #bc5215 !default;
 $orange: #da702c !default;
-$aquaMuted: #24837b !default;
+$aqua_muted: #24837b !default;
 $aqua: #3aa99f !default;
-$yellowMuted: #ad8301 !default;
+$yellow_muted: #ad8301 !default;
 $yellow: #d0a215 !default;
-$greenMuted: #66800b !default;
+$green_muted: #66800b !default;
 $green: #879a39 !default;
 
-$accent: $red !default;
-$accentMuted: $redMuted !default;
+$accent: $green !default;
+$accent_muted: $green_muted !default;
+$accent_greyscale: color.grayscale($accent) !default;
+$accent_greyscale_muted: color.grayscale($accent_muted) !default;
 
 $font: "Bitcount Prop Single" !default;
 $font_mono: "Bitcount Grid Single" !default;

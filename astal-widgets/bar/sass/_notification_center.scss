@@ -2,6 +2,7 @@
 @use "sass:color";
 @use "../../main" as main;
 @use "bar" as bar;
+@use "../../notifications/style.scss";
 
 window.Bar button.ShowNotificationCenter {
   border: main.$button_border;
@@ -51,17 +52,21 @@ window.Bar button.ShowNotificationCenter {
   }
 
   &:hover {
-    border-color: main.$fgMuted;
-    color: main.$fgMuted;
+    border-color: main.$accent_greyscale;
+    color: main.$accent_greyscale;
   }
 
   &:active {
-    border-color: main.$accentMuted;
-    color: main.$accentMuted;
+    border-color: main.$accent_muted;
+    color: main.$accent_muted;
   }
 }
 
 window.NotificationCenter {
+  button {
+    all: unset;
+  }
+
   box.NotificationCenter-panel {
     font-size: main.$font_size * 0.8;
     font-family: main.$font;
@@ -80,7 +85,7 @@ window.NotificationCenter {
     & > label.title {
       font-size: main.$font_size;
       font-weight: 300;
-      color: main.$accentMuted;
+      color: main.$accent_muted;
       margin-bottom: 10px;
     }
 
@@ -97,25 +102,28 @@ window.NotificationCenter {
     transition-duration: main.$hover_time;
     margin-top: main.$inner_margin * 4;
 
-    min-height: bar.$no_border_height;
-    min-width: bar.$no_border_height;
-    padding: 0;
+    min-height: bar.$with_border_height;
+    min-width: bar.$with_border_height;
 
     border-radius: main.$radius;
     background-color: transparent;
     color: main.$bg2;
-    border: 1px solid transparent;
+
+    font-size: 16px;
+
+    border: main.$button_border;
+    border-color: transparent;
 
     &.full {
       border-color: main.$accent;
       color: main.$accent;
       &:hover {
-        border-color: main.$fg;
-        color: main.$fg;
+        border-color: main.$accent_greyscale;
+        color: main.$accent_greyscale;
       }
       &:active {
-        border-color: main.$accentMuted;
-        color: main.$accentMuted;
+        border-color: main.$accent_muted;
+        color: main.$accent_muted;
       }
     }
   }
@@ -133,133 +141,10 @@ window.NotificationCenter {
     border-radius: main.$radius * 0.9;
     margin-bottom: 1rem;
     min-height: 100px;
+    background-color: transparent;
 
     &:last-child {
       margin-bottom: 0;
-    }
-
-    &.critical {
-      border: 1px solid main.$red;
-
-      .header {
-        .app-name {
-          color: main.$red;
-        }
-
-        .app-icon {
-          color: main.$red;
-        }
-      }
-    }
-
-    .header {
-      padding: 0.2rem;
-      color: main.$accentMuted;
-      font-weight: normal;
-
-      .app-icon {
-        margin: 0 0.4rem;
-      }
-
-      .app-name {
-        margin-right: 0.3rem;
-
-        &:first-child {
-          margin-left: 0.4rem;
-        }
-      }
-
-      .time {
-        font-family: main.$font_digits;
-        margin: 0 0.4rem;
-      }
-
-      button {
-        padding: 0.2rem;
-        min-width: 0;
-        min-height: 0;
-        background-color: transparent;
-
-        icon {
-          color: main.$accent;
-        }
-      }
-
-      button:hover {
-        icon {
-          color: main.$fg;
-        }
-      }
-
-      button:active {
-        icon {
-          color: main.$accentMuted;
-        }
-      }
-    }
-
-    separator {
-      margin: 0 0.4rem;
-      background-color: color.adjust(main.$accentMuted, $alpha: -0.8);
-    }
-
-    .content {
-      margin: 5px;
-
-      & > box {
-        margin-left: 5px;
-      }
-
-      .summary {
-        font-weight: 500;
-        color: main.$fgMuted;
-      }
-
-      .body {
-        font-weight: 400;
-        color: main.$fg;
-      }
-
-      .image {
-        border-radius: main.$radius;
-        min-width: 80px;
-        min-height: 80px;
-        background-size: cover;
-        background-position: center;
-      }
-    }
-
-    .actions {
-      margin: 0.5rem;
-      margin-top: 0;
-      padding: 0.2rem;
-
-      button {
-        margin: 0 0.3rem;
-        color: main.$accent;
-        border: 1px solid main.$accent;
-        background-color: transparent;
-        border-radius: main.$radius;
-        font-weight: 200;
-
-        &:first-child {
-          margin-left: 0;
-        }
-
-        &:last-child {
-          margin-right: 0;
-        }
-      }
-
-      button:hover {
-        color: main.$fg;
-        border-color: main.$fg;
-      }
-
-      button:active {
-        color: main.$accentMuted;
-        border-color: main.$accentMuted;
-      }
     }
   }
 }

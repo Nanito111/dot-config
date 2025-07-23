@@ -31,17 +31,17 @@ window.Bar button.Date {
   }
 
   &:hover {
-    border-color: main.$fgMuted;
+    border-color: main.$accent_greyscale;
 
     label {
-      color: main.$fgMuted;
+      color: main.$accent_greyscale;
     }
   }
 
   &:active {
-    border-color: main.$accentMuted;
+    border-color: main.$accent_muted;
     label {
-      color: main.$accentMuted;
+      color: main.$accent_muted;
     }
   }
 }

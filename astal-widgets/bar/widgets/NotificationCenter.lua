@@ -171,10 +171,6 @@ local function NotificationCenter()
                 end
             end,
             Widget.Icon({
-                halign = "CENTER",
-                valign = "CENTER",
-                hexpand = false,
-                vexpand = false,
                 icon = bind(notifd, "notifications"):as(function(notifications)
                     if #notifications > 0 then
                         return "budgie-trash-full-symbolic"

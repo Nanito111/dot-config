@@ -7,7 +7,7 @@ window.Bar .Ethernet {
   border-radius: main.$radius;
   padding: 0 main.$font_size;
   background-color: bar.$bar_color;
-  color: main.$fgMuted;
+  color: main.$accent_greyscale;
 
   & > label {
     font-family: main.$font;

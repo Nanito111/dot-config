@@ -5,6 +5,7 @@
 
 window.Bar .PowerOptions {
   transition-property: min-width, border-color;
+  transition-timing-function: linear;
   transition-duration: main.$hover_time;
 
   background-color: bar.$bar_color;
@@ -14,15 +15,17 @@ window.Bar .PowerOptions {
   min-width: bar.$with_border_height;
 
   &.show {
-    border-color: main.$fgMuted;
+    border-color: main.$accent_greyscale;
     min-width: bar.$with_border_height * 3;
   }
 
   button {
     transition-property: color, min-width, font-size;
-    transition-timing-function: ease-out;
-    transition-duration: main.$hover_time;
+    transition-timing-function: linear;
+    transition: main.$hover_time;
     color: main.$accent;
+    min-width: bar.$with_border_height;
+    min-height: bar.$with_border_height;
     font-size: 16px;
 
     &.Option {
@@ -38,11 +41,11 @@ window.Bar .PowerOptions {
     }
 
     &:hover {
-      color: main.$fgMuted;
+      color: main.$accent_greyscale;
     }
 
     &:active {
-      color: main.$accentMuted;
+      color: main.$accent_muted;
     }
   }
 }

@@ -41,16 +41,16 @@ window.Bar button.Media {
   }
 
   &:hover {
-    border-color: main.$fgMuted;
-    color: main.$fgMuted;
+    border-color: main.$accent_greyscale;
+    color: main.$accent_greyscale;
 
     // > icon {
     // }
   }
 
   &:active {
-    border-color: main.$accentMuted;
-    color: main.$accentMuted;
+    border-color: main.$accent_muted;
+    color: main.$accent_muted;
 
     // > icon {
     // }
@@ -148,7 +148,7 @@ window.Media {
     }
 
     &:active {
-      background-color: main.$accentMuted;
+      background-color: main.$accent_muted;
     }
   }
 
@@ -172,8 +172,8 @@ window.Media {
       }
 
       &:active {
-        color: main.$accentMuted;
-        border-color: main.$accentMuted;
+        color: main.$accent_muted;
+        border-color: main.$accent_muted;
       }
     }
 

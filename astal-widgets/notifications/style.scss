@@ -1,4 +1,5 @@
 @use "../main" as main;
+@use "../bar/sass/_bar.scss" as bar;
 @use "sass:color";
 
 window.NotificationPopups {
@@ -30,9 +31,13 @@ eventbox.Notification {
     margin: 0.5rem 1rem 0.5rem 1rem;
     border: main.$window_border;
   }
+}
 
-  &.critical > box {
-    border: 1pt solid main.$red;
+eventbox.Notification > box,
+.notification-item {
+  &.critical {
+    border: main.$window_border;
+    border-color: main.$red;
 
     .header {
       .app-name {
@@ -47,7 +52,7 @@ eventbox.Notification {
 
   .header {
     padding: 0.2rem;
-    color: main.$accentMuted;
+    color: main.$accent_muted;
     font-weight: normal;
 
     .app-icon {
@@ -80,29 +85,32 @@ eventbox.Notification {
 
     button:hover {
       icon {
-        color: main.$fg;
+        color: main.$red;
       }
     }
+
     button:active {
       icon {
-        color: main.$accentMuted;
+        color: main.$accent_muted;
       }
     }
   }
 
   separator {
     margin: 0 0.4rem;
-    background-color: color.adjust(main.$accentMuted, $alpha: -0.8);
+    background-color: color.adjust(main.$accent_muted, $alpha: -0.8);
   }
 
   .content {
-    margin: 1rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
+    margin: 5px;
+
+    & > box {
+      margin-left: 5px;
+    }
 
     .summary {
       font-weight: 500;
-      color: main.$fgMuted;
+      color: main.$fg_muted;
     }
 
     .body {
@@ -111,8 +119,6 @@ eventbox.Notification {
     }
 
     .image {
-      border: 1px solid main.$accentMuted;
-      margin-right: 0.5rem;
       border-radius: main.$radius;
       min-width: 80px;
       min-height: 80px;
@@ -127,12 +133,20 @@ eventbox.Notification {
     padding: 0.2rem;
 
     button {
-      margin: 0 0.3rem;
-      color: main.$accent;
-      border: 1px solid main.$accent;
+      transition-property: color, border-color;
+      transition-duration: main.$hover_time;
+
       background-color: transparent;
+      margin: 0 0.3rem;
+      min-height: bar.$with_border_height;
+      padding: 0 main.$font_size * 0.5;
+
+      color: main.$accent;
+      font-weight: 400;
+
+      border: main.$button_border;
+      border-color: main.$accent;
       border-radius: main.$radius;
-      font-weight: 200;
 
       &:first-child {
         margin-left: 0;
@@ -144,12 +158,13 @@ eventbox.Notification {
     }
 
     button:hover {
-      color: main.$fg;
-      border-color: main.$fg;
+      color: main.$accent_greyscale;
+      border-color: main.$accent_greyscale;
     }
+
     button:active {
-      color: main.$accentMuted;
-      border-color: main.$accentMuted;
+      color: main.$accent_muted;
+      border-color: main.$accent_muted;
     }
   }
 }
