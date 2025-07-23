@@ -50,7 +50,7 @@ $window_border: $window_border_size solid $accent !default;
 $button_border_size: 2px;
 $button_border: $button_border_size dotted color.adjust($accent, $alpha: -0.5) !default;
 
-$bar_min_height: 32px !default;
+$bar_min_height: 33px !default;
 
 // buttons
 $hover-deepness: 1px !default;
