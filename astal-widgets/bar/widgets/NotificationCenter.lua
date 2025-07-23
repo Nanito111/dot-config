@@ -203,7 +203,20 @@ return function(gdkmonitor, vertical_anchor, layer_namespace)
         }),
     })
 
+    local set_icon = function(self)
+        if notifd.dont_disturb then
+            self.icon = "notifications-disabled-symbolic"
+        elseif #notifd.notifications > 0 then
+            self.icon = "notifications-new-symbolic"
+        else
+            self.icon = "notifications-symbolic"
+        end
+    end
     local show_notification_center_icon = Widget.Icon({
+        setup = function(self)
+            self:hook(notifd, "notified", set_icon)
+            self:hook(notifd, "resolved", set_icon)
+        end,
         tooltip_text = bind(notifd, "notifications"):as(function(n)
             if #n == 1 then
                 return "you have 1 notification"
@@ -213,10 +226,10 @@ return function(gdkmonitor, vertical_anchor, layer_namespace)
             end
             return ""
         end),
-        icon = bind(notifd, "notifications"):as(function(n)
-            if notifd.dont_disturb then
+        icon = bind(notifd, "dont-disturb"):as(function(dnd)
+            if dnd then
                 return "notifications-disabled-symbolic"
-            elseif #n > 0 then
+            elseif #notifd.notifications > 0 then
                 return "notifications-new-symbolic"
             else
                 return "notifications-symbolic"
@@ -241,14 +254,6 @@ return function(gdkmonitor, vertical_anchor, layer_namespace)
                 end
             elseif event.button == "SECONDARY" then
                 notifd.dont_disturb = not notifd.dont_disturb
-
-                if notifd.dont_disturb then
-                    show_notification_center_icon.icon = "notifications-disabled-symbolic"
-                elseif #notifd.notifications > 0 then
-                    show_notification_center_icon.icon = "notifications-new-symbolic"
-                else
-                    show_notification_center_icon.icon = "notifications-symbolic"
-                end
             end
         end,
         show_notification_center_icon,
