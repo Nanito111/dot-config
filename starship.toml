@@ -147,7 +147,11 @@ symbol = " "
 symbol = " "
 
 [gcloud]
-symbol = "  "
+symbol = " "
+format = 'on [$symbol$account <($project)>]($style) '
+
+[gcloud.project_aliases]
+
 
 [git_branch]
 symbol = " "
