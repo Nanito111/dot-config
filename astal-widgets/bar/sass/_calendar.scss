@@ -9,7 +9,7 @@ window.Bar button.Date {
   border: main.$button_border;
   border-color: transparent;
   min-height: bar.$with_border_height;
-  padding: 0 main.$font_size;
+  padding: 0 main.$font_size * 0.75;
 
   transition-property: border-color;
   transition-duration: main.$hover_time;

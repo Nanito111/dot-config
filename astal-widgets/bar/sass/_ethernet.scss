@@ -5,7 +5,7 @@
 
 window.Bar .Ethernet {
   border-radius: main.$radius;
-  padding: 0 main.$font_size;
+  padding: 0 main.$font_size * 0.75;
   background-color: bar.$bar_color;
   color: main.$accent_greyscale;
 
