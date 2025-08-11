@@ -23,8 +23,8 @@ $yellow: #d0a215 !default;
 $green_muted: #66800b !default;
 $green: #879a39 !default;
 
-$accent: $green !default;
-$accent_muted: $green_muted !default;
+$accent: $yellow !default;
+$accent_muted: $yellow !default;
 $accent_greyscale: color.grayscale($accent) !default;
 $accent_greyscale_muted: color.grayscale($accent_muted) !default;
 
@@ -32,15 +32,15 @@ $font: "Bitcount Prop Single" !default;
 $font_mono: "Bitcount Grid Single" !default;
 $font_digits: "Bitcount Single" !default;
 $font_size: 14pt !default;
-$radius: 16px !default;
+$radius: 8px !default;
 $hover_time: 200ms !default;
 $bar_side_margins: 5px !default;
 $inner_margin: 3px !default;
 $space_between: 4px !default;
-$shadow_distance: 2px !default;
-$shadow_blur: 4px !default;
-$shadow_scale: -1px !default;
-$shadow_color: #000000 !default;
+$shadow_distance: 0px !default;
+$shadow_blur: 0px !default;
+$shadow_scale: 0px !default;
+$shadow_color: transparent !default;
 $shadow_outer_color: color.adjust($shadow_color, $alpha: -0.2) !default;
 $shadow_inner_color: color.adjust($shadow_color, $alpha: -0.2) !default;
 
