@@ -1,6 +1,15 @@
-# this is a configuration file for the next tools
-* fish
-* starship
+# configurations and customizations of:
+* bash
+* starship.toml
 * foot
 * fastfetch
 * tmux
+* hypr
+* lazygit
+* fuzzel
+* xdg-desktop-portal
+* astal-widgets
+* browser-homepage
+* qt6ct
+* systemd
+* uwsm
