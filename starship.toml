@@ -149,6 +149,7 @@ symbol = " "
 [gcloud]
 symbol = " "
 format = 'on [$symbol$account <($project)>]($style) '
+detect_env_vars = ["GOOGLE_APPLICATION_CREDENTIALS"]
 
 [gcloud.project_aliases]
 
