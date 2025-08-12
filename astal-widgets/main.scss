@@ -23,15 +23,29 @@ $yellow: #d0a215 !default;
 $green_muted: #66800b !default;
 $green: #879a39 !default;
 
-$accent: $yellow !default;
-$accent_muted: $yellow !default;
+// #1c130b
+// #301f12
+// #452b17
+// #5b381c
+// #724521
+// #895225
+// #a2602a
+// #b27547
+// #c08b64
+// #cea281
+// #dcb89f
+// #e8d0be
+// #f4e7de
+
+$accent: #b27547 !default;
+$accent_muted: #724521 !default;
 $accent_greyscale: color.grayscale($accent) !default;
 $accent_greyscale_muted: color.grayscale($accent_muted) !default;
 
-$font: "Bitcount Prop Single" !default;
-$font_mono: "Bitcount Grid Single" !default;
-$font_digits: "Bitcount Single" !default;
-$font_size: 14pt !default;
+$font: "hurmit nerd font" !default;
+$font_mono: "hurmit nerd font" !default;
+$font_digits: "hurmit nerd font" !default;
+$font_size: 11pt !default;
 $radius: 8px !default;
 $hover_time: 200ms !default;
 $bar_side_margins: 5px !default;
@@ -50,7 +64,7 @@ $window_border: $window_border_size solid $accent !default;
 $button_border_size: 2px;
 $button_border: $button_border_size dotted color.adjust($accent, $alpha: -0.5) !default;
 
-$bar_min_height: 33px !default;
+$bar_min_height: 30px !default;
 
 // buttons
 $hover-deepness: 1px !default;

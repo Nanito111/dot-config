@@ -2,12 +2,14 @@
 @use "sass:math";
 @use "../../main" as main;
 @use "bar" as bar;
+@use "workspaces" as workspaces;
 
 $corners_width: 20px;
 $notch_radius: main.$radius + 2px;
+$notch_color: main.$bg;
 
 .Notch {
-  background-color: bar.$bar_color;
+  background-color: $notch_color;
 
   border-bottom-left-radius: $notch_radius;
   border-bottom-right-radius: $notch_radius;
@@ -20,7 +22,7 @@ $notch_radius: main.$radius + 2px;
   min-width: $corners_width;
   min-height: $corners_width;
   background-color: transparent;
-  box-shadow: 0 ($corners_width * -0.8) 0 0 bar.$bar_color;
+  box-shadow: 0 ($corners_width * -0.8) 0 0 $notch_color;
 
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;

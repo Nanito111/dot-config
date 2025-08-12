@@ -7,15 +7,14 @@ $focused_ws_width: bar.$no_border_height + main.$inner_margin;
 $regular_ws_width: bar.$no_border_height * 0.25 + main.$inner_margin;
 $special_ws_width: bar.$with_border_height * 0.25 + main.$inner_margin - 2px;
 
-window.Bar .Workspaces {
-  padding: 0 main.$inner_margin * 3;
-  min-width: $focused_ws_width + ($regular_ws_width * 4) +
-    (main.$inner_margin * 4);
-  margin: 0;
+$regular_container_width: $focused_ws_width + ($regular_ws_width * 3) +
+  (main.$inner_margin * 2.5 * 4);
+$special_container_width: $regular_container_width + $special_ws_width;
 
-  button:first-child {
-    margin-left: 0;
-  }
+window.Bar .Workspaces {
+  padding: 0 main.$inner_margin * 2.5;
+  margin: 0;
+  min-width: $regular_container_width;
 
   button {
     margin-left: main.$inner_margin * 2.5;
@@ -33,6 +32,10 @@ window.Bar .Workspaces {
       border-color: transparent;
       color: main.$accent_muted;
       background-color: main.$bg1;
+    }
+
+    &:first-child {
+      margin-left: 0;
     }
 
     &:hover,

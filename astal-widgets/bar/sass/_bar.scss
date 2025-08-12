@@ -1,10 +1,9 @@
-// @use "sass:color" as color;
 @use "sass:math";
 @use "sass:color";
 
 @use "../../main" as main;
 
-$bar_color: main.$bg;
+$bar_color: color.adjust(main.$bg, $alpha: 0);
 $no_border_height: main.$bar_min_height;
 $with_border_height: main.$bar_min_height - main.$button_border_size - 1px;
 $window_color: color.adjust(main.$bg, $alpha: -0.2);
