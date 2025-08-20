@@ -4,10 +4,12 @@
 @use "bar" as bar;
 
 window.Bar .SysTray {
-  padding: 0 main.$inner_margin * 3;
+  padding: 0 main.$inner_margin * 2;
   background-color: bar.$bar_color;
   border-radius: main.$radius;
-  min-height: bar.$no_border_height;
+  min-height: bar.$with_border_height;
+  border: main.$button_border;
+  box-shadow: main.$window_shadow;
   button {
     margin-left: main.$space_between;
     &:first-child {

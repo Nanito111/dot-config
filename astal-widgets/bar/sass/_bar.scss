@@ -17,8 +17,8 @@ window.Bar {
   font-weight: bold;
 
   & > centerbox {
-    margin-left: 10px;
-    margin-right: 10px;
+    margin-left: 4pt;
+    margin-right: 4pt;
     margin-bottom: 1px + main.$shadow_distance + main.$shadow_blur +
       main.$shadow_scale;
   }
@@ -27,8 +27,7 @@ window.Bar {
   .RightBox {
     margin-top: 4px;
     & > * {
-      box-shadow: 0 main.$shadow_distance main.$shadow_blur main.$shadow_scale
-        main.$shadow_outer_color;
+      box-shadow: none;
     }
   }
 

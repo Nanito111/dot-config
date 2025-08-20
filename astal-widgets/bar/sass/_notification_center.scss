@@ -5,13 +5,13 @@
 @use "../../notifications/style.scss";
 
 window.Bar button.ShowNotificationCenter {
-  border: main.$button_border;
   border-radius: main.$radius;
   min-width: bar.$with_border_height;
   min-height: bar.$with_border_height;
   background-color: bar.$bar_color;
-  border-color: transparent;
   color: main.$accent;
+  box-shadow: main.$window_shadow;
+  border: main.$button_border;
 
   @keyframes new-notifications {
     0% {
@@ -43,7 +43,6 @@ window.Bar button.ShowNotificationCenter {
 
   &.no-notifications {
     background-color: bar.$bar_color;
-    border-color: transparent;
     color: main.$accent;
     icon {
       animation: none;
@@ -73,6 +72,7 @@ window.NotificationCenter {
     letter-spacing: 0px;
     min-height: 430px;
     min-width: 400px;
+    box-shadow: main.$window_shadow;
     border: main.$window_border;
     background-color: bar.$window_color;
     border-radius: main.$radius;

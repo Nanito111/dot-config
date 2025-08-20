@@ -6,10 +6,10 @@
 window.Bar button.Date {
   background-color: bar.$bar_color;
   border-radius: main.$radius;
-  border: main.$button_border;
-  border-color: transparent;
   min-height: bar.$with_border_height;
   padding: 0 main.$font_size * 0.75;
+  border: main.$button_border;
+  box-shadow: main.$window_shadow;
 
   transition-property: border-color;
   transition-duration: main.$hover_time;
@@ -39,6 +39,7 @@ window.Bar button.Date {
   }
 
   &:active {
+    border: main.$button_border;
     border-color: main.$accent_muted;
     label {
       color: main.$accent_muted;
@@ -50,6 +51,7 @@ window.Calendar {
   .Calendar {
     border: main.$window_border;
     background-color: bar.$window_color;
+    box-shadow: main.$window_shadow;
     border-radius: main.$radius;
     margin-bottom: 10px;
     margin-left: 10px;

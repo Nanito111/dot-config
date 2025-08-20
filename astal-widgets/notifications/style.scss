@@ -79,6 +79,7 @@ eventbox.Notification > box,
       background-color: transparent;
 
       icon {
+        font-size: main.$font_size;
         color: main.$accent;
       }
     }

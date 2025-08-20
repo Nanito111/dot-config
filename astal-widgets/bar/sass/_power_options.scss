@@ -11,7 +11,7 @@ window.Bar .PowerOptions {
   background-color: bar.$bar_color;
   border-radius: main.$radius;
   border: main.$button_border;
-  border-color: transparent;
+  box-shadow: main.$window_shadow;
   min-width: bar.$with_border_height;
 
   &.show {

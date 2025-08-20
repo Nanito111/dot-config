@@ -10,7 +10,7 @@ window.Bar .ShowAudio {
   background-color: bar.$bar_color;
   border-radius: main.$radius;
   border: main.$button_border;
-  border-color: transparent;
+  box-shadow: main.$window_shadow;
   min-height: bar.$with_border_height;
   padding: 0 main.$font_size * 0.75;
 
@@ -61,6 +61,7 @@ window.Bar .ShowAudio {
 window.Audio {
   .AudioSlider {
     border: main.$window_border;
+    box-shadow: main.$window_shadow;
     min-width: 250px;
     background-color: bar.$window_color;
     border-radius: main.$radius;

@@ -7,11 +7,13 @@
 window.Bar .Time {
   background-color: bar.$bar_color;
   border-radius: main.$radius;
-  min-height: main.$bar_min_height;
+  min-height: bar.$with_border_height;
   padding: 0 main.$font_size * 0.75;
   color: main.$accent;
   font-family: main.$font_digits;
   font-size: main.$font_size * 1.1;
   font-weight: 400;
   letter-spacing: 0px;
+  box-shadow: main.$window_shadow;
+  border: main.$window_border;
 }

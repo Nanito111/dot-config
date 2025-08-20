@@ -49,8 +49,7 @@ window.Bar .Workspaces {
     }
 
     &.focused {
-      box-shadow: main.$shadow_distance main.$shadow_distance main.$shadow_blur
-        main.$shadow_scale main.$accent_muted;
+      box-shadow: none;
     }
 
     &.focused,

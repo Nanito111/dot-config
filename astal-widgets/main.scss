@@ -50,19 +50,21 @@ $radius: 8px !default;
 $hover_time: 200ms !default;
 $bar_side_margins: 5px !default;
 $inner_margin: 3px !default;
-$space_between: 4px !default;
+$space_between: 8px !default;
 $shadow_distance: 0px !default;
 $shadow_blur: 0px !default;
-$shadow_scale: 0px !default;
-$shadow_color: transparent !default;
-$shadow_outer_color: color.adjust($shadow_color, $alpha: -0.2) !default;
+$shadow_scale: 2px !default;
+$shadow_color: black !default;
+$shadow_outer_color: color.adjust($shadow_color, $alpha: 0) !default;
 $shadow_inner_color: color.adjust($shadow_color, $alpha: -0.2) !default;
+$window_shadow: $shadow_distance $shadow_distance $shadow_blur $shadow_scale
+  $shadow_outer_color;
 
 $window_border_size: 1px;
-$window_border: $window_border_size solid $accent !default;
+$window_border: $window_border_size solid color.adjust($accent, $alpha: -0.5) !default;
 
-$button_border_size: 2px;
-$button_border: $button_border_size dotted color.adjust($accent, $alpha: -0.5) !default;
+$button_border_size: 1px;
+$button_border: $button_border_size solid color.adjust($accent, $alpha: -0.5) !default;
 
 $bar_min_height: 30px !default;
 

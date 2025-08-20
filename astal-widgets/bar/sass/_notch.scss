@@ -6,7 +6,7 @@
 
 $corners_width: 20px;
 $notch_radius: main.$radius + 2px;
-$notch_color: main.$bg;
+$notch_color: black;
 
 .Notch {
   background-color: $notch_color;
@@ -14,8 +14,7 @@ $notch_color: main.$bg;
   border-bottom-left-radius: $notch_radius;
   border-bottom-right-radius: $notch_radius;
 
-  box-shadow: 0 main.$shadow_distance main.$shadow_blur main.$shadow_scale
-    main.$shadow_outer_color;
+  box-shadow: none;
 }
 .Notch.Left,
 .Notch.Right {
@@ -28,8 +27,6 @@ $notch_color: main.$bg;
   border-bottom-right-radius: 0;
   & > * {
     margin-top: main.$inner_margin;
-    box-shadow: 0 main.$shadow_distance main.$shadow_blur main.$shadow_scale
-      main.$shadow_outer_color;
   }
 }
 

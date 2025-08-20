@@ -14,10 +14,10 @@ window.Bar button.Media {
   border-radius: main.$radius;
   background-color: bar.$bar_color;
   border: main.$button_border;
-  border-color: transparent;
   min-width: bar.$with_border_height;
   min-height: bar.$with_border_height;
   font-size: 16px;
+  box-shadow: main.$window_shadow;
 
   @keyframes playing-media {
     to {
@@ -28,7 +28,6 @@ window.Bar button.Media {
   icon {
     animation: playing-media 2s linear infinite;
     animation-play-state: running;
-    border-radius: main.$radius;
   }
 
   &.offline icon {
@@ -73,6 +72,7 @@ window.Media {
     min-width: $media-width;
     min-height: $media-height;
 
+    box-shadow: main.$window_shadow;
     border: main.$window_border;
     color: main.$fg;
     background-color: bar.$window_color;
