@@ -66,6 +66,7 @@ return function(gdkmonitor)
         gdkmonitor = gdkmonitor,
         namespace = "astal-notification-blur",
         anchor = Anchor.TOP,
+        layer = "OVERLAY",
         visible = bind(hypr, "focused-monitor"):as(function(monitor)
             return monitor.model == gdkmonitor.model
         end),
