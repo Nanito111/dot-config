@@ -42,7 +42,7 @@ elif [ "$exit_code" -eq 10 ]; then
         item_id=$(echo "$item" | cut -f1)
         echo "$item_id" | cliphist delete
         find "$thumbnail_dir" -name "${item_id}.*" -delete
-        uwsm app -- bash $BASH_CONFIG_DIR/scripts/cliphist-fuzzel-with-images.bash
+        uwsm app -- bash $CUSTOM_SCRIPTS_DIR/cliphist-fuzzel-with-images.bash
     fi
 else
     [ -z "$item" ] || echo "$item" | cliphist decode | wl-copy
