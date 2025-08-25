@@ -94,7 +94,7 @@ end
 function M.AudioSlider()
     local speakers_descriptions = {
         motherboard = "Family 17h/19h/1ah HD Audio Controller Analog Stereo",
-        hdmi = "Renoir Radeon High Definition Audio Controller Digital Stereo (HDMI)",
+        hdmi = "Renoir/Cezanne HDMI/DP Audio Controller Digital Stereo (HDMI)",
     }
     return Widget.Box({
         class_name = "AudioSlider",
@@ -111,7 +111,7 @@ function M.AudioSlider()
                 if name == speakers_descriptions.motherboard then
                     return "Motherboard Analog Stereo"
                 elseif name == speakers_descriptions.hdmi then
-                    return "HDMI Digital Stereo"
+                    return "HDMI/DP Digital Stereo"
                 else
                     return name
                 end
