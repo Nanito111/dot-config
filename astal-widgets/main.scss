@@ -23,22 +23,22 @@ $yellow: #d0a215 !default;
 $green_muted: #66800b !default;
 $green: #879a39 !default;
 
-// #1c130b
-// #301f12
-// #452b17
-// #5b381c
-// #724521
-// #895225
-// #a2602a
-// #b27547
-// #c08b64
-// #cea281
-// #dcb89f
-// #e8d0be
-// #f4e7de
+// #1b110f 950
+// #2d1a19 900
+// #412322 850
+// #552d2b 800
+// #6b3635 700
+// #81403f 600
+// #984A49 500
+// #a86360 400
+// #b87c79 300
+// #c79592 200
+// #d6afac 150
+// #e4c9c7 100
+// #f2e4e3 50
 
-$accent: #b27547 !default;
-$accent_muted: #724521 !default;
+$accent: #a86360 !default;
+$accent_muted: #81403f !default;
 $accent_greyscale: color.grayscale($accent) !default;
 $accent_greyscale_muted: color.grayscale($accent_muted) !default;
 
