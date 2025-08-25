@@ -12,17 +12,18 @@ local microphone = Wp.get_default().audio.default_microphone
 local SHOW_TIME = 1 * 1000
 local osd_icon = Variable.new()
 local osd_level = Variable.new()
-local audio_is_playing = Variable.new(false)
+-- local audio_is_playing = Variable.new(false)
 
-osd_level:subscribe(function()
-    -- if audio is not playing, play audio
-    if audio_is_playing:get() == false then
-        audio_is_playing:set(true)
-        astal.exec_async("canberra-gtk-play -i audio-volume-change", function()
-            audio_is_playing:set(false)
-        end)
-    end
-end)
+-- osd_level:subscribe(function()
+--     -- if audio is not playing, play audio
+--     if audio_is_playing:get() == false then
+--         audio_is_playing:set(true)
+--         -- TODO: remove unwanted delay when playing caused by audio_is_playing == false
+--         astal.exec_async("canberra-gtk-play -i audio-volume-change", function()
+--             audio_is_playing:set(false)
+--         end)
+--     end
+-- end)
 
 local function show(window, window_timeout, level, icon)
     if window_timeout:get() ~= nil then

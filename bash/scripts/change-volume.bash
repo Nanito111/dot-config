@@ -11,3 +11,6 @@ fi
 
 # set volume
 wpctl set-volume @$audio_source@ 5%$option --limit 1.0
+
+# play audio
+canberra-gtk-play -i audio-volume-change
