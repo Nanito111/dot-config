@@ -61,10 +61,10 @@ $window_shadow: $shadow_distance $shadow_distance $shadow_blur $shadow_scale
   $shadow_outer_color;
 
 $window_border_size: 1px;
-$window_border: $window_border_size solid color.adjust($accent, $alpha: -0.5) !default;
+$window_border: $window_border_size solid $accent !default;
 
 $button_border_size: 1px;
-$button_border: $button_border_size solid color.adjust($accent, $alpha: -0.5) !default;
+$button_border: $button_border_size solid $accent !default;
 
 $bar_min_height: 30px !default;
 

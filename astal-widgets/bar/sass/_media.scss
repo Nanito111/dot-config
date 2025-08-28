@@ -42,17 +42,11 @@ window.Bar button.Media {
   &:hover {
     border-color: main.$accent_greyscale;
     color: main.$accent_greyscale;
-
-    // > icon {
-    // }
   }
 
   &:active {
     border-color: main.$accent_muted;
     color: main.$accent_muted;
-
-    // > icon {
-    // }
   }
 }
 
@@ -79,7 +73,9 @@ window.Media {
     border-radius: main.$radius;
 
     &.offline {
+      min-width: $media-width;
       min-height: $media-width;
+      color: main.$accent;
     }
   }
 
@@ -107,15 +103,10 @@ window.Media {
   }
 
   box.interface {
-    background-color: transparent;
-    min-height: $media-height * 0.42 + 1px;
-
     &.offline {
-      min-height: $media-width;
-
       icon {
+        margin-top: $media-width * 0.25;
         font-size: 128px;
-        margin-top: 60px;
       }
     }
   }

@@ -18,14 +18,10 @@ function M.MediaPlayer(mpris_instance)
                 Widget.Box({
                     class_name = "interface offline",
                     vertical = true,
-                    vexpand = false,
-                    valign = "CENTER",
                     Widget.Icon({
-                        valign = "CENTER",
                         icon = "music-app-symbolic",
                     }),
                     Widget.Label({
-                        valign = "CENTER",
                         label = "no media playing",
                     }),
                 }),
