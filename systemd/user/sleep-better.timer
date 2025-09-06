@@ -1,9 +1,10 @@
 [Unit]
-Description=Shutdown system daily
+Description=Shutdown system daily from 00:00 to 04:59
 
 [Timer]
-OnCalendar=*-*-* 00:30:00
-OnCalendar=*-*-* 23:30:00
+OnCalendar=*-*-* 00..04:*:00
+AccuracySec=1s
+RandomizedDelaySec=0
 
 [Install]
 WantedBy=timers.target

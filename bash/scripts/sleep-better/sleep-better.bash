@@ -1,8 +1,8 @@
 #!/bin/bash
 
 notify-send "Good night..." "Sleep-better process is starting. System will be shutdown." \
-    -i system-suspend -a "Sleep-better"
+    -i system-suspend -a "Sleep-better" -t 2000
 
-ffplay "$CUSTOM_SCRIPTS_DIR/sleep-better/soft-outro-piano.mp3" -nodisp -autoexit
+canberra-gtk-play -i _desktop-logout
 
 shutdown now
