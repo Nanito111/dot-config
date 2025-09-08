@@ -9,7 +9,6 @@
 * fuzzel
 * xdg-desktop-portal
 * astal-widgets
-* browser-homepage
 * qt6ct
 * systemd
 * uwsm
