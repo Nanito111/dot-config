@@ -17,8 +17,10 @@ window.OnScreenDisplay {
   }
   .base > levelbar block.filled {
     background-color: main.$accent;
+    border-radius: main.$radius;
   }
   .base > levelbar block.empty {
     background-color: main.$bg1;
+    border-radius: main.$radius;
   }
 }
