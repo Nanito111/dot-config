@@ -13,3 +13,4 @@
 * qt6ct
 * systemd
 * uwsm
+* matugen
