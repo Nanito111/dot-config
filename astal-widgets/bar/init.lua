@@ -18,6 +18,7 @@ end
 create_css(scss, css)
 astal.monitor_file(scss_dir, on_reload_css)
 astal.monitor_file("main.scss", on_reload_css)
+astal.monitor_file("colors.scss", on_reload_css)
 
 local reloading_app = false
 -- check changes in widgets

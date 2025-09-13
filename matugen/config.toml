@@ -13,3 +13,7 @@ output_path = '~/.config/foot/colors.ini'
 input_path = '~/.config/matugen/templates/hyprland.conf'
 output_path = '~/.config/hypr/colors.conf'
 post_hook = 'hyprctl reload'
+
+[templates.astal]
+input_path = '~/.config/matugen/templates/astal.scss'
+output_path = '~/.config/astal-widgets/colors.scss'

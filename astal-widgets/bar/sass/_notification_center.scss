@@ -2,7 +2,7 @@
 @use "sass:color";
 @use "../../main" as main;
 @use "bar" as bar;
-@use "../../notifications/style.scss";
+@use "../../notifications/notifications.scss";
 
 window.Bar button.ShowNotificationCenter {
   border-radius: main.$radius;
