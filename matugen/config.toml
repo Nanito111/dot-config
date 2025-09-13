@@ -8,3 +8,8 @@ output_path = '~/.config/fuzzel/colors.ini'
 [templates.foot]
 input_path = '~/.config/matugen/templates/foot.ini'
 output_path = '~/.config/foot/colors.ini'
+
+[templates.hyprland]
+input_path = '~/.config/matugen/templates/hyprland.conf'
+output_path = '~/.config/hypr/colors.conf'
+post_hook = 'hyprctl reload'
