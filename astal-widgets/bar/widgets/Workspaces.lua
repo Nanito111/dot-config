@@ -12,7 +12,7 @@ return function(gdkmonitor)
         bind(hypr, "workspaces"):as(function(wss)
             local filtered_workspaces = {}
             for _, workspace in ipairs(wss) do
-                if workspace.monitor.model == gdkmonitor.model then
+                if workspace.monitor.model == gdkmonitor.model and workspace.id ~= 5 then
                     table.insert(filtered_workspaces, workspace)
                 end
             end
@@ -34,14 +34,6 @@ return function(gdkmonitor)
                         on_clicked = function()
                             ws:focus()
                         end,
-                        bind(ws, "id"):as(function(v)
-                            if v ~= 5 then
-                                return
-                            end
-                            return Widget.Icon({
-                                icon = "applications-games-symbolic",
-                            })
-                        end),
                     })
                 else
                     return Widget.Button({
