@@ -21,9 +21,42 @@ output_path = '~/.config/astal-widgets/colors.scss'
 [templates.gtk3]
 input_path = '~/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-3.0/colors.css'
-post_hook = 'gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark'
+post_hook = 'gsettings set org.gnome.desktop.interface gtk-theme ""; gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark'
 
 [templates.gtk4]
 input_path = '~/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-4.0/colors.css'
-# todo stop all gtk4 open instances
+
+# TODO: add neovim template
+
+[config.custom_colors.red]
+color = "#AA0000"
+blend = true
+
+[config.custom_colors.green]
+color = "#00AA00"
+blend = true
+
+[config.custom_colors.yellow]
+color = "#EEAA00"
+blend = true
+
+[config.custom_colors.blue]
+color = "#0000AA"
+blend = true
+
+[config.custom_colors.magenta]
+color = "#AA00AA"
+blend = true
+
+[config.custom_colors.cyan]
+color = "#00AAAA"
+blend = true
+
+[config.custom_colors.white]
+color = "#FFFCF0"
+blend = true
+
+[config.custom_colors.black]
+color = "#100F0F"
+blend = true
