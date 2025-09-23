@@ -30,27 +30,27 @@ output_path = '~/.config/gtk-4.0/colors.css'
 # TODO: add neovim template
 
 [config.custom_colors.red]
-color = "#AA0000"
+color = "#AF3029"
 blend = true
 
 [config.custom_colors.green]
-color = "#00AA00"
+color = "#66800B"
 blend = true
 
 [config.custom_colors.yellow]
-color = "#EEAA00"
+color = "#AD8301"
 blend = true
 
 [config.custom_colors.blue]
-color = "#0000AA"
+color = "#205EA6"
 blend = true
 
 [config.custom_colors.magenta]
-color = "#AA00AA"
+color = "#A02F6F"
 blend = true
 
 [config.custom_colors.cyan]
-color = "#00AAAA"
+color = "#24837B"
 blend = true
 
 [config.custom_colors.white]
