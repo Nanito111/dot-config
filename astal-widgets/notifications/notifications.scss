@@ -27,7 +27,8 @@ eventbox.Notification {
 
     min-width: 400px;
     border-radius: main.$radius;
-    background-color: color.adjust(main.$bg, $alpha: -0.25);
+    background-color: bar.$window_color;
+    box-shadow: main.$window_shadow;
     margin: 0.5rem 1rem 0.5rem 1rem;
     border: main.$window_border;
   }
