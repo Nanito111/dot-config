@@ -21,7 +21,7 @@ $notch_color: black;
   min-width: $corners_width;
   min-height: $corners_width;
   background-color: transparent;
-  box-shadow: 0 ($corners_width * -0.8) 0 0 $notch_color;
+  box-shadow: 0 (-$corners_width) 0 0 $notch_color;
 
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;

@@ -4,8 +4,8 @@
 @use "bar" as bar;
 
 $focused_ws_width: bar.$no_border_height + main.$inner_margin;
-$regular_ws_width: bar.$no_border_height * 0.25 + main.$inner_margin;
-$special_ws_width: bar.$with_border_height * 0.25 + main.$inner_margin - 2px;
+$regular_ws_width: bar.$no_border_height * 0.35 + main.$inner_margin;
+$special_ws_width: bar.$with_border_height * 0.35 + main.$inner_margin - 2px;
 
 $container_width: $focused_ws_width + ($regular_ws_width * 3) +
   (main.$inner_margin * 2.5 * 4) + ($special_ws_width + 2px);
