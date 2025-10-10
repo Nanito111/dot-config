@@ -5,7 +5,7 @@
 @use "workspaces" as workspaces;
 
 $corners_width: 20px;
-$notch_radius: main.$radius + 2px;
+$notch_radius: main.$radius + 4px;
 $notch_color: black;
 
 .Notch {
@@ -31,13 +31,13 @@ $notch_color: black;
 }
 
 .Notch.Left {
-  border-top-right-radius: main.$radius;
+  border-top-right-radius: main.$radius + 2px;
   & > * {
     margin-right: main.$inner_margin;
   }
 }
 .Notch.Right {
-  border-top-left-radius: main.$radius;
+  border-top-left-radius: main.$radius + 2px;
   & > * {
     margin-left: main.$inner_margin;
   }
