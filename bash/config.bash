@@ -1,9 +1,15 @@
 export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 
-bind 'set show-all-if-ambiguous on'
-bind 'TAB:menu-complete'
-
 eval "$(starship init bash)"
+
+# history stuff
+HISTCONTROL=ignoredups:erasedups
+HISTSIZE=5000
+HISTFILESIZE=10000
+shopt -s histappend
+
+# binds
+[ -f "$BASH_CONFIG_DIR/binds.bash" ] && source "$BASH_CONFIG_DIR/binds.bash"
 
 for file in $BASH_CONFIG_DIR/functions/*.bash; do
     if [ -f "$file" ]; then
@@ -12,6 +18,10 @@ for file in $BASH_CONFIG_DIR/functions/*.bash; do
 done
 
 [ -f "$BASH_CONFIG_DIR/aliases.bash" ] && source "$BASH_CONFIG_DIR/aliases.bash"
+
+[ -f /usr/share/fzf/completion.bash ] && source /usr/share/fzf/completion.bash
+[ -f /usr/share/fzf/key-bindings.bash ] && source /usr/share/fzf/key-bindings.bash
+export FZF_CTRL_R_OPTS="--height 40% --reverse --tac --no-sort"
 
 [ -f /opt/miniforge/etc/profile.d/conda.sh ] && source /opt/miniforge/etc/profile.d/conda.sh
 
