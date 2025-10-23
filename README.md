@@ -12,5 +12,6 @@
 * astal-widgets
 * qt6ct
 * systemd
+* Thunar
 * uwsm
 * matugen

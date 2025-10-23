@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+<action>
+	<icon>utilities-terminal</icon>
+	<name>Open Terminal Here</name>
+	<submenu></submenu>
+	<unique-id>1747707710836458-1</unique-id>
+	<command>uwsm app -- foot -D %f</command>
+	<description>Open a terminal in the selected directory or file</description>
+	<range>1</range>
+	<patterns>*</patterns>
+	<directories/>
+</action>
+<action>
+	<icon>preferences-desktop-wallpaper</icon>
+	<name>Set as wallpaper</name>
+	<submenu></submenu>
+	<unique-id>1747709438731220-1</unique-id>
+	<command>change-wallpaper %f</command>
+	<description>Set selected image as wallpaper</description>
+	<range>1</range>
+	<patterns>*</patterns>
+	<image-files/>
+</action>
+</actions>
