@@ -22,3 +22,6 @@
 # some instructions!
 ## for `bash` and `shell`
 create symlinks in `/home/$USER` so this can work
+* `config.bash` -> `.bashrc`
+* `profile.bash` -> `.bash_profile`
+* `profile.sh` -> `.profile`
