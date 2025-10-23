@@ -1,17 +1,19 @@
 # configurations and customizations of:
+
+* astal-widgets
 * bash
-* starship.toml
-* foot
 * fastfetch
-* tmux
+* foot
+* fuzzel
+* gtk
 * hypr
 * lazygit
-* fuzzel
-* xdg-desktop-portal
-* xdg-terminals.list
-* astal-widgets
+* matugen
 * qt6ct
 * systemd
+* starship
 * Thunar
+* tmux
 * uwsm
-* matugen
+* xdg-desktop-portal
+* xdg-terminals
