@@ -1,6 +1,6 @@
-add_newline = true
-
+# add_newline = true
 format = """
+$shell\
 $username\
 $hostname\
 $localip\
@@ -75,7 +75,6 @@ $direnv\
 $env_var\
 $mise\
 $crystal\
-$custom
 $git_branch\
 $git_commit\
 $git_state\
@@ -87,16 +86,31 @@ $line_break\
 $jobs\
 $battery\
 $time\
-$status\
 $os\
 $container\
 $netns\
-$shell\
-$character"""
+$status\
+$character
+"""
+
+[status]
+disabled = false
+format = "[$status ]($style)"
 
 [character]
-success_symbol = "[>](bright-black)"
-error_symbol = "[>](bright-red)"
+disabled = false
+format = "[$symbol ]($style)"
+success_symbol = "[•](bright-green)"
+error_symbol = "[•](bright-red)"
+
+[shell]
+disabled = false
+format = "[$indicator ]($style)"
+style = "fg:242"
+bash_indicator = "bash"
+fish_indicator = "fish"
+zsh_indicator = "zsh"
+unknown_indicator = "?"
 
 [aws]
 symbol = "  "
@@ -129,6 +143,7 @@ symbol = " "
 symbol = " "
 
 [directory]
+format = "at [$path]($style)[$read_only]($read_only_style) "
 read_only = " 󰌾"
 
 [docker_context]
@@ -148,17 +163,16 @@ symbol = " "
 
 [gcloud]
 symbol = " "
-format = 'on [$symbol$account <($project)>]($style) '
+format = "on [$symbol$account <($project)>]($style) "
 detect_env_vars = ["GOOGLE_APPLICATION_CREDENTIALS"]
 
 [gcloud.project_aliases]
-
 
 [git_branch]
 symbol = " "
 
 [git_commit]
-tag_symbol = '  '
+tag_symbol = "  "
 
 [golang]
 symbol = " "
