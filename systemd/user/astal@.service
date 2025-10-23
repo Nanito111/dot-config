@@ -7,7 +7,10 @@ Wants=graphical-session.target
 Type=simple
 ExecStart=/usr/bin/bash %h/.config/astal-widgets/start.bash %i
 Restart=on-failure
+RestartSec=1s
 Slice=app-graphical.slice
+MemoryMax=500M
+MemorySwapMax=1G
 
 [Install]
 WantedBy=graphical-session.target
