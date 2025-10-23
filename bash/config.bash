@@ -1,4 +1,9 @@
-export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
 
 eval "$(starship init bash)"
 
@@ -11,6 +16,7 @@ shopt -s histappend
 # binds
 [ -f "$BASH_CONFIG_DIR/binds.bash" ] && source "$BASH_CONFIG_DIR/binds.bash"
 
+# load functions
 for file in $BASH_CONFIG_DIR/functions/*.bash; do
     if [ -f "$file" ]; then
         source "$file"
