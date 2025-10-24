@@ -1,5 +1,6 @@
-# add_newline = true
+add_newline = false
 format = """
+$fill
 $shell\
 $username\
 $hostname\
@@ -94,6 +95,10 @@ $status\
 $character
 """
 
+[fill]
+symbol = "─"
+style = "fg:236"
+
 [status]
 disabled = false
 format = "[$status ]($style)"
@@ -101,8 +106,8 @@ format = "[$status ]($style)"
 [character]
 disabled = false
 format = "[$symbol ]($style)"
-success_symbol = "[•](blink bright-green)"
-error_symbol = "[•](bright-red)"
+success_symbol = "[•](green)"
+error_symbol = "[•](blink red)"
 
 [shell]
 disabled = false
