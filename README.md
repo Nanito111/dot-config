@@ -9,6 +9,7 @@
 * hypr
 * lazygit
 * matugen
+* nvim
 * qt6ct
 * systemd
 * shell

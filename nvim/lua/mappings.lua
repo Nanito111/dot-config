@@ -1,0 +1,93 @@
+require "nvchad.mappings"
+
+-- Disable mappings
+local nomap = vim.keymap.del
+
+nomap("i", "<C-h>")
+nomap("i", "<C-j>")
+nomap("i", "<C-k>")
+nomap("n", "<C-s>")
+
+-- Your mappings
+local map = vim.keymap.set
+
+map("i", "<C-j>", "<ENTER>", { desc = "Enter" })
+map("i", "<C-k>", "<DEL>", { desc = "Delete" })
+map({ "n", "v" }, "<leader>fm", function()
+  require("conform").format {
+    lsp_fallback = true,
+    async = true,
+  }
+end, { desc = "Format Buffer" })
+map("v", "p", "P", { desc = "Paste preserving yank" })
+map("v", "P", "p", { desc = "Paste removing yank" })
+
+-- Open Volt menu
+-- Keyboard users
+map({ "n", "v" }, "<C-t>", function()
+  require("menu").open "default"
+end, { desc = "VoltMenu open (keyboard)" })
+
+-- mouse users + nvimtree users!
+map({ "n", "v" }, "<RightMouse>", function()
+  vim.cmd.exec '"normal! \\<RightMouse>"'
+
+  local options = vim.bo.ft == "NvimTree" and "nvimtree" or "default"
+  require("menu").open(options, { mouse = true })
+end, { desc = "VoltMenu open (mouse)" })
+
+-- better indenting
+map("v", "<", "<gv")
+map("v", ">", ">gv")
+
+--text wrapping
+map("n", "<leader>ww", function()
+  vim.cmd.set "wrap"
+end, { desc = "Wrap text" })
+map("n", "<leader>wW", function()
+  vim.cmd.set "nowrap"
+end, { desc = "Unwrap text" })
+
+map("n", "F", function()
+  vim.diagnostic.open_float()
+end, { desc = "Show diagnostics from current line" })
+
+-- ufo plugin
+map("n", "zR", require("ufo").openAllFolds, { desc = "Open all folds" })
+map("n", "zM", require("ufo").closeAllFolds, { desc = "Close all folds" })
+map("n", "zr", require("ufo").openFoldsExceptKinds, { desc = "Open folds except kinds" })
+map("n", "zm", require("ufo").closeFoldsWith, { desc = "Close folds with 0" })
+
+-- todo-comments plugin
+map("n", "<leader>ft", function()
+  vim.cmd "Telescope todo-comments todo"
+end, { desc = "telescope find TODO anotattions" })
+
+-- find highlights groups
+map("n", "<leader>fc", function()
+  vim.cmd "Telescope highlights"
+end, { desc = "telescope find colors (highlights groups)" })
+
+-- find keymaps
+map("n", "<leader>fk", function()
+  vim.cmd "Telescope keymaps"
+end, { desc = "telescope find keymaps" })
+
+-- telescope lsp
+map("n", "<leader>lr", function()
+  vim.cmd "Telescope lsp_references"
+end, { desc = "telescope find lsp references" })
+
+map("n", "<leader>ld", function()
+  vim.cmd "Telescope diagnostics"
+end, { desc = "telescope find diagnostics" })
+
+-- telescope vim options
+map("n", "<leader>fv", function()
+  vim.cmd "Telescope vim_options"
+end, { desc = "telescope find vim options" })
+
+-- git blame
+map("n", "<leader>gb", function()
+  vim.cmd "Gitsigns blame_line"
+end, { desc = "git blame line" })
