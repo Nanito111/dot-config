@@ -1,6 +1,9 @@
+"$schema" = "https://starship.rs/config-schema.json"
 add_newline = false
 format = """
-$fill
+[╰](fg:236)$fill\
+($cmd_duration$status )\
+$fill[╯](fg:236)
 $shell\
 $username\
 $hostname\
@@ -83,7 +86,6 @@ $git_metrics\
 $git_status\
 )\
 $sudo\
-$cmd_duration\
 $line_break\
 $jobs\
 $battery\
@@ -91,9 +93,11 @@ $time\
 $os\
 $container\
 $netns\
-$status\
 $character
 """
+[cmd_duration]
+format = "[ $duration]($style)"
+style = "fg:236 blink"
 
 [fill]
 symbol = "─"
@@ -101,13 +105,11 @@ style = "fg:236"
 
 [status]
 disabled = false
-format = "[$status ]($style)"
+format = "[ $status]($style)"
 
 [character]
 disabled = false
-format = "[$symbol ]($style)"
-success_symbol = "[•](green)"
-error_symbol = "[•](blink red)"
+format = "[𜲂 ](white)"
 
 [shell]
 disabled = false
