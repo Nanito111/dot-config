@@ -49,3 +49,30 @@ vim.cmd.set "guicursor=n-v-c:block-Cursor/lCursor,i-ci-ve:block-blinkwait700-bli
 --     end
 --   end,
 -- })
+
+-- Fold Stuff
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+
+function _G.my_foldtext()
+  -- inicio y fin del pliegue
+  local start = vim.v.foldstart
+  local finish = vim.v.foldend
+  local count = finish - start + 1
+
+  -- obtener la primera línea del pliegue
+  local line = vim.api.nvim_buf_get_lines(0, start - 1, start, false)[1] or ""
+  line = vim.trim(line)
+
+  -- limitar longitud y añadir indicador de pliegue
+  if #line > 80 then
+    line = line:sub(1, 77) .. "..."
+  end
+
+  -- construir texto final
+  return string.format("%s  [%d lines]", line, count)
+end
+
+vim.opt.foldtext = "v:lua.my_foldtext()"
+vim.opt.fillchars = { fold = " ", foldopen = "▼", foldclose = "▶", foldsep = "│" }
+vim.wo.foldcolumn = "auto:5"

@@ -60,6 +60,8 @@ M.base46 = {
   transparency = true,
   hl_override = {
     NvDashAscii = { fg = "white" },
+    Folded = { fg = "NONE", bg = "one_bg" },
+    FoldColumn = { fg = "grey" },
   },
 }
 
