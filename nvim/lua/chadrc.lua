@@ -78,7 +78,7 @@ M.term = {
     col = 0.068,
     width = 0.85,
     height = 0.85,
-    border = "single",
+    border = "rounded",
   },
   winopts = {
     signcolumn = "no",
