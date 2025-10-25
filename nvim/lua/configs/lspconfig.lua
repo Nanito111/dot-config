@@ -16,7 +16,7 @@ local servers = {
   "bashls",
   "rust_analyzer",
   "blueprint_ls",
-  "tombi",
+  "taplo",
 }
 
 for _, server in ipairs(servers) do

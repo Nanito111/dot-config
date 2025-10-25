@@ -45,6 +45,7 @@ return {
         "hyprlang",
         "blueprint",
         "vhs",
+        "toml",
       },
       highlight = { enable = true },
       indent = { enable = false },

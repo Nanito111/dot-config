@@ -103,7 +103,7 @@ M.mason = {
     "bash-language-server",
     "beautysh",
     "rust_analyzer",
-    "tombi",
+    "taplo",
   },
 }
 
