@@ -37,10 +37,10 @@ local function git_display()
   local added = (git_status.added and git_status.added ~= 0) and ("  " .. git_status.added) or ""
   local changed = (git_status.changed and git_status.changed ~= 0) and ("  " .. git_status.changed) or ""
   local removed = (git_status.removed and git_status.removed ~= 0) and ("  " .. git_status.removed) or ""
-  local branch_name = " "
+  local branch_name = "  "
     .. (string.len(git_status.head) < 20 and git_status.head or string.sub(git_status.head, 1, 20) .. "…")
 
-  return branch_name .. added .. changed .. removed
+  return added .. changed .. removed .. branch_name
 end
 
 local M = {}
