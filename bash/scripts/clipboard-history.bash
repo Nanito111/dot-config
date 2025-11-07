@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # requires imagemagick to generate thumbnails
+filename=$(readlink -f "$0")
 
 thumbnail_size=64
 thumbnail_dir="${XDG_CACHE_HOME:-$HOME/.cache}/cliphist/thumbnails"
@@ -28,13 +29,13 @@ match(\$0, /^([0-9]+)\s(\[\[\s)?binary.*(jpg|jpeg|png|bmp)/, grp) {
 1
 EOF
 
-item=$(echo "$cliphist_list" | gawk "$thumbnail" | fuzzel -d --placeholder "Search clipboard..." --counter --no-sort --with-nth 2)
+item=$(echo "$cliphist_list" | gawk "$thumbnail" | fuzzel -d --placeholder "search in clipboard" --counter --no-sort --with-nth 2)
 exit_code=$?
 
 # ALT+0 to clear history
 if [ "$exit_code" -eq 19 ]; then
-    confirmation=$(echo -e "No\nYes" | fuzzel -d --placeholder "Delete history?" --lines 2)
-    [ "$confirmation" == "Yes" ] && rm ~/.cache/cliphist/db && rm -rf "$thumbnail_dir"
+    confirmation=$(echo -e "no\nyes" | fuzzel -d --placeholder "delete history?" --lines 2)
+    [ "$confirmation" == "yes" ] && rm ~/.cache/cliphist/db && rm -rf "$thumbnail_dir"
     # ALT+1 to delete selected item
     # configure the keybind with `custom-1` in your fuzzel.ini
 elif [ "$exit_code" -eq 10 ]; then
@@ -42,7 +43,7 @@ elif [ "$exit_code" -eq 10 ]; then
         item_id=$(echo "$item" | cut -f1)
         echo "$item_id" | cliphist delete
         find "$thumbnail_dir" -name "${item_id}.*" -delete
-        uwsm app -- bash $CUSTOM_SCRIPTS_DIR/cliphist-fuzzel-with-images.bash
+        uwsm app -- bash $filename
     fi
 else
     [ -z "$item" ] || echo "$item" | cliphist decode | wl-copy
