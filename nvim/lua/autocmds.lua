@@ -2,7 +2,7 @@ require "nvchad.autocmds"
 
 -- indenting for gdscript
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "gdscript",
+  pattern = { "gdscript", "cs" },
   callback = function()
     vim.opt.tabstop = 4
     vim.opt.softtabstop = 4

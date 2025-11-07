@@ -17,6 +17,7 @@ local servers = {
   "rust_analyzer",
   "blueprint_ls",
   "taplo",
+  "csharp_ls",
 }
 
 for _, server in ipairs(servers) do

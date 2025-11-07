@@ -104,6 +104,7 @@ M.mason = {
     "beautysh",
     "rust_analyzer",
     "taplo",
+    "csharp-language-server",
   },
 }
 
