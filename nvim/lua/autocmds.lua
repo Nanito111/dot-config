@@ -9,3 +9,9 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt.expandtab = false
   end,
 })
+-- open file with folds open
+vim.api.nvim_create_autocmd("BufReadPost", {
+  callback = function()
+    vim.opt.foldlevel = 99
+  end,
+})
