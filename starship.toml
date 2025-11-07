@@ -3,7 +3,7 @@ add_newline = false
 format = """
 [╰](fg:236)$fill\
 ($cmd_duration$status )\
-$fill[╯](fg:236)
+$fill[╯](fg:236)($custom)
 $shell\
 $username\
 $hostname\
@@ -95,9 +95,16 @@ $container\
 $netns\
 $character
 """
+
+[custom.screen]
+command = "echo $STY | cut -d'.' -f2"
+when = "test -n \"$STY\""
+format = "[ screen \\[](fg:245)[$output]($style)[\\]](fg:245)"
+style = "bold grey"
+
 [cmd_duration]
 format = "[ $duration]($style)"
-style = "fg:236 blink"
+style = "fg:245 blink"
 
 [fill]
 symbol = "─"
