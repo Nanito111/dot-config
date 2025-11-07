@@ -105,6 +105,7 @@ M.mason = {
     "rust_analyzer",
     "taplo",
     "csharp-language-server",
+    "gdtoolkit",
   },
 }
 

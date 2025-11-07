@@ -11,6 +11,7 @@ return {
     zsh = { "beautysh" },
     csh = { "beautysh" },
     ksh = { "beautysh" },
+    gdscript = { "gdformat" },
   },
 
   format_after_save = function(bufnr)
