@@ -59,6 +59,7 @@ return function(props)
             Widget.Label({
                 class_name = "body",
                 wrap = true,
+                ellipsize = "END",
                 use_markup = true,
                 halign = "START",
                 xalign = 0,
