@@ -100,7 +100,7 @@ M.polish_hl = {
   telescope = {
     TelescopeResultsNormal = { fg = M.base_30.grey_fg2 },
     TelescopeSelection = { fg = M.base_30.white, bold = true },
-    TelescopeMatching = { fg = M.base_30.green, bg = "NONE", italic = true },
+    TelescopeMatching = { fg = M.base_30.green, bg = "NONE" },
   },
   syntax = {
     Keyword = { fg = custom_colors.keyword },
