@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# requires imagemagick to generate thumbnails
-filename=$(readlink -f "$0")
+# program real file path
+program_filepath=$(which "$0")
 
+# requires imagemagick to generate thumbnails
 thumbnail_size=64
 thumbnail_dir="${XDG_CACHE_HOME:-$HOME/.cache}/cliphist/thumbnails"
 
@@ -36,6 +37,7 @@ exit_code=$?
 if [ "$exit_code" -eq 19 ]; then
     confirmation=$(echo -e "no\nyes" | fuzzel -d --placeholder "delete history?" --lines 2)
     [ "$confirmation" == "yes" ] && rm ~/.cache/cliphist/db && rm -rf "$thumbnail_dir"
+
     # ALT+1 to delete selected item
     # configure the keybind with `custom-1` in your fuzzel.ini
 elif [ "$exit_code" -eq 10 ]; then
@@ -43,7 +45,7 @@ elif [ "$exit_code" -eq 10 ]; then
         item_id=$(echo "$item" | cut -f1)
         echo "$item_id" | cliphist delete
         find "$thumbnail_dir" -name "${item_id}.*" -delete
-        uwsm app -- bash $filename
+        uwsm app -- bash $program_filepath
     fi
 else
     [ -z "$item" ] || echo "$item" | cliphist decode | wl-copy
