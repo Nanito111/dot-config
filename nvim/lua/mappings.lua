@@ -94,6 +94,22 @@ end, { desc = "telescope git commits" })
 map("n", "<leader>gs", function()
   vim.cmd "Telescope git_status"
 end, { desc = "telescope git status" })
+
+-- lazygit [nvterm]
+map({ "n", "t" }, "<A-l>", function()
+  require("nvchad.term").toggle {
+    pos = "float",
+    id = "lazygit",
+    cmd = "lazygit && exit 0",
+    float_opts = {
+      row = 0,
+      col = 0,
+      width = 1,
+      height = 0.90,
+    },
+  }
+end, { desc = "terminal toggle lazygit" })
+
 -------------------------------------------- GIT --------------------------------------------
 
 -------------------------------------------- LSP --------------------------------------------
