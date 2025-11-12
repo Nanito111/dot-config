@@ -27,3 +27,12 @@ vim.api.nvim_create_autocmd("LspAttach", {
     end
   end,
 })
+
+-- autoclose terms windows
+-- this prevent showing [Process exited {status_code}] message
+vim.api.nvim_create_autocmd("TermClose", {
+  pattern = "*",
+  callback = function(args)
+    vim.cmd("bdelete! " .. args.buf)
+  end,
+})
