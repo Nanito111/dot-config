@@ -1,6 +1,6 @@
 require "nvchad.autocmds"
 
--- indenting for gdscript
+-- indenting for tabs
 vim.api.nvim_create_autocmd("FileType", {
   pattern = { "gdscript", "cs" },
   callback = function()
@@ -19,9 +19,9 @@ vim.api.nvim_create_autocmd("BufReadPost", {
 -- use LSP folding if client supports it
 vim.api.nvim_create_autocmd("LspAttach", {
   callback = function(args)
-    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    local lsp_client = vim.lsp.get_client_by_id(args.data.client_id)
 
-    if client:supports_method "textDocument/foldingRange" then
+    if lsp_client ~= nil and lsp_client:supports_method "textDocument/foldingRange" then
       local win = vim.api.nvim_get_current_win()
       vim.wo[win][0].foldexpr = "v:lua.vim.lsp.foldexpr()"
     end
@@ -33,6 +33,11 @@ vim.api.nvim_create_autocmd("LspAttach", {
 vim.api.nvim_create_autocmd("TermClose", {
   pattern = "*",
   callback = function(args)
-    vim.cmd("bdelete! " .. args.buf)
+    -- prevents deleting an already deleted buffer or an invalid one.
+    if vim.api.nvim_buf_is_valid(args.buf) and vim.api.nvim_buf_is_loaded(args.buf) then
+      vim.schedule(function()
+        vim.cmd("silent! bdelete! " .. args.buf)
+      end)
+    end
   end,
 })
