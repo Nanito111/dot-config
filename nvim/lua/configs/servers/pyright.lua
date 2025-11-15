@@ -18,6 +18,7 @@ return {
   settings = {
     pyright = {
       disableTaggedHints = true,
+      disableOrganizeImports = false,
     },
     python = {
       analysis = {
