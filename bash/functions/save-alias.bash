@@ -24,4 +24,4 @@ save-alias() {
 }
 
 # usage
-# save-alias ll='ls -l'
+# save-alias ll "ls -l"
