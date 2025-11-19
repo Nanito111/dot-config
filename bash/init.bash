@@ -23,6 +23,13 @@ for file in $BASH_CONFIG_DIR/functions/*.bash; do
     fi
 done
 
+# load autocompletions
+for file in $BASH_CONFIG_DIR/autocompletions/*.bash; do
+    if [ -f "$file" ]; then
+        source "$file"
+    fi
+done
+
 [ -f "$BASH_CONFIG_DIR/aliases.bash" ] && source "$BASH_CONFIG_DIR/aliases.bash"
 
 [ -f "$BASH_CONFIG_DIR/style.bash" ] && source "$BASH_CONFIG_DIR/style.bash"
