@@ -82,7 +82,15 @@ end, { desc = "telescope find vim options" })
 -------------------------------------------- GIT --------------------------------------------
 -- git blame
 map("n", "gb", function()
-  vim.cmd "Gitsigns blame_line"
+  require("gitsigns").blame_line {
+    full = false,
+  }
+end, { desc = "Git blame line" })
+-- git blame full
+map("n", "gB", function()
+  require("gitsigns").blame_line {
+    full = true,
+  }
 end, { desc = "Git blame line" })
 
 -- git commits [telescope]
