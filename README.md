@@ -10,6 +10,7 @@
 * lazygit
 * matugen
 * nvim
+* qt5ct
 * qt6ct
 * systemd
 * shell
