@@ -31,17 +31,17 @@ config() {
 
             echo -e "Config is a utility function that provides quick access to configuration files.\n"
 
-            echo -e "Usage:\n\tconfig [option]\n"
+            echo -e "Usage:\n\t${FG_CYAN}config [option]${FMT_RESET}\n"
 
-            echo -e "The available option are:\n"
+            echo -e "The availables options are:\n"
 
             for key in "${!options[@]}"; do
-                printf "\t%-12s %s\n" "$key" "${options[$key]}"
+                printf "\t${FG_CYAN}%-12s${FMT_RESET} %s\n" "$key" "${options[$key]}"
             done
 
             ;;
         *)
-            echo "[ERROR] option not implemented"
+            echo -e "[${FG_RED}ERROR${FMT_RESET}] option not implemented."
             config help
             ;;
     esac

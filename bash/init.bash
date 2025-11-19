@@ -25,6 +25,8 @@ done
 
 [ -f "$BASH_CONFIG_DIR/aliases.bash" ] && source "$BASH_CONFIG_DIR/aliases.bash"
 
+[ -f "$BASH_CONFIG_DIR/style.bash" ] && source "$BASH_CONFIG_DIR/style.bash"
+
 [ -f /usr/share/fzf/completion.bash ] && source /usr/share/fzf/completion.bash
 [ -f /usr/share/fzf/key-bindings.bash ] && source /usr/share/fzf/key-bindings.bash
 export FZF_CTRL_R_OPTS="--height 40% --reverse --tac --no-sort"
