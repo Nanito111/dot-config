@@ -13,11 +13,22 @@
 </action>
 <action>
 	<icon>preferences-desktop-wallpaper</icon>
-	<name>Set as wallpaper</name>
+	<name>Set as Wallpaper</name>
 	<submenu></submenu>
 	<unique-id>1747709438731220-1</unique-id>
-	<command>change-wallpaper %f</command>
+	<command>change-wallpaper wallpaper %f</command>
 	<description>Set selected image as wallpaper</description>
+	<range>1</range>
+	<patterns>*</patterns>
+	<image-files/>
+</action>
+<action>
+	<icon>preferences-desktop-wallpaper</icon>
+	<name>Set as Lockscreen</name>
+	<submenu></submenu>
+	<unique-id>1763593108929851-1</unique-id>
+	<command>change-wallpaper lockscreen %f</command>
+	<description>Set selected image as lockscreen</description>
 	<range>1</range>
 	<patterns>*</patterns>
 	<image-files/>
