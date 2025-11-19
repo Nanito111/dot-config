@@ -36,3 +36,10 @@ vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.opt.foldtext = ""
 vim.opt.fillchars = { eob = " ", fold = " ", foldopen = "▼", foldclose = "▶", foldsep = "│" }
 vim.opt.foldcolumn = "auto:9"
+
+-- gitsigns setup
+require("gitsigns").setup {
+  preview_config = {
+    border = "single",
+  },
+}

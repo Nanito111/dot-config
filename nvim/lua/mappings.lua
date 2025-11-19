@@ -116,7 +116,7 @@ end, { desc = "terminal toggle lazygit" })
 -- hover
 map("n", "K", function()
   vim.lsp.buf.hover {
-    border = "rounded",
+    border = "single",
     max_width = 80,
     max_height = 20,
   }
@@ -125,7 +125,7 @@ end, { desc = "LSP Show lsp info under cursor" })
 -- diagnostic float
 map("n", "F", function()
   vim.diagnostic.open_float {
-    border = "rounded",
+    border = "single",
     max_width = 80,
   }
 end, { desc = "LSP Show diagnostics from current line" })
