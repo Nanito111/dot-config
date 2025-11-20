@@ -118,3 +118,45 @@
 @define-color dark_5 #000000;
 
 @import "colors.css";
+
+/* >>>>>>>>>>>>>> THUNAR >>>>>>>>>>>>>> */
+
+.thunar .sidebar .view:selected {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+}
+
+.thunar .sidebar .view:hover {
+  background-color: @view_bg_hover_color;
+  color: @sidebar_fg_color;
+}
+
+.thunar .sidebar .view {
+  background-color: @window_bg_color_alt;
+}
+.thunar .sidebar {
+  background-color: transparent;
+}
+
+.thunar .standard-view .view {
+  background-color: @view_bg_color;
+}
+
+.thunar grid paned paned grid widget {
+  background-color: @window_bg_color_alt;
+}
+
+.thunar .standard-view .view:hover {
+  background-color: @view_bg_hover_color;
+  color: @view_fg_color;
+}
+
+.thunar .standard-view .view:selected {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+}
+
+.thunar {
+  background-color: transparent;
+}
+/* <<<<<<<<<<<<<< THUNAR <<<<<<<<<<<<<< */
