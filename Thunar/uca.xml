@@ -33,4 +33,20 @@
 	<patterns>*</patterns>
 	<image-files/>
 </action>
+<action>
+	<icon>emblem-symbolic-link</icon>
+	<name>Open Real Location</name>
+	<submenu></submenu>
+	<unique-id>1763594885771670-2</unique-id>
+	<command>thunar &quot;$(readlink -f %f)&quot;</command>
+	<description>Open the real location of a file or directory. This is useful for following symlinks</description>
+	<range>1</range>
+	<patterns>*</patterns>
+	<directories/>
+	<audio-files/>
+	<image-files/>
+	<other-files/>
+	<text-files/>
+	<video-files/>
+</action>
 </actions>
