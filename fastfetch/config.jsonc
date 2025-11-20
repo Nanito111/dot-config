@@ -1,13 +1,13 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "source": "/home/francisco/Pictures/mini-link.jpg",
+    "source": "/home/francisco/Pictures/profiles-pictures/kanagawa-wave.sixel",
     "preserveAspectRatio": true,
-    "width": 30,
-    "type": "sixel",
+    "width": 24,
+    "type": "raw",
     "padding": {
       "top": 7,
-      "right": 1
+      "right": 3
     },
     "position": "left"
   },
