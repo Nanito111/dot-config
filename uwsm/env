@@ -7,7 +7,6 @@ export ELECTRON_OZONE_PLATFORM_HINT=wayland
 export HYPR_CONFIG_DIR="$XDG_CONFIG_HOME/hypr"
 export BASH_CONFIG_DIR="$XDG_CONFIG_HOME/bash"
 export CUSTOM_SCRIPTS_DIR="$BASH_CONFIG_DIR/scripts"
-export ATAC_KEY_BINDINGS="$XDG_CONFIG_HOME/atac/key_bindings.toml"
 export EDITOR="$(which nvim)"
 export SUDO_EDITOR="$(which nvim)"
 export ADW_DISABLE_PORTAL=1
