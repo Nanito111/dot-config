@@ -12,6 +12,7 @@ HISTCONTROL=ignoredups:erasedups
 HISTSIZE=5000
 HISTFILESIZE=10000
 shopt -s histappend
+shopt -s cdspell
 
 # binds
 [ -f "$BASH_CONFIG_DIR/binds.bash" ] && source "$BASH_CONFIG_DIR/binds.bash"
