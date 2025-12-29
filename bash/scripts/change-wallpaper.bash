@@ -30,23 +30,20 @@ set_wallpaper(){
     hyprpaper_conf="$HYPR_CONFIG_DIR/hyprpaper.conf"
 
     # Run hyprctl hyprpaper reload and capture the first line of output
-    change_confirmation=$(hyprctl hyprpaper reload , "$image_path" | head -n 1)
+    hyprctl hyprpaper wallpaper ,"$image_path"
+    change_confirmation=$(echo $?)
 
-    if [ "$change_confirmation" = "ok" ]; then
+    if [[ $change_confirmation -eq 0 ]] then
         echo -e "${FG_GREEN}wallpaper setted!${FMT_RESET}"
     else
         echo -e "${FG_RED}wallpaper cannot be setted${FMT_RESET}"
-        echo "$change_confirmation"
-        exit 1
+        exit $change_confirmation
     fi
 
-    echo -e "\nsaving wallpaper in ${FMT_UNDERLINE}${FG_CYAN}${hyprpaper_conf}${FMT_RESET}"
+    echo -e "\nsaving wallpaper ${FMT_UNDERLINE}${FG_CYAN}${image_path}${FMT_RESET}"
 
-    # Overwrite the hyprpaper.conf file
-    echo "# DO NOT EDIT, AUTO-EDITED BY change-wallpaper.bash" > "$hyprpaper_conf"
-    # Save the current wallpaper path to the config
-    echo "preload = $image_path" >> "$hyprpaper_conf"
-    echo "wallpaper =, $image_path" >> "$hyprpaper_conf"
+    # create or overwrite symlink for lockscreen image
+    ln -sf "$image_path" "$HYPR_CONFIG_DIR/wallpaper-desktop"
 
     echo -e "${FG_GREEN}wallpaper saved!${FMT_RESET}"
 
@@ -61,7 +58,7 @@ set_wallpaper(){
 set_lockscreen(){
 
     # create or overwrite symlink for lockscreen image
-    ln -sf "$image_path" "$HYPR_CONFIG_DIR/lockscreen"
+    ln -sf "$image_path" "$HYPR_CONFIG_DIR/wallpaper-lockscreen"
 
     echo -e "${FG_GREEN}lockscreen setted!${FMT_RESET}"
 }
