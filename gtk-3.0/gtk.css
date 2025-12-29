@@ -119,6 +119,16 @@
 
 @import "colors.css";
 
+messagedialog.background {
+  border-radius: 0px;
+  background-color: @window_bg_color;
+}
+
+messagedialog.background > box.titlebar {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+}
+
 /* >>>>>>>>>>>>>> THUNAR >>>>>>>>>>>>>> */
 
 .thunar .sidebar .view:selected {
