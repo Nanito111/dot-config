@@ -29,9 +29,9 @@ $accent_muted: colors.$primary_container !default;
 $accent_greyscale: color.grayscale($accent) !default;
 $accent_greyscale_muted: color.grayscale($accent_muted) !default;
 
-$font: "hurmit nerd font" !default;
-$font_mono: "hurmit nerd font" !default;
-$font_digits: "hurmit nerd font" !default;
+$font: "jetbrainsmono nerd font" !default;
+$font_mono: "jetbrainsmono nerd font" !default;
+$font_digits: "jetbrainsmono nerd font" !default;
 $font_size: 11pt !default;
 $radius: 0 !default;
 $hover_time: 200ms !default;

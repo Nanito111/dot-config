@@ -38,27 +38,27 @@ output_path = '~/.config/qt5ct/colors/matugen.conf'
 # TODO: add neovim template
 
 [config.custom_colors.red]
-color = "#AF3029"
+color = "#C03E35"
 blend = true
 
 [config.custom_colors.green]
-color = "#66800B"
+color = "#768D21"
 blend = true
 
 [config.custom_colors.yellow]
-color = "#AD8301"
+color = "#BE9207"
 blend = true
 
 [config.custom_colors.blue]
-color = "#205EA6"
+color = "#3171B2"
 blend = true
 
 [config.custom_colors.magenta]
-color = "#A02F6F"
+color = "#B74583"
 blend = true
 
 [config.custom_colors.cyan]
-color = "#24837B"
+color = "#2F968D"
 blend = true
 
 [config.custom_colors.white]
