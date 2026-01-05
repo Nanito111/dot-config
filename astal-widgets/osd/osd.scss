@@ -4,7 +4,7 @@
 
 window.OnScreenDisplay {
   & > .base {
-    margin: main.$shadow_scale;
+    margin: 5px;
     background-color: main.$bg;
     border: main.$window_border;
     box-shadow: main.$window_shadow;

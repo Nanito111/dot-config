@@ -5,9 +5,10 @@ set = false # this prevents setting wallpaper with matugen
 input_path = '~/.config/matugen/templates/fuzzel.ini'
 output_path = '~/.config/fuzzel/colors.ini'
 
-[templates.foot]
-input_path = '~/.config/matugen/templates/foot.ini'
-output_path = '~/.config/foot/colors.ini'
+# INFO: deactivated until fix of https://github.com/InioX/matugen/issues/237
+# [templates.foot]
+# input_path = '~/.config/matugen/templates/foot.ini'
+# output_path = '~/.config/foot/colors.ini'
 
 [templates.hyprland]
 input_path = '~/.config/matugen/templates/hyprland.conf'
@@ -36,35 +37,28 @@ input_path = '~/.config/matugen/templates/qtct.conf'
 output_path = '~/.config/qt5ct/colors/matugen.conf'
 
 # TODO: add neovim template
+# [templates.nvim]
+# input_path = '~/.config/nvim/pywal/matugen.lua'
+# output_path = '~/.cache/wal/base46-dark.lua'
+#
+# [templates.nvimlight]
+# input_path = '~/.config/nvim/pywal/matugen.lua'
+# output_path = '~/.cache/wal/base46-light.lua'
 
-[config.custom_colors.red]
-color = "#C03E35"
-blend = true
-
-[config.custom_colors.green]
-color = "#768D21"
-blend = true
-
-[config.custom_colors.yellow]
-color = "#BE9207"
-blend = true
-
-[config.custom_colors.blue]
-color = "#3171B2"
-blend = true
-
-[config.custom_colors.magenta]
-color = "#B74583"
-blend = true
-
-[config.custom_colors.cyan]
-color = "#2F968D"
-blend = true
-
-[config.custom_colors.white]
-color = "#FFFCF0"
-blend = true
-
-[config.custom_colors.black]
-color = "#100F0F"
-blend = true
+[config.custom_colors]
+base_0 = { color = "#100F0F", blend = false }
+base_1 = { color = "#D14D41", blend = false }
+base_2 = { color = "#879A39", blend = false }
+base_3 = { color = "#CE5D97", blend = false }
+base_4 = { color = "#4385BE", blend = false }
+base_5 = { color = "#D0A215", blend = false }
+base_6 = { color = "#3AA99F", blend = false }
+base_7 = { color = "#CECDC3", blend = false }
+base_8 = { color = "#403E3C", blend = false }
+base_9 = { color = "#AF3029", blend = false }
+base_10 = { color = "#66800B", blend = false }
+base_11 = { color = "#A02F6F", blend = false }
+base_12 = { color = "#205EA6", blend = false }
+base_13 = { color = "#AD8301", blend = false }
+base_14 = { color = "#24837B", blend = false }
+base_15 = { color = "#FFFCF0", blend = false }

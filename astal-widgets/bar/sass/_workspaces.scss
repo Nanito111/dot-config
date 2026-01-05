@@ -21,28 +21,28 @@ window.Bar .Workspaces {
     min-height: $regular_ws_width;
     font-size: 12px;
 
-    &,
-    icon {
+    & {
       transition-property: color, min-width;
       transition-duration: main.$hover_time;
       transition-timing-function: linear;
 
+      background-color: main.$bg1;
       border-radius: main.$radius * 0.8;
       border-color: transparent;
-      color: main.$accent_muted;
-      background-color: main.$bg1;
+
+      icon {
+        color: main.$accent_muted;
+      }
     }
 
     &:first-child {
       margin-left: 0;
     }
 
-    &:hover,
     &:hover > icon {
       color: main.$fg;
     }
 
-    &:active,
     &:active > icon {
       color: main.$accent_muted;
     }
@@ -51,11 +51,13 @@ window.Bar .Workspaces {
       box-shadow: none;
     }
 
-    &.focused,
-    &.focused > icon {
-      color: main.$bg;
+    &.focused {
       background-color: main.$accent;
       min-width: $focused_ws_width;
+
+      & > icon {
+        color: main.$bg;
+      }
     }
 
     &.special {

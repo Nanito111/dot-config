@@ -15,7 +15,7 @@ local ShowMediaPlayer = require("bar.widgets.MediaPlayer").ShowMediaPlayer
 local ShowNotificationCenter = require("bar.widgets.NotificationCenter")
 
 local vertical_anchor = WindowAnchor.TOP
-local bar_namespace = "astal-bar"
+local bar_namespace = "astal-bar-blur"
 local blur_namespace = "astal-bar-blur"
 
 -- a comment
