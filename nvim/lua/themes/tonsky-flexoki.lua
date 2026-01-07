@@ -133,8 +133,8 @@ M.polish_hl = {
     ["@attribute"] = { fg = custom_colors.attribute },
     ["@property"] = { fg = custom_colors.property },
 
-    ["@tag.attribute"] = { bg = custom_colors.tag },
-    ["@tag"] = { bg = custom_colors.tag },
+    ["@tag.attribute"] = { fg = custom_colors.tag },
+    ["@tag"] = { fg = custom_colors.tag },
 
     ["@string"] = { fg = custom_colors.string },
     ["@string.special.url"] = { bg = custom_colors.string },
@@ -152,6 +152,7 @@ M.polish_hl = {
     ["@constant.builtin"] = { fg = custom_colors.keyword },
 
     ["@type.builtin"] = { fg = custom_colors.type },
+    ["@type"] = { fg = custom_colors.type },
 
     ["@number"] = { fg = custom_colors.number },
     ["@number.float"] = { fg = custom_colors.number },
