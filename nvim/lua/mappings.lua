@@ -34,17 +34,17 @@ map("v", "P", "p", { desc = "Paste removing yank" })
 -------------------------------------------- menu --------------------------------------------
 -- Open Volt menu
 -- Keyboard users
-map({ "n", "v" }, "<C-t>", function()
-  require("menu").open "default"
-end, { desc = "VoltMenu open (keyboard)" })
-
--- mouse users + nvimtree users!
-map({ "n", "v" }, "<RightMouse>", function()
-  vim.cmd.exec '"normal! \\<RightMouse>"'
-
-  local options = vim.bo.ft == "NvimTree" and "nvimtree" or "default"
-  require("menu").open(options, { mouse = true })
-end, { desc = "VoltMenu open (mouse)" })
+-- map({ "n", "v" }, "<C-t>", function()
+--   require("menu").open "default"
+-- end, { desc = "VoltMenu open (keyboard)" })
+--
+-- -- mouse users + nvimtree users!
+-- map({ "n", "v" }, "<RightMouse>", function()
+--   vim.cmd.exec '"normal! \\<RightMouse>"'
+--
+--   local options = vim.bo.ft == "NvimTree" and "nvimtree" or "default"
+--   require("menu").open(options, { mouse = true })
+-- end, { desc = "VoltMenu open (mouse)" })
 -------------------------------------------- menu --------------------------------------------
 
 -- better indenting
@@ -113,7 +113,8 @@ map({ "n", "t" }, "<A-l>", function()
       row = 0,
       col = 0,
       width = 1,
-      height = 0.90,
+      height = 0.95,
+      border = "none",
     },
   }
 end, { desc = "terminal toggle lazygit" })
@@ -124,7 +125,6 @@ end, { desc = "terminal toggle lazygit" })
 -- hover
 map("n", "K", function()
   vim.lsp.buf.hover {
-    border = "single",
     max_width = 80,
     max_height = 20,
   }
@@ -133,7 +133,7 @@ end, { desc = "LSP Show lsp info under cursor" })
 -- diagnostic float
 map("n", "F", function()
   vim.diagnostic.open_float {
-    border = "single",
+    border = "rounded",
     max_width = 80,
   }
 end, { desc = "LSP Show diagnostics from current line" })

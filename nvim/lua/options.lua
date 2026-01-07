@@ -5,6 +5,7 @@ vim.opt.shiftwidth = 0
 vim.opt.scrolloff = 15
 vim.opt.list = true
 vim.opt.listchars = { tab = "> ", trail = "·" }
+vim.opt.winborder = "rounded"
 
 -- AutoFormating Toggle
 vim.api.nvim_create_user_command("FormatDisable", function(args)
@@ -38,8 +39,8 @@ vim.opt.fillchars = { eob = " ", fold = " ", foldopen = "▼", foldclose = "▶"
 vim.opt.foldcolumn = "auto:9"
 
 -- gitsigns setup
-require("gitsigns").setup {
-  preview_config = {
-    border = "single",
-  },
-}
+-- require("gitsigns").setup {
+--   preview_config = {
+--     border = "rounded",
+--   },
+-- }

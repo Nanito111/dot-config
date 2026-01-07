@@ -17,7 +17,7 @@ M.nvdash = {
 
 M.colorify = {
   enabled = true,
-  mode = "virtual",
+  mode = "bg",
 }
 
 M.cheatsheet = {
@@ -57,7 +57,7 @@ M.ui = {
 M.base46 = {
   theme = "tonsky-flexoki",
   integrations = { "blink", "todo" },
-  transparency = true,
+  transparency = false,
   hl_override = {
     NvDashAscii = { fg = "white" },
     Folded = { fg = "NONE", bg = "one_bg" },
@@ -78,7 +78,7 @@ M.term = {
     col = 0.068,
     width = 0.85,
     height = 0.85,
-    border = "single",
+    border = "rounded",
   },
   winopts = {
     signcolumn = "no",
@@ -108,5 +108,4 @@ M.mason = {
     "gdtoolkit",
   },
 }
-
 return M
