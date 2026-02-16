@@ -50,7 +50,7 @@ set_wallpaper(){
     # generating new system colors
     echo -e "\ngenerating colors"
 
-    matugen -t scheme-content image "$image_path" -v
+    matugen -t scheme-content image --source-color-index 0 "$image_path" -v
 
     echo -e "${FG_GREEN}colors generated!${FMT_RESET}"
 }
