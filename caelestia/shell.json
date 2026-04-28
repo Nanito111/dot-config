@@ -1,0 +1,185 @@
+{
+    "appearance": {
+        "anim": {
+            "durations": {
+                "scale": 0.4762938230383974
+            }
+        },
+        "font": {
+            "family": {
+                "material": "Material Symbols Rounded",
+                "mono": "Bitcount Grid Single",
+                "sans": "Bitcount Prop Single"
+            },
+            "size": {
+                "scale": 1.1420537897310514
+            }
+        },
+        "padding": {
+            "scale": 1.0707627118644067
+        },
+        "rounding": {
+            "scale": 0.5541463414634147
+        },
+        "spacing": {
+            "scale": 0.3737288135593221
+        },
+        "transparency": {
+            "enabled": false
+        }
+    },
+    "background": {
+        "desktopClock": {
+            "background": {
+                "blur": true,
+                "enabled": false,
+                "opacity": 0.8625461254612548
+            },
+            "enabled": true,
+            "invertColors": false,
+            "position": "middle-center",
+            "shadow": {
+                "blur": 1,
+                "enabled": true,
+                "opacity": 1
+            }
+        },
+        "enabled": true,
+        "visualiser": {
+            "enabled": false
+        },
+        "wallpaperEnabled": true
+    },
+    "bar": {
+        "activeWindow": {
+            "compact": true,
+            "inverted": true
+        },
+        "clock": {
+            "background": false,
+            "showDate": true,
+            "showIcon": false
+        },
+        "dragThreshold": 100,
+        "excludedScreens": [
+            "DVI-D-1"
+        ],
+        "persistent": true,
+        "popouts": {
+            "activeWindow": true,
+            "statusIcons": true,
+            "tray": true
+        },
+        "scrollActions": {
+            "brightness": false,
+            "volume": true
+        },
+        "showOnHover": true,
+        "status": {
+            "showAudio": false,
+            "showBattery": true,
+            "showKbLayout": true,
+            "showMicrophone": false,
+            "showWifi": false
+        },
+        "tray": {
+            "background": true,
+            "compact": false,
+            "recolour": true
+        },
+        "workspaces": {
+            "activeIndicator": true,
+            "occupiedBg": false,
+            "perMonitorWorkspaces": true,
+            "showWindows": false,
+            "shown": 4
+        }
+    },
+    "border": {
+        "rounding": 14,
+        "thickness": 18
+    },
+    "dashboard": {
+        "resourceUpdateInterval": 1000
+    },
+    "general": {
+        "apps": {
+            "audio": [
+                "pavucontrol"
+            ],
+            "explorer": [
+                "thunar"
+            ],
+            "playback": [
+                "mpv"
+            ],
+            "terminal": [
+                "foot"
+            ]
+        },
+        "idle": {
+            "inhibitWhenAudio": true,
+            "lockBeforeSleep": true,
+            "timeouts": [
+                {
+                    "idleAction": "lock",
+                    "timeout": 600
+                },
+                {
+                    "idleAction": "dpms off",
+                    "returnAction": "dpms on",
+                    "timeout": 615
+                },
+                {
+                    "idleAction": [
+                        "systemctl",
+                        "suspend-then-hibernate"
+                    ],
+                    "timeout": 600
+                }
+            ]
+        }
+    },
+    "launcher": {
+        "actionPrefix": "/",
+        "enableDangerousActions": false,
+        "favouriteApps": [
+            "thunar",
+            "waterfox",
+            "foot",
+            "obsidian"
+        ],
+        "hiddenApps": [
+            "thunar-settings",
+            "xfce4-about",
+            "thunar-bulk-rename",
+            "electron34",
+            "electron36",
+            "electron37",
+            "footclient",
+            "foot-server",
+            "org.freedesktop.IBus.Setup",
+            "jconsole-java-openjdk",
+            "jshell-java-openjdk",
+            "panel-preferences",
+            "qv4l2",
+            "qvidcap",
+            "ukmm"
+        ],
+        "showOnHover": false,
+        "useFuzzy": {
+            "apps": true
+        },
+        "vimKeybinds": true
+    },
+    "notifs": {
+        "defaultExpireTimeout": 3000
+    },
+    "paths": {
+        "wallpaperDir": "~/Pictures/wallpapers"
+    },
+    "services": {
+        "useFahrenheit": false,
+        "useTwelveHourClock": false
+    }
+}
