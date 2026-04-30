@@ -10,3 +10,4 @@ export CUSTOM_SCRIPTS_DIR="$BASH_CONFIG_DIR/scripts"
 export EDITOR="$(which nvim)"
 export SUDO_EDITOR="$(which nvim)"
 export ADW_DISABLE_PORTAL=1
+export CAELESTIA_WALLPAPERS_DIR="$HOME/Pictures/wallpapers"
