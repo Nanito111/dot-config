@@ -41,6 +41,9 @@ export FZF_CTRL_R_OPTS="--height 40% --reverse --tac --no-sort"
 
 [ -f /opt/miniforge/etc/profile.d/conda.sh ] && source /opt/miniforge/etc/profile.d/conda.sh
 
+# Cealestia colors
+cat ~/.local/state/caelestia/sequences.txt 2> /dev/null
+
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'mamba shell init' !!
 export MAMBA_EXE='/opt/miniforge/bin/mamba';
