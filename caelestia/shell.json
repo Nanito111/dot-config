@@ -37,7 +37,7 @@
             },
             "enabled": true,
             "invertColors": false,
-            "position": "middle-center",
+            "position": "bottom-left",
             "shadow": {
                 "blur": 1,
                 "enabled": true,
