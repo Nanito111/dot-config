@@ -1,1 +1,2 @@
-vim.o.clipboard = "unnamedplus"
+require("config.options")
+require("config.keymaps")
