@@ -142,6 +142,20 @@ map("n", "<leader>sx", "<cmd>tabclose<CR>", { silent = true, desc = "Cerrar work
 map("n", "<leader>sl", "gt", { silent = true, desc = "Workspace siguiente" })
 map("n", "<leader>sh", "gT", { silent = true, desc = "Workspace anterior" })
 
+-- Notificaciones
+map("n", "<leader>nh", "<cmd>Notifications<CR>", { silent = true, desc = "Historial de notificaciones" })
+map("n", "<leader>nd", function()
+  require("plugins.local.notify").dismiss_all()
+end, { silent = true, desc = "Descartar notificaciones visibles" })
+
+-- UI: pickers de la statusline (con preview en vivo)
+map("n", "<leader>us", function()
+  require("plugins.local.statusline").pick_preset()
+end, { silent = true, desc = "Preset de la statusline (picker)" })
+map("n", "<leader>ub", function()
+  require("plugins.local.statusline").pick()
+end, { silent = true, desc = "Borde de la statusline (picker)" })
+
 -- Explorador: alternar el foco entre el panel y el editor (lo abre si no está)
 map("n", "<leader>e", function()
   require("plugins.local.explorer").focus()

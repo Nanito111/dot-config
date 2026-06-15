@@ -5,6 +5,7 @@ vim.g.loaded_netrwPlugin = 1
 require("config.options")
 require("config.winopts")
 require("config.theme") -- registro central de highlights que reaccionan a ColorScheme
+require("plugins.local.notify") -- toasts: sobrescribe vim.notify (antes del resto)
 require("config.keymaps")
 require("config.commands")
 require("config.autocmds")

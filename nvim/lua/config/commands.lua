@@ -1,13 +1,16 @@
 local usr_cmd = vim.api.nvim_create_user_command
 
 usr_cmd("ReloadConfig", function()
-  for name,_ in pairs(package.loaded) do
-    if name:match("^config") then
+  -- limpiar el caché de los módulos propios (config.* y plugins.local.*) para que
+  -- dofile vuelva a ejecutarlos con los cambios; los demás (de Neovim) se conservan
+  for name, _ in pairs(package.loaded) do
+    if name:match("^config") or name:match("^plugins") then
       package.loaded[name] = nil
     end
   end
   dofile(vim.env.MYVIMRC)
-end, {})
+  vim.notify("Configuración recargada")
+end, { desc = "Recargar la configuración (config.* y plugins.local.*)" })
 
 -- Terminales flotantes
 local floatterm = require("plugins.local.floatterm")

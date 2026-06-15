@@ -1,0 +1,191 @@
+-- Dibujo del árbol: highlights, marcas de git, construcción de nodos, render,
+-- nodo bajo el cursor y "revelar" (expandir hasta el archivo actual).
+local api = vim.api
+local icons = require("config.icons")
+local palette = require("config.palette")
+local theme = require("config.theme")
+local state = require("plugins.local.explorer.state")
+local util = require("plugins.local.explorer.util")
+
+local ns = state.ns
+local FOLDER_CLOSED, FOLDER_OPEN = state.FOLDER_CLOSED, state.FOLDER_OPEN
+local normpath, read_dir = util.normpath, util.read_dir
+
+local M = {}
+
+local function set_hl()
+  local hl = api.nvim_set_hl
+  hl(0, "ExplorerDir", { fg = palette.blue, bold = true })
+  hl(0, "ExplorerFile", { fg = palette.fg })
+  hl(0, "ExplorerRoot", { fg = palette.yellow, bold = true })
+  hl(0, "ExplorerCurrent", { fg = palette.cyan_bright, bold = true }) -- archivo actual
+  hl(0, "ExplorerGitNew", { fg = palette.cyan }) -- sin trackear (distinto del verde de añadido)
+end
+
+-- Define los grupos ahora y los reaplica en ColorScheme.
+theme.register(set_hl)
+
+-- Símbolo + highlight para un estado de git. El código XY de `git status
+-- --porcelain` separa staged (X, índice) de sin-stagear (Y, árbol de trabajo):
+-- los cambios sin stagear se ven con color VIVO y los solo-staged con color
+-- APAGADO (igual que el gutter). Para carpetas: "DU" = contiene algo sin stagear
+-- (• vivo), "DS" = solo cambios staged (• apagado).
+local function git_mark(code, is_dir)
+  if is_dir then
+    if code == "DS" then
+      return "\u{2022}", "GitSignStagedChange" -- • carpeta: solo staged (apagado)
+    end
+    return "\u{2022}", "GitSignChange" -- • carpeta: hay algo sin stagear (vivo)
+  end
+  if code == "??" then
+    return "?", "ExplorerGitNew" -- sin trackear (teal)
+  end
+  local x, y = code:sub(1, 1), code:sub(2, 2)
+  -- los cambios sin stagear (Y) tienen prioridad visual: color vivo
+  if y == "D" then
+    return "-", "GitSignDelete"
+  elseif y == "A" then
+    return "+", "GitSignAdd"
+  elseif y ~= " " then -- M, R, C, T… modificado sin stagear
+    return "~", "GitSignChange"
+  end
+  -- solo staged (Y vacío): colores apagados
+  if x == "A" or x == "C" then
+    return "+", "GitSignStagedAdd"
+  elseif x == "D" then
+    return "-", "GitSignStagedDelete"
+  elseif x == "R" then
+    return "\u{2192}", "GitSignStagedChange" -- → renombrado (staged)
+  end
+  return "~", "GitSignStagedChange" -- M u otros (staged)
+end
+
+-- Construye la lista de nodos visibles (recursivo según lo expandido)
+local function build(s, path, depth, out)
+  for _, e in ipairs(read_dir(path)) do
+    local full = path .. "/" .. e.name
+    out[#out + 1] = { path = full, name = e.name, is_dir = e.is_dir, depth = depth }
+    if e.is_dir and s.expanded[full] then
+      build(s, full, depth + 1, out)
+    end
+  end
+end
+
+-- Grupo de highlight para un color de icono (estilo devicons)
+local function icon_color_group(col)
+  local name = "ExpIcon_" .. col:gsub("#", "")
+  api.nvim_set_hl(0, name, { fg = col })
+  return name
+end
+
+-- Dibuja el árbol en el buffer de `s`
+function M.render(s)
+  if not (s and s.buf and api.nvim_buf_is_valid(s.buf)) then
+    return
+  end
+  s.nodes = {}
+  build(s, s.root, 0, s.nodes)
+  local colored = vim.g.explorer_colored_icons
+  local current = s.current_file and normpath(s.current_file) or nil
+
+  local lines = { " " .. FOLDER_OPEN .. " " .. vim.fn.fnamemodify(s.root, ":t") .. "/" }
+  local hls = {} -- por nodo: { icon_end, name_end (bytes), icon_hl, type_hl, git_hl }
+  for _, n in ipairs(s.nodes) do
+    local indent = string.rep("  ", n.depth + 1)
+    local icon = n.is_dir and (s.expanded[n.path] and FOLDER_OPEN or FOLDER_CLOSED) or icons.icon(n.name)
+    local body = indent .. icon .. " " .. n.name .. (n.is_dir and "/" or "")
+
+    local type_hl = n.is_dir and "ExplorerDir" or "ExplorerFile"
+    if not n.is_dir and current and normpath(n.path) == current then
+      type_hl = "ExplorerCurrent" -- el archivo abierto en la ventana principal
+    end
+    local icon_hl = type_hl
+    if colored and not n.is_dir then
+      local col = icons.color(n.name)
+      if col then
+        icon_hl = icon_color_group(col)
+      end
+    end
+
+    -- marca de git al final
+    local line, git_hl = body, nil
+    local st = s.git and s.git[normpath(n.path)]
+    if st then
+      local sym, hlg = git_mark(st, n.is_dir)
+      line = body .. "  " .. sym
+      git_hl = hlg
+    end
+    lines[#lines + 1] = line
+    hls[#hls + 1] = {
+      icon_end = #indent + #icon,
+      name_end = #body,
+      icon_hl = icon_hl,
+      type_hl = type_hl,
+      git_hl = git_hl,
+    }
+  end
+
+  -- preservar la posición del cursor al re-renderizar (auto-refresco)
+  local cursor
+  if s.win and api.nvim_win_is_valid(s.win) then
+    cursor = api.nvim_win_get_cursor(s.win)
+  end
+
+  vim.bo[s.buf].modifiable = true
+  api.nvim_buf_set_lines(s.buf, 0, -1, false, lines)
+  vim.bo[s.buf].modifiable = false
+
+  api.nvim_buf_clear_namespace(s.buf, ns, 0, -1)
+  api.nvim_buf_add_highlight(s.buf, ns, "ExplorerRoot", 0, 0, -1)
+  for i, h in ipairs(hls) do
+    -- línea de buffer = i (la 0 es la raíz)
+    api.nvim_buf_add_highlight(s.buf, ns, h.icon_hl, i, 0, h.icon_end) -- icono
+    api.nvim_buf_add_highlight(s.buf, ns, h.type_hl, i, h.icon_end, h.name_end) -- nombre
+    if h.git_hl then
+      api.nvim_buf_add_highlight(s.buf, ns, h.git_hl, i, h.name_end, -1) -- marca git
+    end
+  end
+
+  if cursor then
+    cursor[1] = math.max(1, math.min(cursor[1], #lines))
+    pcall(api.nvim_win_set_cursor, s.win, cursor)
+  end
+end
+
+function M.node_at_cursor(s)
+  local lnum = api.nvim_win_get_cursor(s.win)[1]
+  return s.nodes[lnum - 1] -- la línea 1 es la raíz, no es nodo
+end
+
+-- Expande las carpetas ancestro hasta revelar `s.current_file`
+function M.reveal(s)
+  local target = s.current_file and normpath(s.current_file)
+  if not target then
+    return
+  end
+  local root = normpath(s.root)
+  if target:sub(1, #root + 1) ~= root .. "/" then
+    return -- el archivo no está bajo la raíz
+  end
+  local dir = s.root
+  while normpath(dir) ~= target do
+    local next_dir
+    for _, e in ipairs(read_dir(dir)) do
+      if e.is_dir then
+        local child = dir .. "/" .. e.name
+        local nc = normpath(child)
+        if target == nc or target:sub(1, #nc + 1) == nc .. "/" then
+          next_dir = child
+          break
+        end
+      end
+    end
+    if not next_dir then
+      break -- el archivo está directamente en `dir`
+    end
+    s.expanded[next_dir] = true
+    dir = next_dir
+  end
+end
+
+return M

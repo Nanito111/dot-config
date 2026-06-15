@@ -23,6 +23,9 @@ local function close()
     api.nvim_set_current_win(s.origin)
   end
   vim.cmd("stopinsert") -- salir del insert mode que dejó el prompt
+  if not s.confirmed and s.on_cancel then
+    s.on_cancel() -- se cerró sin elegir (Esc / foco fuera): deshacer el preview
+  end
 end
 
 -- Resalta la línea seleccionada y la mantiene visible
@@ -37,6 +40,9 @@ local function highlight()
     hl_eol = true,
   })
   pcall(api.nvim_win_set_cursor, s.res_win, { s.idx, 0 })
+  if s.on_move then
+    s.on_move(s.shown[s.idx]) -- preview en vivo del elemento resaltado
+  end
 end
 
 -- Vuelca una lista de resultados en la ventana
@@ -99,6 +105,7 @@ end
 -- Confirma la selección actual
 local function confirm()
   local s = state
+  s.confirmed = true -- para que close() no dispare on_cancel
   local item = s.shown and s.shown[s.idx]
   local on_select = s.on_select
   local origin = s.origin
@@ -142,8 +149,15 @@ local function create_windows(title)
   return prompt_buf, prompt_win, res_buf, res_win
 end
 
--- Picker genérico. opts = { title, items | source, on_select }
-local function pick(opts)
+-- Picker genérico.
+-- opts = {
+--   title,
+--   items | source,        -- lista estática (fuzzy) o fuente live async
+--   on_select(item, origin),
+--   on_move(item)?,         -- al cambiar el resaltado (para preview en vivo)
+--   on_cancel()?,           -- al cerrar sin elegir (para deshacer el preview)
+-- }
+function M.pick(opts)
   if state then
     close()
   end
@@ -160,6 +174,8 @@ local function pick(opts)
     items = opts.items,
     source = opts.source,
     on_select = opts.on_select,
+    on_move = opts.on_move,
+    on_cancel = opts.on_cancel,
     shown = opts.items or {},
     idx = 1,
     count = 0,
@@ -190,6 +206,8 @@ local function pick(opts)
   refilter()
   vim.cmd("startinsert")
 end
+
+local pick = M.pick -- alias para los buscadores de abajo
 
 -- Enfoca una ventana normal (evita netrw y terminales)
 local function goto_normal_win(origin)
