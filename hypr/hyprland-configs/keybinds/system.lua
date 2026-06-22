@@ -32,6 +32,29 @@ hl.bind("XF86AudioPlay",  hl.dsp.exec_cmd("playerctl play-pause"),  { locked = t
 hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),    { locked = true })
 
 -- Zoom
-hl.bind(mainMod .. " + mouse_down", hl.dsp.exec_cmd(change_zoom .. " 1.2"))
-hl.bind(mainMod .. " + mouse_up",   hl.dsp.exec_cmd(change_zoom .. " 0.8"))
-hl.bind(mainMod .. " + mouse:274",  hl.dsp.exec_cmd("hyprctl -q keyword cursor:zoom_factor 1"))
+local MAX_ZOOM = 5
+local MIN_ZOOM = 1
+local ZOOM_TOGGLE_FACTOR = 1.5
+
+---@param offset number
+---@return nil
+local function zoom(offset)
+    local current = hl.get_config("cursor.zoom_factor")
+    if offset ~= nil then
+        current = current + offset
+    elseif current ~= MIN_ZOOM then
+        current = MIN_ZOOM
+    else
+        current = ZOOM_TOGGLE_FACTOR
+    end
+    current = math.max(MIN_ZOOM, math.min(MAX_ZOOM, current))
+    hl.config({ cursor = { zoom_factor = current } })
+end
+
+hl.bind(mainMod .. " + mouse:274", zoom)
+hl.bind(mainMod .. " + mouse_down", function()
+    zoom(0.2)
+end)
+hl.bind(mainMod .. " + mouse_up", function()
+    zoom(-0.2)
+end)
