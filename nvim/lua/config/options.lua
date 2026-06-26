@@ -45,16 +45,7 @@ opt.updatetime = 250    -- respuesta más rápida (para LSP)
 opt.clipboard = "unnamedplus"  -- integración con el portapapeles del sistema
 opt.termguicolors = true
 
--- Netrw (común a todos los SO)
-glob.netrw_browse_split = 4
-glob.netrw_liststyle = 3
-glob.netrw_list_hide = ""
-glob.netrw_banner = 0
-glob.netrw_keepdir = 1
-glob.netrw_preview = 1
-glob.netrw_winsize = -45  -- ancho del panel: 30 columnas (negativo = absoluto)
-
--- Shell y comandos de netrw según el sistema operativo
+-- Shell según el sistema operativo (usado por las terminales)
 if is_windows then
   -- forzar forward slashes (la opción 'shellslash' solo existe en Windows)
   opt.shellslash = true
@@ -67,20 +58,7 @@ if is_windows then
   opt.shellpipe = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
   opt.shellquote = ""
   opt.shellxquote = ""
-
-  -- Operaciones locales de netrw con cmdlets de PowerShell
-  glob.netrw_localcopycmd = "Copy-Item"
-  glob.netrw_localcopydircmd = "Copy-Item -Recurse"
-  glob.netrw_localmkdir = "New-Item -ItemType Directory"
-  glob.netrw_localmovecmd = "Move-Item"
-  glob.netrw_localrmdir = "Remove-Item"
 else
   -- Linux/Unix: bash y utilidades POSIX
   opt.shell = "bash"
-
-  glob.netrw_localcopycmd = "cp"
-  glob.netrw_localcopydircmd = "cp -r"
-  glob.netrw_localmkdir = "mkdir -p"
-  glob.netrw_localmovecmd = "mv"
-  glob.netrw_localrmdir = "rmdir"
 end

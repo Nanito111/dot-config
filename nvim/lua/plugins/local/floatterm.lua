@@ -26,6 +26,15 @@ end
 -- Alterna un terminal flotante que ejecuta `cmd` (lista de argumentos).
 -- `name` identifica la instancia para mantener su proceso vivo entre toggles.
 function M.toggle(name, cmd)
+  -- Verificar que el binario exista antes de intentar arrancarlo
+  if vim.fn.executable(cmd[1]) == 0 then
+    vim.notify(
+      string.format("'%s' no está en el PATH; instálalo para usar esta función", cmd[1]),
+      vim.log.levels.ERROR
+    )
+    return
+  end
+
   -- Una instancia por tab (workspace): así cada cwd tiene su propio proceso
   local key = name .. "#" .. api.nvim_get_current_tabpage()
   local st = state[key] or {}
