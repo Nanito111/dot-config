@@ -12,18 +12,18 @@ return {
     default = {
       border = "round",
       layout = {
-        left = { "git", "label" },
+        left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "filetype", "position", "percent" },
+        right = { "lsp", "filetype", "position", "percent" },
       },
     },
     -- Powerline: bloque de modo a la IZQUIERDA, segmentos de colores, flechas.
     powerline = {
       border = "arrow",
       layout = {
-        left = { "mode", "git", "label" },
+        left = { "mode", "git", "label", "diagnostics" },
         center = {},
-        right = { "filetype", "position", "percent" },
+        right = { "lsp", "filetype", "position", "percent" },
       },
       colors = function(pair, p)
         pair("StGit", p.bg, p.green, { bold = true }) -- rama sobre verde
@@ -34,9 +34,9 @@ return {
     minimal = {
       border = "square",
       layout = {
-        left = { "label" },
+        left = { "label", "diagnostics" },
         center = { "mode" },
-        right = { "position", "percent" },
+        right = { "lsp", "position", "percent" },
       },
       colors = function(pair, p)
         -- modo: solo texto del color del modo, sin fondo
@@ -55,9 +55,9 @@ return {
     slant = {
       border = "slant",
       layout = {
-        left = { "git", "label" },
+        left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "filetype", "position", "percent" },
+        right = { "lsp", "filetype", "position", "percent" },
       },
       colors = function(pair, p)
         pair("StGit", p.bg, p.orange, { bold = true })
@@ -72,9 +72,9 @@ return {
       border = "thin",
       transparent = true,
       layout = {
-        left = { "git", "label" },
+        left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "filetype", "position", "percent" },
+        right = { "lsp", "filetype", "position", "percent" },
       },
       colors = function(pair, p)
         local function t(name, fg)
@@ -98,9 +98,9 @@ return {
       border = "square",
       fill = "#007acc",
       layout = {
-        left = { "git", "label" },
-        center = {},
-        right = { "position", "filetype" },
+        left = { "git", "label", "diagnostics" },
+        center = { "mode" },
+        right = { "lsp", "position", "filetype" },
       },
       colors = function(pair)
         local bg, fg = "#007acc", "#ffffff"
@@ -125,9 +125,9 @@ return {
       border = "square",
       fill = "#2d2d2d",
       layout = {
-        left = { "git", "label" },
-        center = {},
-        right = { "position", "filetype" },
+        left = { "git", "label", "diagnostics" },
+        center = { "mode" },
+        right = { "lsp", "position", "filetype" },
       },
       colors = function(pair)
         local bg, fg = "#2d2d2d", "#cccccc"
@@ -150,9 +150,9 @@ return {
     blocky = {
       border = "square",
       layout = {
-        left = { "git", "label" },
+        left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "filetype", "position", "percent" },
+        right = { "lsp", "filetype", "position", "percent" },
       },
       colors = function(pair, p)
         pair("StGit", p.bg, p.cyan, { bold = true }) -- rama sobre cian
@@ -195,5 +195,10 @@ return {
     branch = "\u{e0a0}", --  rama de git
     terminal = "\u{f489}", --  buffer de terminal
     files = "\u{f07b}", --  explorador de archivos
+    lsp = "\u{f085}", --  servidor(es) LSP activos
+    diag_error = "\u{f057}", --  diagnóstico: error
+    diag_warn = "\u{f071}", --  diagnóstico: aviso
+    diag_info = "\u{f05a}", --  diagnóstico: info
+    diag_hint = "\u{f0eb}", --  diagnóstico: pista
   },
 }

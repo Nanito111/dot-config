@@ -15,7 +15,28 @@ local cfg = require("plugins.local.statusline.config")
 local M = {}
 
 -- Estado activo (lo fija el preset): layout, borde, relleno y modo transparente
-local current = { layout = {}, border = "round", fill = palette.bg_dark, transparent = false }
+-- fill = nil significa "usar palette.bg dinámicamente" (mismo fondo que el editor);
+-- un preset puede fijar su propio fill. Al dejarlo nil, apply_colors lee la paleta
+-- fresca en cada ColorScheme y así la statusline sigue al tema activo.
+local current = { layout = {}, border = "round", fill = nil, transparent = false }
+
+-- ── Persistencia de la elección (preset + borde) entre sesiones ────
+local prefs_file = vim.fn.stdpath("data") .. "/statusline.json"
+
+-- Guarda el estado activo (preset y borde) para restaurarlo al reabrir Neovim
+local function save_prefs()
+  pcall(vim.fn.writefile, { vim.json.encode({ preset = cfg.preset, border = current.border }) }, prefs_file)
+end
+
+-- Lee las preferencias guardadas (o {} si no hay / están corruptas)
+local function load_prefs()
+  local ok, lines = pcall(vim.fn.readfile, prefs_file)
+  if not ok or not lines or not lines[1] then
+    return {}
+  end
+  local decoded_ok, prefs = pcall(vim.json.decode, lines[1])
+  return (decoded_ok and type(prefs) == "table") and prefs or {}
+end
 
 -- ── Colores ────────────────────────────────────────────────────────
 -- Cada preset puede traer su propio `colors(pair, palette)`; si no, se usan estos.
@@ -30,6 +51,11 @@ local function default_colors(pair)
   pair("StGit", palette.blue, palette.bg_highlight)
   pair("StFile", palette.fg, palette.bg_highlight)
   pair("StInfo", palette.fg, palette.bg_highlight)
+  -- diagnósticos: color de severidad sobre el fondo de píldora "info"
+  pair("StDiagError", palette.red, palette.bg_highlight)
+  pair("StDiagWarn", palette.yellow, palette.bg_highlight)
+  pair("StDiagInfo", palette.blue, palette.bg_highlight)
+  pair("StDiagHint", palette.cyan, palette.bg_highlight)
 end
 
 local active_colors = default_colors -- función de colores del preset activo
@@ -38,7 +64,7 @@ local active_colors = default_colors -- función de colores del preset activo
 -- y se registra en theme para reaplicarse en cada ColorScheme.
 local function apply_colors()
   local transparent = current.transparent
-  local fill = current.fill or palette.bg_dark
+  local fill = current.fill or palette.bg -- por defecto = fondo global del editor
   local hl = api.nvim_set_hl
   local function pair(name, fg, bg, opts)
     opts = opts or {}
@@ -81,7 +107,8 @@ function M.set_border(name)
     return false
   end
   apply_border(name)
-  vim.cmd("redrawstatus")
+  save_prefs()
+  vim.cmd("redrawstatus | redrawtabline")
   return true
 end
 
@@ -113,14 +140,15 @@ function M.set_preset(name)
   if p.layout then
     current.layout = p.layout
   end
-  current.fill = p.fill or palette.bg_dark
+  current.fill = p.fill -- nil = seguir palette.bg dinámicamente
   current.transparent = p.transparent or false
   active_colors = p.colors or default_colors
   apply_colors()
   if p.border then
     apply_border(p.border)
   end
-  vim.cmd("redrawstatus")
+  save_prefs()
+  vim.cmd("redrawstatus | redrawtabline")
   return true
 end
 
@@ -195,7 +223,7 @@ local function update_git(buf)
     vim.schedule(function()
       if api.nvim_buf_is_valid(buf) and vim.b[buf].gitbranch ~= branch then
         vim.b[buf].gitbranch = branch
-        vim.cmd("redrawstatus")
+        vim.cmd("redrawstatus | redrawtabline")
       end
     end)
   end)
@@ -203,7 +231,16 @@ end
 
 -- ── Activación ─────────────────────────────────────────────────────
 theme.register(apply_colors) -- reaplica los colores del preset activo en ColorScheme
-M.set_preset(cfg.preset) -- fija layout + colores + borde del preset inicial
+
+-- Restaurar la elección guardada (preset + borde); si no hay o es inválida, usar
+-- el preset por defecto de config.lua.
+local prefs = load_prefs()
+if not (prefs.preset and M.set_preset(prefs.preset)) then
+  M.set_preset(cfg.preset) -- fija layout + colores + borde del preset inicial
+end
+if prefs.border then
+  M.set_border(prefs.border) -- restaurar el borde exacto (eje independiente del preset)
+end
 vim.o.laststatus = 3 -- una sola statusline global
 vim.o.statusline = "%!v:lua.statusline()"
 
@@ -234,6 +271,14 @@ autocmd({ "BufEnter", "FocusGained", "DirChanged", "BufWritePost" }, {
   desc = "Actualizar rama de git",
   callback = function(ev)
     update_git(ev.buf)
+  end,
+})
+
+autocmd("DiagnosticChanged", {
+  group = group,
+  desc = "Redibujar la statusline al cambiar los diagnósticos",
+  callback = function()
+    vim.cmd("redrawstatus | redrawtabline")
   end,
 })
 

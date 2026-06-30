@@ -21,6 +21,8 @@ function M.register(fn)
       group = group,
       desc = "Reaplicar highlights de UI registrados",
       callback = function()
+        -- recalcular la paleta desde el tema nuevo ANTES de reaplicar la UI
+        require("config.palette").refresh()
         for _, f in ipairs(M._callbacks) do
           f()
         end

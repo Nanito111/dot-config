@@ -111,6 +111,36 @@ M.components = {
     return { text = ft, hl = "StInfo", width = cfg.width.filetype, align = "c" }
   end,
 
+  -- servidor(es) LSP conectados al buffer; se oculta si no hay ninguno
+  lsp = function()
+    local names = {}
+    for _, c in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
+      names[#names + 1] = c.name
+    end
+    if #names == 0 then
+      return nil
+    end
+    return { text = cfg.icons.lsp .. " " .. table.concat(names, ","), hl = "StInfo", align = "l" }
+  end,
+
+  -- conteo de diagnósticos del buffer (errores/avisos/info/pistas); se oculta si no
+  -- hay ninguno. Una sola píldora coloreada según la severidad más alta presente.
+  diagnostics = function()
+    local sev = vim.diagnostic.severity
+    local c = vim.diagnostic.count(0)
+    local e, w, i, h = c[sev.ERROR] or 0, c[sev.WARN] or 0, c[sev.INFO] or 0, c[sev.HINT] or 0
+    if e + w + i + h == 0 then
+      return nil
+    end
+    local parts = {}
+    if e > 0 then parts[#parts + 1] = cfg.icons.diag_error .. " " .. e end
+    if w > 0 then parts[#parts + 1] = cfg.icons.diag_warn .. " " .. w end
+    if i > 0 then parts[#parts + 1] = cfg.icons.diag_info .. " " .. i end
+    if h > 0 then parts[#parts + 1] = cfg.icons.diag_hint .. " " .. h end
+    local hl = (e > 0 and "StDiagError") or (w > 0 and "StDiagWarn") or (i > 0 and "StDiagInfo") or "StDiagHint"
+    return { text = table.concat(parts, " "), hl = hl, align = "l" }
+  end,
+
   -- posición línea:columna
   position = function()
     local cur = api.nvim_win_get_cursor(0)

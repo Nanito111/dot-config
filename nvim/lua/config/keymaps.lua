@@ -90,6 +90,23 @@ map("t", "<C-q>", [[<C-\><C-n>]], { silent = true, desc = "Salir del modo termin
 -- Marks
 map("n", "<leader>m", ":marks a-z<CR>", { silent = true, desc = "Listar marcas a-z" })
 
+-- Diagnósticos (grupo <leader>d*) — son de vim.diagnostic, independientes del LSP.
+-- D: acceso rápido al flotante de la línea (reemplaza el D por defecto = d$).
+local function diag_float()
+  vim.diagnostic.open_float({ scope = "line", border = "rounded" })
+end
+map("n", "D", diag_float, { silent = true, desc = "Diagnóstico de la línea (flotante)" })
+map("n", "<leader>dd", diag_float, { silent = true, desc = "Diagnóstico de la línea (flotante)" })
+map("n", "<leader>dq", function()
+  vim.diagnostic.setloclist() -- diagnósticos del buffer en una lista
+end, { silent = true, desc = "Diagnósticos del buffer (lista)" })
+map("n", "<leader>dn", function()
+  vim.diagnostic.jump({ count = 1, float = true })
+end, { silent = true, desc = "Siguiente diagnóstico" })
+map("n", "<leader>dp", function()
+  vim.diagnostic.jump({ count = -1, float = true })
+end, { silent = true, desc = "Diagnóstico anterior" })
+
 -- Terminales flotantes
 map({ "n", "t" }, "<M-g>", "<cmd>Lazygit<CR>", { silent = true, desc = "Lazygit (flotante)" })
 map({ "n", "t" }, "<M-c>", "<cmd>Claude<CR>", { silent = true, desc = "Claude (flotante)" })
@@ -155,6 +172,9 @@ end, { silent = true, desc = "Preset de la statusline (picker)" })
 map("n", "<leader>ub", function()
   require("plugins.local.statusline").pick()
 end, { silent = true, desc = "Borde de la statusline (picker)" })
+map("n", "<leader>ut", function()
+  require("config.themes").pick()
+end, { silent = true, desc = "Tema/colorscheme (picker con preview)" })
 
 -- Explorador: alternar el foco entre el panel y el editor (lo abre si no está)
 map("n", "<leader>e", function()

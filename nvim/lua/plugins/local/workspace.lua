@@ -3,26 +3,35 @@ local palette = require("config.palette")
 local theme = require("config.theme")
 local M = {}
 
-local FILL = palette.bg_dark -- fondo de la tabline
-local CAP_L = "\u{e0b6}" -- medialuna izquierda
-local CAP_R = "\u{e0b4}" -- medialuna derecha
+-- Extremos de píldora: leídos del statusline en cada render (para que la tabline
+-- use el mismo borde que el statusline). Respaldo: medialunas si el statusline no
+-- estuviera cargado.
+local function caps()
+  local ok, core = pcall(require, "plugins.local.statusline.core")
+  if ok then
+    return core.CAP_L, core.CAP_R
+  end
+  return "\u{e0b6}", "\u{e0b4}"
+end
 
--- Colores de la tabline: cada workspace es una píldora con extremos redondeados.
--- Por cada grupo se define su "<nombre>Sep" (fg = color del cuadro) para las medialunas.
+-- Colores de la tabline: cada workspace es una píldora. El relleno (fondo de la
+-- tabline) usa palette.bg = fondo global del editor, leído en cada ColorScheme.
+-- Por cada grupo se define su "<nombre>Sep" (fg = color del cuadro) para los extremos.
 local function set_hl()
   local hl = api.nvim_set_hl
+  local fill = palette.bg -- fondo de la tabline = fondo global del editor
   local function pair(name, fg, bg, opts)
     opts = opts or {}
     opts.fg, opts.bg = fg, bg
     hl(0, name, opts)
-    hl(0, name .. "Sep", { fg = bg, bg = FILL })
+    hl(0, name .. "Sep", { fg = bg, bg = fill })
   end
   -- workspace activo: fondo brillante, texto oscuro, negrita
   pair("WsActive", palette.bg, palette.blue, { bold = true })
   -- workspaces inactivos: texto apagado sobre fondo tenue (distinto del relleno)
   pair("WsInactive", palette.blue, palette.bg_highlight)
-  hl(0, "WsFill", { bg = FILL })
-  hl(0, "TabLineFill", { bg = FILL })
+  hl(0, "WsFill", { bg = fill })
+  hl(0, "TabLineFill", { bg = fill })
 end
 
 -- Nombre visible de una tab: variable t:name, o el basename de su cwd
@@ -38,6 +47,7 @@ end
 -- Tabline personalizada: cada workspace en una píldora redondeada
 function _G.tabline()
   local cur = api.nvim_get_current_tabpage()
+  local CAP_L, CAP_R = caps() -- mismos extremos que el statusline
   local parts = { "%#WsFill# " }
   for i, tab in ipairs(api.nvim_list_tabpages()) do
     local hl = (tab == cur) and "WsActive" or "WsInactive"

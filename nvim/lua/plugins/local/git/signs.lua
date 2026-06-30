@@ -243,4 +243,13 @@ autocmd("BufDelete", {
   end,
 })
 
+-- Poblar los signos de los buffers de archivo YA abiertos. Importante tras
+-- :ReloadConfig (el módulo se recarga con las cachés vacías y los autocomandos no
+-- vuelven a dispararse para el buffer actual), y también útil al arrancar.
+for _, buf in ipairs(api.nvim_list_bufs()) do
+  if api.nvim_buf_is_loaded(buf) and is_file(buf) then
+    update_head(buf)
+  end
+end
+
 return M

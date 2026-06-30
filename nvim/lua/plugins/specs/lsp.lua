@@ -28,6 +28,12 @@ return {
         automatic_enable = true, -- activa (vim.lsp.enable) los servidores instalados
       })
 
+      -- :LspLog — abrir el log del cliente LSP en una pestaña nueva (al final)
+      vim.api.nvim_create_user_command("LspLog", function()
+        vim.cmd("tabedit " .. vim.fn.fnameescape(vim.lsp.get_log_path()))
+        vim.cmd("normal! G") -- saltar a lo más reciente
+      end, { desc = "Abrir el log del LSP" })
+
       -- Capacidades de completado de blink para todos los servidores
       local ok, blink = pcall(require, "blink.cmp")
       if ok then
@@ -51,7 +57,10 @@ return {
 
       -- ── Diagnósticos (UI) ──────────────────────────────────────────
       vim.diagnostic.config({
-        virtual_text = { spacing = 2, prefix = "●" },
+        -- virtual_lines solo en la línea del cursor: muestra el mensaje completo
+        -- en línea, debajo del código, sin llenar la pantalla. Sin virtual_text.
+        virtual_lines = { current_line = true },
+        virtual_text = false,
         signs = {
           text = {
             [vim.diagnostic.severity.ERROR] = "\u{f057}",
@@ -79,12 +88,16 @@ return {
           end
           map("gd", vim.lsp.buf.definition, "LSP: ir a definición")
           map("gD", vim.lsp.buf.declaration, "LSP: ir a declaración")
+          -- K: hover en ventana flotante con borde redondeado (a juego con el resto)
+          map("K", function()
+            vim.lsp.buf.hover({ border = "rounded" })
+          end, "LSP: hover (documentación)")
           map("<leader>lr", vim.lsp.buf.rename, "LSP: renombrar símbolo")
           map("<leader>la", vim.lsp.buf.code_action, "LSP: acciones de código")
-          map("<leader>ld", vim.diagnostic.open_float, "LSP: diagnóstico en línea")
           map("<leader>lf", function()
             vim.lsp.buf.format({ async = true })
           end, "LSP: formatear buffer")
+          -- Los diagnósticos viven en su propio grupo global <leader>d* (config.keymaps)
         end,
       })
     end,

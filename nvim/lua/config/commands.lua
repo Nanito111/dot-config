@@ -1,16 +1,58 @@
 local usr_cmd = vim.api.nvim_create_user_command
 
 usr_cmd("ReloadConfig", function()
-  -- limpiar el caché de los módulos propios (config.* y plugins.local.*) para que
-  -- dofile vuelva a ejecutarlos con los cambios; los demás (de Neovim) se conservan
+  -- 1. limpiar el caché de los módulos propios (config.* y plugins.*, incluidos los
+  --    specs de lazy) para que se vuelvan a ejecutar con los cambios; los módulos de
+  --    Neovim y de los plugins se conservan
   for name, _ in pairs(package.loaded) do
     if name:match("^config") or name:match("^plugins") then
       package.loaded[name] = nil
     end
   end
+
+  -- 2. re-ejecutar init.lua: opciones, keymaps, módulos propios y re-importar los
+  --    specs en lazy (toma los cambios de lua/plugins/specs/*)
   dofile(vim.env.MYVIMRC)
-  vim.notify("Configuración recargada")
-end, { desc = "Recargar la configuración (config.* y plugins.local.*)" })
+
+  -- 3. recargar los plugins para reaplicar su config/opts (keymaps de blink, settings
+  --    del LSP, etc.). lazy.setup es no-op tras el arranque, así que re-parseamos los
+  --    specs a mano y volvemos a cargar los plugins que estaban activos.
+  -- Plugins que NO se deben recargar en caliente (su deactivate de lazy falla):
+  --   lazy.nvim       -> es el propio gestor, no puede desactivarse a sí mismo
+  --   nvim-lspconfig  -> al desactivarlo lazy hace require('lspconfig'), que dispara
+  --                      su framework deprecado y suelta errores. Para cambios de LSP,
+  --                      reinicia Neovim (o :LspRestart).
+  local SKIP_RELOAD = { ["lazy.nvim"] = true, ["nvim-lspconfig"] = true }
+
+  local ok, Config = pcall(require, "lazy.core.config")
+  local reloaded = 0
+  if ok then
+    -- nombres de los plugins cargados ANTES de re-parsear (el re-parseo resetea su estado)
+    local loaded = {}
+    for name, plugin in pairs(Config.plugins) do
+      if plugin._ and plugin._.loaded and not SKIP_RELOAD[name] then
+        loaded[#loaded + 1] = name
+      end
+    end
+
+    -- re-leer lua/plugins/specs/* con los cambios (lazy.setup no lo hace dos veces)
+    pcall(function()
+      require("lazy.core.plugin").load()
+    end)
+
+    -- re-aplicar cada uno: reload (desactiva + reengancha) + load (re-ejecuta su config)
+    local loader = require("lazy.core.loader")
+    for _, name in ipairs(loaded) do
+      local okr = pcall(loader.reload, name)
+      pcall(require("lazy").load, { plugins = { name } })
+      if okr then
+        reloaded = reloaded + 1
+      end
+    end
+  end
+
+  vim.notify(string.format("Configuración recargada (%d plugins)", reloaded))
+end, { desc = "Recargar config (config.*, plugins.local.*) y los plugins de lazy" })
 
 -- Terminales flotantes
 local floatterm = require("plugins.local.floatterm")

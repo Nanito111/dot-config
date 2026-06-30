@@ -123,6 +123,7 @@ local function create_windows(title)
   local row = math.max(0, math.floor((vim.o.lines - height - 3) / 2))
 
   local prompt_buf = api.nvim_create_buf(false, true)
+  vim.b[prompt_buf].completion = false -- sin autocompletado (blink) en el prompt de búsqueda
   local prompt_win = api.nvim_open_win(prompt_buf, true, {
     relative = "editor",
     width = width,

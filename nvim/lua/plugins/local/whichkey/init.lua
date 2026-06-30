@@ -71,7 +71,15 @@ end
 -- Ejecuta un mapeo de usuario (callback directo o feed del rhs)
 local function execute(m)
   vim.schedule(function()
-    if m.callback then
+    if m.expr == 1 and m.callback then
+      -- mapeo expr (p. ej. gc/gcc del comentado nativo): el callback DEVUELVE las
+      -- teclas a ejecutar; hay que alimentarlas (no basta con llamarlo).
+      local ok, keys = pcall(m.callback)
+      if ok and type(keys) == "string" and keys ~= "" then
+        keys = api.nvim_replace_termcodes(keys, true, true, true)
+        api.nvim_feedkeys(keys, m.noremap == 1 and "n" or "m", false)
+      end
+    elseif m.callback then
       m.callback()
     elseif m.rhs and m.rhs ~= "" then
       local keys = api.nvim_replace_termcodes(m.rhs, true, true, true)

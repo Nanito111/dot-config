@@ -30,6 +30,10 @@ opt.wrap = false        -- no romper líneas largas
 opt.timeout = true
 opt.timeoutlen = 300    -- espera entre teclas de una secuencia (y retardo del which-key)
 
+-- No mostrar la pantalla de intro de Neovim ("NVIM v… type :help"): es lo que se ve
+-- como "Neovim por defecto" mientras el terminal pinta antes de aparecer el dashboard.
+opt.shortmess:append("I")
+
 -- Mostrar caracteres invisibles (espacios al final, tabs, etc.)
 opt.list = true
 opt.listchars = { trail = "·", tab = "→ ", nbsp = "␣", extends = "›", precedes = "‹" }
