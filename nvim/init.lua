@@ -49,6 +49,7 @@ end
 require("config.winopts")
 require("config.theme") -- registro central de highlights que reaccionan a ColorScheme
 require("plugins.local.notify") -- toasts: sobrescribe vim.notify (antes del resto)
+require("plugins.local.input") -- inputs flotantes: sobrescribe vim.ui.input
 -- Aplicar el colorscheme LO ANTES POSIBLE (ya con theme+notify listos): así el fondo
 -- del editor queda temático cuanto antes y se evita cualquier frame con colores por
 -- defecto. Los módulos de UI que cargan después leen la paleta ya refrescada.
@@ -57,6 +58,7 @@ require("config.keymaps")
 require("config.commands")
 require("config.autocmds")
 require("config.updates") -- avisos de actualización (lazy + mason) al iniciar
+require("config.lspkeys") -- diagnósticos + keymaps del LSP (recargables con :ReloadConfig)
 require("config.treesitter") -- resaltado nativo (parsers/queries bundled de Neovim)
 require("plugins.local.dashboard")
 require("plugins.local.statusline")
@@ -65,4 +67,5 @@ require("plugins.local.git")
 require("plugins.local.winbar")
 require("plugins.local.explorer")
 require("plugins.local.cursor") -- cursor + línea del cursor coloreados según el modo
+require("plugins.local.envcloak") -- ocultar valores en archivos .env
 require("config.highlights")

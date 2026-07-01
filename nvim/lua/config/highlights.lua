@@ -11,6 +11,9 @@ local function set_hl()
   api.nvim_set_hl(0, "NormalFloat", { bg = bg, fg = normal.fg })
   api.nvim_set_hl(0, "FloatBorder", { bg = bg, fg = palette.comment }) -- borde tenue
   api.nvim_set_hl(0, "FloatTitle", { bg = bg, fg = palette.blue, bold = true })
+  -- Separador entre ventanas: muchos temas lo pintan más oscuro que el fondo (casi
+  -- invisible en temas oscuros). Lo fijamos al color de comentario para que se vea.
+  api.nvim_set_hl(0, "WinSeparator", { bg = bg, fg = palette.comment })
 
   -- Completado (blink): el menú enlaza a Pmenu (color distinto); lo igualamos al
   -- fondo del editor, con la selección apenas resaltada y bordes tenues como el

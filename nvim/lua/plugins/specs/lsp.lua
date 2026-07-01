@@ -55,51 +55,8 @@ return {
         },
       })
 
-      -- ── Diagnósticos (UI) ──────────────────────────────────────────
-      vim.diagnostic.config({
-        -- virtual_lines solo en la línea del cursor: muestra el mensaje completo
-        -- en línea, debajo del código, sin llenar la pantalla. Sin virtual_text.
-        virtual_lines = { current_line = true },
-        virtual_text = false,
-        signs = {
-          text = {
-            [vim.diagnostic.severity.ERROR] = "\u{f057}",
-            [vim.diagnostic.severity.WARN] = "\u{f071}",
-            [vim.diagnostic.severity.INFO] = "\u{f05a}",
-            [vim.diagnostic.severity.HINT] = "\u{f0eb}",
-          },
-        },
-        underline = true,
-        update_in_insert = false,
-        severity_sort = true,
-        float = { border = "rounded", source = true },
-      })
-
-      -- ── Keymaps al conectar un servidor a un buffer ────────────────
-      -- Neovim 0.11+ ya trae por defecto grn (renombrar), gra (acción de código),
-      -- grr (referencias), gri (implementación), gO (símbolos), K (hover) y
-      -- <C-s> en inserción (ayuda de firma). Aquí añadimos el resto.
-      vim.api.nvim_create_autocmd("LspAttach", {
-        group = vim.api.nvim_create_augroup("LspAttach", { clear = true }),
-        callback = function(args)
-          local buf = args.buf
-          local function map(lhs, fn, desc)
-            vim.keymap.set("n", lhs, fn, { buffer = buf, desc = desc, silent = true })
-          end
-          map("gd", vim.lsp.buf.definition, "LSP: ir a definición")
-          map("gD", vim.lsp.buf.declaration, "LSP: ir a declaración")
-          -- K: hover en ventana flotante con borde redondeado (a juego con el resto)
-          map("K", function()
-            vim.lsp.buf.hover({ border = "rounded" })
-          end, "LSP: hover (documentación)")
-          map("<leader>lr", vim.lsp.buf.rename, "LSP: renombrar símbolo")
-          map("<leader>la", vim.lsp.buf.code_action, "LSP: acciones de código")
-          map("<leader>lf", function()
-            vim.lsp.buf.format({ async = true })
-          end, "LSP: formatear buffer")
-          -- Los diagnósticos viven en su propio grupo global <leader>d* (config.keymaps)
-        end,
-      })
+      -- Diagnósticos (UI) y keymaps del LspAttach viven en config.lspkeys, que SÍ es
+      -- recargable con :ReloadConfig (este spec está en SKIP_RELOAD).
     end,
   },
 }

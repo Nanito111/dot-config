@@ -7,13 +7,12 @@ return {
   dependencies = { "rafamadriz/friendly-snippets" },
   opts = {
     -- preset 'default': <C-y> confirma, <C-n>/<C-p> navegan. Encima añadimos:
-    --   <C-Space> -> abrir el menú de autocompletado (y alternar la documentación)
-    --   <CR>      -> aceptar la sugerencia seleccionada; si no hay menú, Enter normal
+    --   <C-k>  -> abrir el menú de autocompletado (Ctrl+Space no lo envía esta terminal)
+    --   <Tab>  -> aceptar la sugerencia seleccionada; si no hay menú, Tab normal
     keymap = {
       preset = "default",
-      -- <C-k>: abrir el menú de autocompletado (Ctrl+Space no lo envía esta terminal)
       ["<C-k>"] = { "show", "show_documentation", "hide_documentation" },
-      ["<CR>"] = { "accept", "fallback" },
+      ["<Tab>"] = { "accept", "fallback" },
     },
     appearance = { nerd_font_variant = "mono" },
     sources = {

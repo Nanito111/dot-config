@@ -65,13 +65,22 @@ M.components = {
     return { text = modes[ctx.mode] or ctx.mode:upper(), hl = ctx.color, width = MODE_W, align = "c" }
   end,
 
-  -- rama de git (la cachea init en vim.b.gitbranch); se oculta si no hay
+  -- rama de git del workspace (cwd de la tab; la cachea init en vim.t.gitbranch);
+  -- muestra ahead/behind vs upstream; se oculta si el cwd no es un repo
   git = function()
-    local b = vim.b.gitbranch
+    local b = vim.t.gitbranch
     if not b or b == "" then
       return nil
     end
-    return { text = cfg.icons.branch .. " " .. b, hl = "StGit", width = cfg.width.git, align = "l" }
+    local text = cfg.icons.branch .. " " .. b
+    local ahead, behind = vim.t.gitahead or 0, vim.t.gitbehind or 0
+    if ahead > 0 then
+      text = text .. " " .. cfg.icons.ahead .. ahead
+    end
+    if behind > 0 then
+      text = text .. " " .. cfg.icons.behind .. behind
+    end
+    return { text = text, hl = "StGit", align = "l" }
   end,
 
   -- etiqueta solo para buffers especiales (terminal/explorador) y [No Name];

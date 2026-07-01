@@ -1,58 +1,152 @@
 local usr_cmd = vim.api.nvim_create_user_command
 
-usr_cmd("ReloadConfig", function()
+-- Recarga en caliente de blink.cmp. La recarga genérica de lazy no sirve: blink
+-- aplica keymaps BUFFER-LOCAL y crea su autocmd InsertEnter SIN augroup, así que al
+-- recargarlo quedan keymaps apuntando a la instancia vieja y autocmds duplicados.
+-- Aquí lo hacemos limpio: quitar sus keymaps, borrar sus InsertEnter, recargar sus
+-- módulos y re-setup con los opts frescos del spec.
+local function reload_blink()
+  local okc, cfg = pcall(require, "blink.cmp.config")
+  if not okc then
+    return false
+  end
+
+  -- 1. teclas que blink tenía mapeadas (resueltas: preset + usuario)
+  local keys = {}
+  local okk, km = pcall(require, "blink.cmp.keymap")
+  if okk then
+    local ok2, mappings = pcall(km.get_mappings, cfg.keymap, "default")
+    if ok2 then
+      for lhs in pairs(mappings) do
+        keys[#keys + 1] = lhs
+      end
+    end
+  end
+
+  -- 2. quitar esos keymaps buffer-local (modo inserción) de todos los buffers
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      for _, lhs in ipairs(keys) do
+        pcall(vim.keymap.del, "i", lhs, { buffer = buf })
+      end
+    end
+  end
+
+  -- 3. borrar los autocmds InsertEnter de blink (los crea sin augroup) para no duplicar
+  for _, au in ipairs(vim.api.nvim_get_autocmds({ event = "InsertEnter" })) do
+    if au.callback then
+      local info = debug.getinfo(au.callback, "S")
+      if info and info.source and info.source:find("blink", 1, true) then
+        pcall(vim.api.nvim_del_autocmd, au.id)
+      end
+    end
+  end
+
+  -- 4. limpiar los módulos de blink
+  for name in pairs(package.loaded) do
+    if name:match("^blink") then
+      package.loaded[name] = nil
+    end
+  end
+
+  -- 5. leer los opts frescos del spec (limpiando su caché primero)
+  package.loaded["plugins.specs.completion"] = nil
+  local oks, spec = pcall(require, "plugins.specs.completion")
+  local opts = (oks and type(spec) == "table" and spec.opts) or {}
+
+  -- 6. re-setup limpio (crea un único InsertEnter y aplica al buffer actual)
+  return pcall(function()
+    require("blink.cmp").setup(opts)
+  end)
+end
+
+usr_cmd("ReloadConfig", function(o)
+  local uv = vim.uv or vim.loop
+  local t0 = uv.hrtime()
+
   -- 1. limpiar el caché de los módulos propios (config.* y plugins.*, incluidos los
   --    specs de lazy) para que se vuelvan a ejecutar con los cambios; los módulos de
-  --    Neovim y de los plugins se conservan
+  --    Neovim y de los plugins se conservan.
   for name, _ in pairs(package.loaded) do
     if name:match("^config") or name:match("^plugins") then
       package.loaded[name] = nil
     end
   end
 
-  -- 2. re-ejecutar init.lua: opciones, keymaps, módulos propios y re-importar los
-  --    specs en lazy (toma los cambios de lua/plugins/specs/*)
-  dofile(vim.env.MYVIMRC)
+  -- 2. re-ejecutar init.lua. Si algo falla (p. ej. un error de sintaxis recién
+  --    introducido), avisar con el error y NO seguir (evita dejar todo a medias).
+  local ok, err = pcall(dofile, vim.env.MYVIMRC)
+  if not ok then
+    vim.notify("Error al recargar:\n" .. tostring(err), vim.log.levels.ERROR, { title = "ReloadConfig" })
+    return
+  end
 
   -- 3. recargar los plugins para reaplicar su config/opts (keymaps de blink, settings
-  --    del LSP, etc.). lazy.setup es no-op tras el arranque, así que re-parseamos los
-  --    specs a mano y volvemos a cargar los plugins que estaban activos.
-  -- Plugins que NO se deben recargar en caliente (su deactivate de lazy falla):
-  --   lazy.nvim       -> es el propio gestor, no puede desactivarse a sí mismo
-  --   nvim-lspconfig  -> al desactivarlo lazy hace require('lspconfig'), que dispara
-  --                      su framework deprecado y suelta errores. Para cambios de LSP,
-  --                      reinicia Neovim (o :LspRestart).
-  local SKIP_RELOAD = { ["lazy.nvim"] = true, ["nvim-lspconfig"] = true }
-
-  local ok, Config = pcall(require, "lazy.core.config")
+  --    del LSP, etc.). Con :ReloadConfig! se omite este paso (solo config, más rápido).
+  --    lazy.setup es no-op tras el arranque, así que re-parseamos los specs a mano y
+  --    recargamos los plugins que estaban activos.
   local reloaded = 0
-  if ok then
-    -- nombres de los plugins cargados ANTES de re-parsear (el re-parseo resetea su estado)
-    local loaded = {}
-    for name, plugin in pairs(Config.plugins) do
-      if plugin._ and plugin._.loaded and not SKIP_RELOAD[name] then
-        loaded[#loaded + 1] = name
+  if not o.bang then
+    -- Plugins que NO se deben recargar en caliente (su deactivate de lazy no limpia
+    -- bien y quedan en estado inconsistente):
+    --   lazy.nvim       -> es el propio gestor, no puede desactivarse a sí mismo
+    --   nvim-lspconfig  -> al desactivarlo lazy hace require('lspconfig'), que dispara
+    --                      su framework deprecado y suelta errores.
+    --   blink.cmp       -> aplica keymaps buffer-local; al recargarlo quedan apuntando
+    --                      a la instancia vieja y <C-n>/<C-p> se comportan mal.
+    -- Para cambios en estos, reinicia Neovim (o :LspRestart para el LSP).
+    local SKIP_RELOAD = {
+      ["lazy.nvim"] = true,
+      ["nvim-lspconfig"] = true,
+      ["blink.cmp"] = true,
+    }
+    local okc, Config = pcall(require, "lazy.core.config")
+    if okc then
+      -- nombres de los plugins cargados ANTES de re-parsear (el re-parseo resetea su estado)
+      local loaded = {}
+      for name, plugin in pairs(Config.plugins) do
+        if plugin._ and plugin._.loaded and not SKIP_RELOAD[name] then
+          loaded[#loaded + 1] = name
+        end
       end
+
+      -- re-leer lua/plugins/specs/* con los cambios (lazy.setup no lo hace dos veces)
+      pcall(function()
+        require("lazy.core.plugin").load()
+      end)
+
+      -- re-aplicar cada uno: reload (desactiva + reengancha) + load (re-ejecuta su config)
+      local loader = require("lazy.core.loader")
+      for _, name in ipairs(loaded) do
+        if pcall(loader.reload, name) then
+          reloaded = reloaded + 1
+        end
+        pcall(require("lazy").load, { plugins = { name } })
+      end
+
+      -- Recargar plugins puede reaplicar el colorscheme (hi clear) y borrar nuestros
+      -- highlights locales (cursor, git, statusline, floats, tabline...). Reaplicamos
+      -- el tema para dispararlos de nuevo y restaurarlos.
+      pcall(function()
+        require("config.themes").setup()
+      end)
     end
 
-    -- re-leer lua/plugins/specs/* con los cambios (lazy.setup no lo hace dos veces)
-    pcall(function()
-      require("lazy.core.plugin").load()
-    end)
-
-    -- re-aplicar cada uno: reload (desactiva + reengancha) + load (re-ejecuta su config)
-    local loader = require("lazy.core.loader")
-    for _, name in ipairs(loaded) do
-      local okr = pcall(loader.reload, name)
-      pcall(require("lazy").load, { plugins = { name } })
-      if okr then
-        reloaded = reloaded + 1
-      end
+    -- blink.cmp está en SKIP_RELOAD (la recarga genérica de lazy lo rompe); lo
+    -- recargamos aquí en caliente y limpio para aplicar cambios de su config.
+    if reload_blink() then
+      reloaded = reloaded + 1
     end
   end
 
-  vim.notify(string.format("Configuración recargada (%d plugins)", reloaded))
-end, { desc = "Recargar config (config.*, plugins.local.*) y los plugins de lazy" })
+  local ms = math.floor((uv.hrtime() - t0) / 1e6)
+  local msg = o.bang and string.format("Config recargada (solo config) · %d ms", ms)
+    or string.format("Config recargada · %d plugins · %d ms", reloaded, ms)
+  vim.notify(msg, vim.log.levels.INFO, { title = "ReloadConfig" })
+end, {
+  bang = true,
+  desc = "Recargar la config (con ! solo config, sin recargar plugins)",
+})
 
 -- Terminales flotantes
 local floatterm = require("plugins.local.floatterm")

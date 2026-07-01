@@ -160,7 +160,8 @@ function M.delete()
     return
   end
   local kind = n.is_dir and "carpeta" or "archivo"
-  if vim.fn.confirm("¿Borrar " .. kind .. " '" .. n.name .. "'?", "&Si\n&No", 2) ~= 1 then
+  local confirm = require("plugins.local.confirm").confirm
+  if confirm("¿Borrar " .. kind .. " '" .. n.name .. "'?", "&Si\n&No", 2) ~= 1 then
     return
   end
   vim.fn.delete(n.path, n.is_dir and "rf" or "")
@@ -189,29 +190,91 @@ function M.rename()
   end)
 end
 
--- x / p: cortar y pegar (mover) un nodo a la carpeta bajo el cursor
-local cut_path = nil
+-- x/c + p: cortar/copiar y pegar en la carpeta bajo el cursor.
+-- clip = { path = <ruta>, op = "cut" | "copy" }
+local clip = nil
+local uv = vim.uv or vim.loop
 
 function M.cut()
   local n = node_at_cursor(cur())
   if n then
-    cut_path = n.path
+    clip = { path = n.path, op = "cut" }
     vim.notify("Cortado: " .. n.name)
+  end
+end
+
+function M.copy()
+  local n = node_at_cursor(cur())
+  if n then
+    clip = { path = n.path, op = "copy" }
+    vim.notify("Copiado: " .. n.name)
+  end
+end
+
+-- Copia recursiva (archivo o carpeta) con vim.uv (multiplataforma)
+local function copy_recursive(src, dest)
+  local st = uv.fs_stat(src)
+  if not st then
+    return false
+  end
+  if st.type == "directory" then
+    vim.fn.mkdir(dest, "p")
+    local h = uv.fs_scandir(src)
+    while h do
+      local name = uv.fs_scandir_next(h)
+      if not name then
+        break
+      end
+      if not copy_recursive(src .. "/" .. name, dest .. "/" .. name) then
+        return false
+      end
+    end
+    return true
+  end
+  return uv.fs_copyfile(src, dest) and true or false
+end
+
+-- Ruta de destino sin colisión: si ya existe, añade " copy" (útil al duplicar en la
+-- misma carpeta sin sobrescribir el original)
+local function unique_dest(dir, name)
+  if not uv.fs_stat(dir .. "/" .. name) then
+    return dir .. "/" .. name
+  end
+  local base, ext = name:match("^(.-)%.([^.]+)$")
+  if not base then
+    base, ext = name, nil
+  end
+  local i = 1
+  while true do
+    local suffix = (i == 1) and " copy" or (" copy " .. i)
+    local cand = dir .. "/" .. base .. suffix .. (ext and ("." .. ext) or "")
+    if not uv.fs_stat(cand) then
+      return cand
+    end
+    i = i + 1
   end
 end
 
 function M.paste()
   local s = cur()
-  if not (s and cut_path) then
+  if not (s and clip) then
     return
   end
   local dest_dir = dir_of(s)
-  local dest = dest_dir .. "/" .. vim.fn.fnamemodify(cut_path, ":t")
-  if vim.fn.rename(cut_path, dest) == 0 then
-    rename_buf(cut_path, dest)
-    s.expanded[dest_dir] = true
+  local name = vim.fn.fnamemodify(clip.path, ":t")
+  if clip.op == "cut" then
+    local dest = dest_dir .. "/" .. name
+    if vim.fn.rename(clip.path, dest) == 0 then
+      rename_buf(clip.path, dest)
+      s.expanded[dest_dir] = true
+    end
+    clip = nil -- mover es de un solo uso
+  else -- copy
+    if copy_recursive(clip.path, unique_dest(dest_dir, name)) then
+      s.expanded[dest_dir] = true
+    end
+    -- se conserva clip: puedes pegar la copia en varias carpetas
   end
-  cut_path = nil
   render.render(s)
 end
 

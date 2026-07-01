@@ -193,6 +193,8 @@ return {
   -- ── Glifos (Nerd Font) ────────────────────────────────────────────
   icons = {
     branch = "\u{e0a0}", --  rama de git
+    ahead = "\u{2191}", -- ↑ commits por delante del upstream
+    behind = "\u{2193}", -- ↓ commits por detrás del upstream
     terminal = "\u{f489}", --  buffer de terminal
     files = "\u{f07b}", --  explorador de archivos
     lsp = "\u{f085}", --  servidor(es) LSP activos

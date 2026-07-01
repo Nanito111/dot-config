@@ -49,6 +49,11 @@ function M.apply(win)
   for name, value in pairs(opts) do
     api.nvim_set_option_value(name, value, { win = win })
   end
+  -- El explorador es "especial" (limpio) pero SÍ quiere cursorline: con el cursor
+  -- oculto, la línea marcada es la única señal de la posición.
+  if vim.bo[buf].filetype == "explorer" then
+    api.nvim_set_option_value("cursorline", true, { win = win })
+  end
 end
 
 local group = api.nvim_create_augroup("WinOpts", { clear = true })

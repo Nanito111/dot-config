@@ -54,7 +54,7 @@ map("n", "<leader>x", function()
 
   -- Buffer modificado: confirmar antes de descartar los cambios
   if not force and vim.bo[cur].modified then
-    local ans = vim.fn.confirm("El buffer tiene cambios sin guardar. ¿Cerrar de todos modos?", "&Si\n&No", 2)
+    local ans = require("plugins.local.confirm").confirm("El buffer tiene cambios sin guardar. ¿Cerrar de todos modos?", "&Si\n&No", 2)
     if ans ~= 1 then
       return
     end
@@ -86,6 +86,9 @@ map("n", "<Esc>", ":nohlsearch<CR>", { silent = true, desc = "Quitar resaltado d
 
 -- Sacar foco de terminal
 map("t", "<C-q>", [[<C-\><C-n>]], { silent = true, desc = "Salir del modo terminal" })
+
+-- Ctrl+C en inserción = Esc de verdad (dispara InsertLeave, abreviaciones, etc.)
+map("i", "<C-c>", "<Esc>", { silent = true, desc = "Salir de inserción (como Esc)" })
 
 -- Marks
 map("n", "<leader>m", ":marks a-z<CR>", { silent = true, desc = "Listar marcas a-z" })
@@ -128,12 +131,12 @@ map("n", "<leader>ft", "<cmd>Terminals<CR>", { silent = true, desc = "Terminales
 
 -- Terminales con nombre
 map("n", "<leader>tn", function()
-  vim.ui.input({ prompt = "Nombre de la terminal: " }, function(name)
+  vim.ui.input({ prompt = "Nombre de la terminal: ", relative = "editor" }, function(name)
     require("config.terminal").new(name)
   end)
 end, { silent = true, desc = "Nueva terminal (con nombre)" })
 map("n", "<leader>tr", function()
-  vim.ui.input({ prompt = "Nuevo nombre de la terminal: " }, function(name)
+  vim.ui.input({ prompt = "Nuevo nombre de la terminal: ", relative = "editor" }, function(name)
     if name and name ~= "" then
       require("config.terminal").rename(name)
     end
@@ -142,14 +145,14 @@ end, { silent = true, desc = "Renombrar terminal actual" })
 
 -- Workspaces (tabs con cwd propio)
 map("n", "<leader>sn", function()
-  vim.ui.input({ prompt = "Directorio del workspace: ", default = vim.fn.getcwd(), completion = "dir" }, function(dir)
+  vim.ui.input({ prompt = "Directorio del workspace: ", default = vim.fn.getcwd(), completion = "dir", relative = "editor" }, function(dir)
     if dir and dir ~= "" then
       require("plugins.local.workspace").new(dir)
     end
   end)
 end, { silent = true, desc = "Nuevo workspace" })
 map("n", "<leader>sr", function()
-  vim.ui.input({ prompt = "Nombre del workspace: " }, function(name)
+  vim.ui.input({ prompt = "Nombre del workspace: ", relative = "editor" }, function(name)
     if name and name ~= "" then
       require("plugins.local.workspace").rename(name)
     end
@@ -175,6 +178,9 @@ end, { silent = true, desc = "Borde de la statusline (picker)" })
 map("n", "<leader>ut", function()
   require("config.themes").pick()
 end, { silent = true, desc = "Tema/colorscheme (picker con preview)" })
+map("n", "<leader>uv", function()
+  require("plugins.local.envcloak").toggle()
+end, { silent = true, desc = "Ocultar/mostrar valores en .env" })
 
 -- Explorador: alternar el foco entre el panel y el editor (lo abre si no está)
 map("n", "<leader>e", function()

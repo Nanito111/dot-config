@@ -6,6 +6,10 @@ local is_windows = vim.fn.has("win32") == 1
 -- Opciones del explorador
 glob.explorer_colored_icons = false -- iconos a color (estilo devicons) en el árbol
 
+-- El ftplugin de SQL de Neovim crea mapeos buffer-local <C-c>... (autocompletado)
+-- que sombrean nuestro <C-c> = Esc en inserción. Los desactivamos.
+glob.omni_sql_no_default_maps = 1
+
 -- Línea de números
 opt.number = true
 opt.relativenumber = false

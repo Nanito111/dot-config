@@ -7,11 +7,228 @@ local render = require("plugins.local.explorer.render")
 local watch = require("plugins.local.explorer.watch")
 local git = require("plugins.local.explorer.git")
 local actions = require("plugins.local.explorer.actions")
+local theme = require("config.theme")
+local palette = require("config.palette")
 
 local cur = state.cur
 local states = state.states
 
 local M = {}
+
+-- ── Cursor oculto + línea marcada (estilo neo-tree) ────────────────
+-- Dentro del explorador ocultamos el cursor y marcamos la línea actual: la línea
+-- marcada pasa a ser la única señal de posición. Los grupos siguen al tema.
+theme.register(function()
+  api.nvim_set_hl(0, "ExplorerCursorLine", { bg = palette.bg_highlight, bold = true })
+  -- cursor oculto: mismo color que la línea marcada Y que el tooltip (bg_highlight),
+  -- así queda invisible sobre ambos (el cursor está en col 0, que es un espacio).
+  api.nvim_set_hl(0, "ExplorerHiddenCursor", { fg = palette.bg_highlight, bg = palette.bg_highlight })
+  api.nvim_set_hl(0, "ExplorerPeek", { bg = palette.bg_highlight, fg = palette.fg }) -- fondo del tooltip
+  api.nvim_set_hl(0, "ExplorerBold", { bold = true }) -- negrita del item seleccionado
+  api.nvim_set_hl(0, "ExplorerDim", { fg = palette.comment }) -- panel atenuado (sin foco)
+end)
+
+-- ── Negrita en el item seleccionado (línea del cursor) ─────────────
+-- El bold de CursorLine no se propaga al texto (los highlights del nombre lo pisan),
+-- así que aplicamos un extmark de solo-negrita sobre la línea actual, combinándose
+-- con sus colores. Se mueve con el cursor.
+local bold_ns = api.nvim_create_namespace("explorer_bold")
+local function bold_current()
+  local s = cur()
+  if not (s and s.buf and api.nvim_buf_is_valid(s.buf) and s.win and api.nvim_win_is_valid(s.win)) then
+    return
+  end
+  api.nvim_buf_clear_namespace(s.buf, bold_ns, 0, -1)
+  local lnum = api.nvim_win_get_cursor(s.win)[1]
+  local len = #(api.nvim_buf_get_lines(s.buf, lnum - 1, lnum, false)[1] or "")
+  pcall(api.nvim_buf_set_extmark, s.buf, bold_ns, lnum - 1, 0, {
+    end_col = len,
+    hl_group = "ExplorerBold",
+    hl_mode = "combine",
+    priority = 300,
+  })
+end
+
+-- ── Which-key del explorador ──────────────────────────────────────
+-- Al pulsar <leader> dentro del explorador, muestra sus atajos (las teclas sueltas
+-- con su descripción, leídas de los keymaps buffer-local) reusando el popup del
+-- which-key; al elegir una tecla, ejecuta esa acción.
+local function explorer_help()
+  local entries = {}
+  for _, m in ipairs(api.nvim_buf_get_keymap(0, "n")) do
+    if m.desc and m.desc ~= "" and m.lhs ~= "?" then -- excluir la propia tecla de ayuda
+      -- lhsraw (termcode) para que keytrans muestre "<CR>" y no "<lt>CR>"
+      entries[#entries + 1] = { key = m.lhsraw or m.lhs, label = m.desc }
+    end
+  end
+  table.sort(entries, function(a, b)
+    return a.key:lower() < b.key:lower()
+  end)
+  local ch = require("plugins.local.whichkey.popup").read_key("Explorador", entries, true)
+  if ch and ch ~= "" and ch ~= "\27" then
+    api.nvim_feedkeys(ch, "m", false) -- ejecutar la acción de la tecla elegida
+  end
+end
+
+-- ── Atenuar el panel cuando no tiene el foco ──────────────────────
+-- Enfocado: colores vivos + línea marcada + negrita. Sin foco: todos los grupos de
+-- color del explorador se remapean a ExplorerDim (gris) vía winhighlight, y se quita
+-- la línea marcada y la negrita, para que el panel "se aparte".
+local FOCUSED_WINHL = "CursorLine:ExplorerCursorLine"
+local DIMMED_WINHL
+do
+  local groups = {
+    "ExplorerDir", "ExplorerFile", "ExplorerCurrent", "ExplorerRoot", "ExplorerGitNew",
+    "GitSignAdd", "GitSignChange", "GitSignDelete", "GitSignChangedelete",
+    "GitSignStagedAdd", "GitSignStagedChange", "GitSignStagedDelete",
+  }
+  local parts = {}
+  for _, g in ipairs(groups) do
+    parts[#parts + 1] = g .. ":ExplorerDim"
+  end
+  DIMMED_WINHL = table.concat(parts, ",")
+end
+
+local function apply_focus(focused)
+  local s = cur()
+  if not (s and s.win and api.nvim_win_is_valid(s.win)) then
+    return
+  end
+  local wo = vim.wo[s.win]
+  if focused then
+    wo.winhighlight = FOCUSED_WINHL
+    wo.cursorline = true
+    bold_current()
+  else
+    wo.winhighlight = DIMMED_WINHL
+    wo.cursorline = false
+    if s.buf and api.nvim_buf_is_valid(s.buf) then
+      api.nvim_buf_clear_namespace(s.buf, bold_ns, 0, -1) -- quitar la negrita del item
+    end
+  end
+end
+
+api.nvim_create_autocmd({ "WinEnter", "BufEnter" }, {
+  group = api.nvim_create_augroup("ExplorerFocus", { clear = true }),
+  desc = "Atenuar el explorador cuando no tiene el foco",
+  callback = function()
+    apply_focus(vim.bo[api.nvim_get_current_buf()].filetype == "explorer")
+  end,
+})
+
+-- ── Peek: tooltip con el nombre completo cuando la línea está cortada ──
+-- Al mover el cursor en el explorador, si la línea actual es más ancha que el panel
+-- (nombre largo o nivel profundo), muestra un flotante al borde derecho con el nombre
+-- completo. Se oculta si cabe o al salir del explorador.
+local peek_win, peek_buf
+local function peek_close()
+  if peek_win and api.nvim_win_is_valid(peek_win) then
+    pcall(api.nvim_win_close, peek_win, true)
+  end
+  peek_win = nil
+end
+
+local function peek_update()
+  local s = cur()
+  if not (s and s.win and api.nvim_win_is_valid(s.win)) or api.nvim_get_current_win() ~= s.win then
+    return peek_close()
+  end
+  local width = api.nvim_win_get_width(s.win)
+  local lnum = api.nvim_win_get_cursor(s.win)[1]
+  local line = api.nvim_buf_get_lines(s.buf, lnum - 1, lnum, false)[1] or ""
+  if vim.fn.strdisplaywidth(line) <= width then
+    return peek_close() -- cabe: no hace falta tooltip
+  end
+
+  local text = line .. " " -- línea COMPLETA (para solaparse encima del nombre) + margen
+  local w = math.min(vim.fn.strdisplaywidth(text), vim.o.columns)
+  if not (peek_buf and api.nvim_buf_is_valid(peek_buf)) then
+    peek_buf = api.nvim_create_buf(false, true)
+  end
+  vim.bo[peek_buf].modifiable = true
+  api.nvim_buf_set_lines(peek_buf, 0, -1, false, { text })
+  vim.bo[peek_buf].modifiable = false
+
+  -- copiar los highlights de la línea del explorador al tooltip (colores idénticos:
+  -- icono, nombre por tipo, marca de git). Como el texto es la misma línea, los
+  -- offsets en bytes coinciden.
+  local ns = state.ns
+  api.nvim_buf_clear_namespace(peek_buf, ns, 0, -1)
+  for _, m in ipairs(api.nvim_buf_get_extmarks(s.buf, ns, { lnum - 1, 0 }, { lnum - 1, -1 }, { details = true })) do
+    local start_col, det = m[3], m[4]
+    if det.hl_group then
+      pcall(api.nvim_buf_set_extmark, peek_buf, ns, 0, start_col, {
+        end_col = det.end_col,
+        hl_group = det.hl_group,
+      })
+    end
+  end
+  -- el tooltip es el item seleccionado -> también en negrita
+  pcall(api.nvim_buf_set_extmark, peek_buf, ns, 0, 0, {
+    end_col = #text,
+    hl_group = "ExplorerBold",
+    hl_mode = "combine",
+    priority = 300,
+  })
+
+  local cfg = {
+    relative = "win",
+    win = s.win,
+    row = vim.fn.winline() - 1, -- fila del cursor dentro de la ventana
+    col = 0, -- ENCIMA de la línea (mismo inicio que el panel), se extiende a la derecha
+    width = math.max(1, w),
+    height = 1,
+    style = "minimal",
+    focusable = false,
+    noautocmd = true,
+    zindex = 60,
+  }
+  if peek_win and api.nvim_win_is_valid(peek_win) then
+    api.nvim_win_set_config(peek_win, cfg)
+  else
+    peek_win = api.nvim_open_win(peek_buf, false, cfg)
+    vim.wo[peek_win].winhighlight = "NormalFloat:ExplorerPeek"
+  end
+end
+
+local peek_group = api.nvim_create_augroup("ExplorerPeek", { clear = true })
+api.nvim_create_autocmd({ "CursorMoved", "WinScrolled" }, {
+  group = peek_group,
+  desc = "Tooltip con el nombre completo de la línea del explorador",
+  callback = function(ev)
+    -- Solo actuamos en el buffer del explorador. NO cerramos en la rama contraria:
+    -- reposicionar el propio tooltip dispara eventos con su buffer y cerrarlo aquí
+    -- causaba el parpadeo "uno sí, uno no". El cierre lo hacen los autocmds de salida.
+    if vim.bo[ev.buf].filetype == "explorer" then
+      bold_current()
+      peek_update()
+    end
+  end,
+})
+api.nvim_create_autocmd({ "WinLeave", "BufLeave", "CursorMovedI" }, {
+  group = peek_group,
+  desc = "Cerrar el tooltip del explorador al salir",
+  callback = peek_close,
+})
+
+-- Ocultar el cursor al entrar al explorador y restaurarlo al salir. guicursor es
+-- global, así que guardamos el valor del editor y lo devolvemos al salir.
+local saved_guicursor
+api.nvim_create_autocmd("BufEnter", {
+  group = api.nvim_create_augroup("ExplorerCursor", { clear = true }),
+  desc = "Ocultar el cursor dentro del explorador",
+  callback = function(ev)
+    if vim.bo[ev.buf].filetype == "explorer" then
+      if not saved_guicursor then
+        saved_guicursor = vim.o.guicursor
+        vim.o.guicursor = "n:ExplorerHiddenCursor"
+      end
+    elseif saved_guicursor then
+      vim.o.guicursor = saved_guicursor
+      saved_guicursor = nil
+    end
+  end,
+})
 
 -- Abre el explorador como panel lateral izquierdo (en la tab actual)
 function M.open()
@@ -52,33 +269,40 @@ function M.open()
   wo.cursorline = true
   wo.winfixwidth = true
   wo.list = false
+  -- la línea marcada del explorador usa su propio grupo (prominente y estable,
+  -- independiente del tinte por modo del cursor global)
+  wo.winhighlight = "CursorLine:ExplorerCursorLine"
 
-  local function map(lhs, fn)
-    vim.keymap.set("n", lhs, fn, { buffer = s.buf, silent = true, nowait = true })
+  local function map(lhs, fn, desc)
+    vim.keymap.set("n", lhs, fn, { buffer = s.buf, silent = true, nowait = true, desc = desc })
   end
-  map("<CR>", actions.on_enter)
-  map("l", actions.on_enter)
-  map("h", actions.on_collapse)
-  map("-", actions.go_up)
+  map("<CR>", actions.on_enter, "Abrir archivo / expandir carpeta")
+  map("l", actions.on_enter, "Abrir archivo / expandir carpeta")
+  map("h", actions.on_collapse, "Colapsar carpeta")
+  map("-", actions.go_up, "Subir la raíz un nivel")
   map("R", function()
     render.render(cur())
-  end)
-  map("q", M.close)
+  end, "Refrescar el árbol")
+  map("q", M.close, "Cerrar el explorador")
   map("<Tab>", "<Nop>")
   map("<S-Tab>", "<Nop>")
+  map("<leader>x", "<Nop>") -- desactivar cerrar-buffer global dentro del explorador
   -- operaciones de archivo
-  map("a", actions.create)
-  map("d", actions.delete)
-  map("r", actions.rename)
-  map("x", actions.cut)
-  map("p", actions.paste)
+  map("a", actions.create, "Crear archivo/carpeta")
+  map("d", actions.delete, "Borrar")
+  map("r", actions.rename, "Renombrar")
+  map("x", actions.cut, "Cortar")
+  map("y", actions.copy, "Copiar archivo/carpeta")
+  map("p", actions.paste, "Pegar")
   -- copiar ruta del nodo bajo el cursor (como tenía netrw)
-  map("y", function()
+  map("c", function()
     actions.copy_path(false)
-  end)
-  map("Y", function()
+  end, "Copiar ruta relativa")
+  map("C", function()
     actions.copy_path(true)
-  end)
+  end, "Copiar ruta absoluta")
+  -- which-key del explorador: ? muestra estos atajos
+  map("?", explorer_help, "Atajos del explorador (which-key)")
 
   render.render(s)
   watch.start_watch(s)

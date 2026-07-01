@@ -206,26 +206,58 @@ function M.pick_preset()
   })
 end
 
--- ── Fuente de datos: rama de git (async, cacheada en vim.b.gitbranch) ──
-local function update_git(buf)
+-- ── Fuente de datos: rama de git del WORKSPACE (cwd de la tab, async) ──
+-- Depende del cwd (no del archivo) y se guarda POR TAB (vim.t.gitbranch): cada
+-- workspace muestra la rama de su cwd, siempre visible. Si el cwd no es un repo,
+-- queda "" y el componente se oculta.
+-- Guarda rama + ahead/behind en variables de la tab; redibuja si algo cambió.
+local function set_git(tab, branch, ahead, behind)
+  vim.schedule(function()
+    if not api.nvim_tabpage_is_valid(tab) then
+      return
+    end
+    local changed = false
+    local function tset(name, val)
+      local ok, curv = pcall(api.nvim_tabpage_get_var, tab, name)
+      if not ok or curv ~= val then
+        api.nvim_tabpage_set_var(tab, name, val)
+        changed = true
+      end
+    end
+    tset("gitbranch", branch)
+    tset("gitahead", ahead)
+    tset("gitbehind", behind)
+    if changed then
+      vim.cmd("redrawstatus | redrawtabline")
+    end
+  end)
+end
+
+local function update_git()
   if vim.fn.executable("git") == 0 then
     return
   end
-  buf = buf or api.nvim_get_current_buf()
-  if not api.nvim_buf_is_valid(buf) then
-    return -- el buffer pudo invalidarse (p. ej. al cambiar de directorio)
-  end
-  local name = api.nvim_buf_get_name(buf)
-  local dir = name ~= "" and vim.fn.fnamemodify(name, ":h") or vim.fn.getcwd()
+  local tab = api.nvim_get_current_tabpage()
+  local dir = vim.fn.getcwd() -- cwd efectivo de la tab (respeta tcd del workspace)
 
   vim.system({ "git", "-C", dir, "rev-parse", "--abbrev-ref", "HEAD" }, { text = true }, function(res)
     local branch = (res.code == 0) and vim.trim(res.stdout or "") or ""
-    vim.schedule(function()
-      if api.nvim_buf_is_valid(buf) and vim.b[buf].gitbranch ~= branch then
-        vim.b[buf].gitbranch = branch
-        vim.cmd("redrawstatus | redrawtabline")
+    if branch == "" then
+      return set_git(tab, "", 0, 0) -- el cwd no es un repo
+    end
+    -- ahead/behind vs upstream: "left\tright" = detrás\tadelante (0 si no hay upstream)
+    vim.system(
+      { "git", "-C", dir, "rev-list", "--left-right", "--count", "@{upstream}...HEAD" },
+      { text = true },
+      function(r2)
+        local behind, ahead = 0, 0
+        if r2.code == 0 then
+          local bh, ah = (r2.stdout or ""):match("(%d+)%s+(%d+)")
+          behind, ahead = tonumber(bh) or 0, tonumber(ah) or 0
+        end
+        set_git(tab, branch, ahead, behind)
       end
-    end)
+    )
   end)
 end
 
@@ -266,13 +298,17 @@ end, {
 
 local group = api.nvim_create_augroup("Statusline", { clear = true })
 
-autocmd({ "BufEnter", "FocusGained", "DirChanged", "BufWritePost" }, {
+-- Actualizar la rama según el cwd: al cambiar de directorio, cambiar de workspace
+-- (tab), recuperar el foco (por si cambió la rama fuera), guardar, o salir/cerrar una
+-- terminal embebida (capta commits/pull hechos en :terminal o lazygit).
+autocmd({ "DirChanged", "TabEnter", "FocusGained", "BufWritePost", "TermLeave", "TermClose" }, {
   group = group,
-  desc = "Actualizar rama de git",
-  callback = function(ev)
-    update_git(ev.buf)
+  desc = "Actualizar la rama de git del workspace (cwd)",
+  callback = function()
+    update_git()
   end,
 })
+update_git() -- rama inicial de la tab actual
 
 autocmd("DiagnosticChanged", {
   group = group,
