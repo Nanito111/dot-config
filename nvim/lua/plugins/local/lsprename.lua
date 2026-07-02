@@ -219,6 +219,20 @@ function M.confirm(files, title, encoding, on_confirm)
   map("<Esc>", function() done(false) end)
 end
 
+-- Guarda a disco un buffer de archivo normal (válido, con nombre y buftype vacío).
+-- Silencioso; keepalt para no ensuciar el archivo alterno.
+local function write_buf(buf)
+  if not api.nvim_buf_is_valid(buf) then
+    return
+  end
+  if api.nvim_buf_get_name(buf) == "" or vim.bo[buf].buftype ~= "" then
+    return
+  end
+  api.nvim_buf_call(buf, function()
+    pcall(vim.cmd, "silent keepalt write")
+  end)
+end
+
 -- Guarda el snapshot del contenido actual de los archivos afectados (antes de aplicar)
 local function take_snapshot(files)
   snapshot = {}
@@ -228,16 +242,23 @@ local function take_snapshot(files)
     snapshot[#snapshot + 1] = {
       buf = b,
       lines = api.nvim_buf_get_lines(b, 0, -1, false),
-      modified = vim.bo[b].modified,
     }
   end
 end
 
--- Snapshot + aplicar el WorkspaceEdit. Devuelve los archivos afectados.
+-- Snapshot + aplicar el WorkspaceEdit. Guarda cada archivo afectado ANTES de aplicar
+-- (persiste cualquier cambio pendiente) y DESPUÉS (deja el rename en disco). Devuelve
+-- los archivos afectados.
 function M.apply(edit, encoding)
   local files = M.edit_files(edit)
   take_snapshot(files)
+  for _, s in ipairs(snapshot) do
+    write_buf(s.buf) -- guardar antes de aplicar
+  end
   vim.lsp.util.apply_workspace_edit(edit, encoding)
+  for _, s in ipairs(snapshot) do
+    write_buf(s.buf) -- guardar después de aplicar
+  end
   return files
 end
 
@@ -296,7 +317,7 @@ function M.undo()
   for _, s in ipairs(snapshot) do
     if api.nvim_buf_is_valid(s.buf) then
       api.nvim_buf_set_lines(s.buf, 0, -1, false, s.lines)
-      vim.bo[s.buf].modified = s.modified
+      write_buf(s.buf) -- persistir la reversión (en apply guardamos a disco)
       n = n + 1
     end
   end

@@ -55,6 +55,21 @@ return {
         },
       })
 
+      -- tailwindcss: al adjuntarse registra file-watchers dinámicos
+      -- (workspace/didChangeWatchedFiles) sobre un glob enorme. Neovim monta esos
+      -- watchers recorriendo TODO el árbol (incluido node_modules) de forma síncrona en
+      -- el hilo de UI -> congela el editor unos segundos al abrir un .ts/.tsx. Al negar
+      -- dynamicRegistration, el servidor no pide esos watchers y arranca sin bloquear.
+      -- (Contrapartida: no auto-detecta cambios en tailwind.config vía watcher; basta
+      -- reabrir el archivo o :LspRestart tras tocar la config de Tailwind.)
+      vim.lsp.config("tailwindcss", {
+        capabilities = {
+          workspace = {
+            didChangeWatchedFiles = { dynamicRegistration = false },
+          },
+        },
+      })
+
       -- Diagnósticos (UI) y keymaps del LspAttach viven en config.lspkeys, que SÍ es
       -- recargable con :ReloadConfig (este spec está en SKIP_RELOAD).
     end,

@@ -7,6 +7,7 @@ local function set_hl()
   api.nvim_set_hl(0, "WinBarPath", { fg = palette.comment }) -- carpetas (tenue)
   api.nvim_set_hl(0, "WinBarFile", { fg = palette.fg, bold = true }) -- archivo
   api.nvim_set_hl(0, "WinBarSep", { fg = palette.blue }) -- separador
+  api.nvim_set_hl(0, "WinBarDeleted", { fg = palette.red, bold = true }) -- archivo borrado
 end
 theme.register(set_hl)
 
@@ -34,6 +35,11 @@ function _G.breadcrumbs()
       out[#out + 1] = "%#WinBarPath#" .. p:gsub("%%", "%%%%")
       out[#out + 1] = "%#WinBarSep# ▸ "
     end
+  end
+  -- marca [deleted] si el archivo del buffer fue borrado en disco (la fija el
+  -- autocomando FileChangedShell en config.autocmds; se limpia al reguardar)
+  if vim.b[buf].file_deleted then
+    out[#out + 1] = " %#WinBarDeleted#[deleted]"
   end
   out[#out + 1] = " %#WinBarFile#%m" -- indicador de modificado
   return table.concat(out)
