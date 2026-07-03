@@ -7,6 +7,23 @@ local popup = require("plugins.local.whichkey.popup")
 
 local M = {}
 
+-- ── Nombres de grupos ──────────────────────────────────────────────
+-- Cuando un prefijo agrupa varias teclas, el popup muestra este título en vez de
+-- "+N". La clave es la secuencia CRUDA (el líder es un espacio). Añade aquí los
+-- grupos nuevos que crees; los que no estén listados siguen mostrando "+N".
+local leader = api.nvim_replace_termcodes(vim.g.mapleader or " ", true, true, true)
+local GROUP_NAMES = {
+  [leader .. "d"] = "Diagnósticos",
+  [leader .. "f"] = "Buscar",
+  [leader .. "g"] = "Git",
+  [leader .. "l"] = "LSP",
+  [leader .. "n"] = "Notificaciones",
+  [leader .. "p"] = "Pato",
+  [leader .. "s"] = "Workspaces",
+  [leader .. "t"] = "Terminales",
+  [leader .. "u"] = "Apariencia",
+}
+
 -- ── Utilidades ─────────────────────────────────────────────────────
 local function rawof(m)
   return m.lhsraw or api.nvim_replace_termcodes(m.lhs, true, true, true)
@@ -58,7 +75,8 @@ local function build_entries(seq, longer)
     if g.leaf and g.count == 1 then
       label = g.leaf.desc or "?"
     else
-      label = "\u{f0770} +" .. g.count
+      -- grupo: título nombrado si está registrado; si no, el clásico "+N"
+      label = "\u{f0770} " .. (GROUP_NAMES[seq .. ch] or ("+" .. g.count))
     end
     entries[#entries + 1] = { key = ch, label = label }
   end

@@ -47,38 +47,7 @@ map("n", "<S-Tab>", function()
   require("plugins.local.workspace").cycle_buffer(-1)
 end, { silent = true, desc = "Buffer anterior (del workspace)" })
 map("n", "<leader>x", function()
-  local cur = vim.api.nvim_get_current_buf()
-
-  -- Terminal: forzar (el job en ejecución bloquea el borrado normal)
-  local force = vim.bo[cur].buftype == "terminal"
-
-  -- Buffer modificado: confirmar antes de descartar los cambios
-  if not force and vim.bo[cur].modified then
-    local ans = require("plugins.local.confirm").confirm("El buffer tiene cambios sin guardar. ¿Cerrar de todos modos?", "&Si\n&No", 2)
-    if ans ~= 1 then
-      return
-    end
-    force = true
-  end
-
-  -- Mostrar otro buffer en la ventana ANTES de borrar, para no cerrarla.
-  -- Buscar un buffer real (listado, normal, con nombre) distinto al actual.
-  local alt
-  for _, info in ipairs(vim.fn.getbufinfo({ buflisted = 1 })) do
-    if info.bufnr ~= cur and info.name ~= "" and vim.bo[info.bufnr].buftype == "" then
-      alt = info.bufnr
-      break
-    end
-  end
-
-  if alt then
-    vim.api.nvim_set_current_buf(alt)
-  else
-    require("plugins.local.dashboard").open() -- no quedan buffers: mostrar el inicio
-  end
-
-  -- Borrar el buffer original; la ventana ya muestra otra cosa
-  pcall(vim.api.nvim_buf_delete, cur, { force = force })
+  require("config.bufclose").close()
 end, { silent = true, desc = "Cerrar buffer" })
 
 -- Quitar highlight de busqueda
@@ -161,6 +130,12 @@ end, { silent = true, desc = "Renombrar workspace" })
 map("n", "<leader>sx", "<cmd>tabclose<CR>", { silent = true, desc = "Cerrar workspace (tab)" })
 map("n", "<leader>sl", "gt", { silent = true, desc = "Workspace siguiente" })
 map("n", "<leader>sh", "gT", { silent = true, desc = "Workspace anterior" })
+-- Ir directo al workspace N (mismo número que muestra la tabline): <leader>s1 … s9
+for i = 1, 9 do
+  map("n", "<leader>s" .. i, function()
+    require("plugins.local.workspace").jump(i)
+  end, { silent = true, desc = "Ir al workspace " .. i })
+end
 
 -- Notificaciones
 map("n", "<leader>nh", "<cmd>Notifications<CR>", { silent = true, desc = "Historial de notificaciones" })
@@ -181,6 +156,9 @@ end, { silent = true, desc = "Tema/colorscheme (picker con preview)" })
 map("n", "<leader>uv", function()
   require("plugins.local.envcloak").toggle()
 end, { silent = true, desc = "Ocultar/mostrar valores en .env" })
+map("n", "<leader>ui", function()
+  require("plugins.local.indentline").pick()
+end, { silent = true, desc = "Guías de indentación (picker)" })
 
 -- Explorador: alternar el foco entre el panel y el editor (lo abre si no está)
 map("n", "<leader>e", function()

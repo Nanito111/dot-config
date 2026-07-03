@@ -93,7 +93,8 @@ function M.render(s)
   for _, n in ipairs(s.nodes) do
     local indent = string.rep("  ", n.depth + 1)
     local icon = n.is_dir and (s.expanded[n.path] and FOLDER_OPEN or FOLDER_CLOSED) or icons.icon(n.name)
-    local body = indent .. icon .. " " .. n.name .. (n.is_dir and "/" or "")
+    local prefix = indent .. icon .. " " -- indentación + icono de tipo + espacio
+    local name = n.name .. (n.is_dir and "/" or "")
 
     local type_hl = n.is_dir and "ExplorerDir" or "ExplorerFile"
     if not n.is_dir and current and normpath(n.path) == current then
@@ -107,18 +108,22 @@ function M.render(s)
       end
     end
 
-    -- marca de git al final
-    local line, git_hl = body, nil
+    -- marca de git ANTES del nombre: prefijo(icono) + [marca git] + nombre
+    local git_part, git_hl, git_len = "", nil, 0
     local st = s.git and s.git[normpath(n.path)]
     if st then
       local sym, hlg = git_mark(st, n.is_dir)
-      line = body .. "  " .. sym
+      git_part = sym .. " "
       git_hl = hlg
+      git_len = #sym
     end
-    lines[#lines + 1] = line
+
+    lines[#lines + 1] = prefix .. git_part .. name
     hls[#hls + 1] = {
       icon_end = #indent + #icon,
-      name_end = #body,
+      git_start = #prefix, -- la marca de git empieza tras el espacio del icono
+      git_end = #prefix + git_len,
+      name_start = #prefix + #git_part, -- el nombre empieza tras la marca (si hay)
       icon_hl = icon_hl,
       type_hl = type_hl,
       git_hl = git_hl,
@@ -140,10 +145,10 @@ function M.render(s)
   for i, h in ipairs(hls) do
     -- línea de buffer = i (la 0 es la raíz)
     api.nvim_buf_add_highlight(s.buf, ns, h.icon_hl, i, 0, h.icon_end) -- icono
-    api.nvim_buf_add_highlight(s.buf, ns, h.type_hl, i, h.icon_end, h.name_end) -- nombre
     if h.git_hl then
-      api.nvim_buf_add_highlight(s.buf, ns, h.git_hl, i, h.name_end, -1) -- marca git
+      api.nvim_buf_add_highlight(s.buf, ns, h.git_hl, i, h.git_start, h.git_end) -- marca git (antes del nombre)
     end
+    api.nvim_buf_add_highlight(s.buf, ns, h.type_hl, i, h.name_start, -1) -- nombre
   end
 
   if cursor then

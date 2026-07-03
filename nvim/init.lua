@@ -66,6 +66,7 @@ require("plugins.local.workspace")
 require("plugins.local.git")
 require("plugins.local.winbar")
 require("plugins.local.explorer")
+require("plugins.local.indentline") -- guías de indentación en buffers de código
 require("plugins.local.cursor") -- cursor + línea del cursor coloreados según el modo
 require("plugins.local.envcloak") -- ocultar valores en archivos .env
 require("config.highlights")

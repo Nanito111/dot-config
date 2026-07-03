@@ -58,6 +58,14 @@ function M.context()
   return { mode = m, color = mode_color(m) }
 end
 
+-- Handler de clic del componente `indent`: alterna espacios <-> tabs en el buffer
+-- actual y redibuja. Global porque la statusline lo referencia como v:lua.<nombre>.
+-- Recibe (minwid, clicks, botón, modificadores); no necesitamos ninguno.
+function _G.statusline_indent_click()
+  vim.bo.expandtab = not vim.bo.expandtab
+  vim.cmd("redrawstatus")
+end
+
 -- ── Componentes ────────────────────────────────────────────────────
 M.components = {
   -- cuadro de modo (centro), coloreado según el modo
@@ -148,6 +156,25 @@ M.components = {
     if h > 0 then parts[#parts + 1] = cfg.icons.diag_hint .. " " .. h end
     local hl = (e > 0 and "StDiagError") or (w > 0 and "StDiagWarn") or (i > 0 and "StDiagInfo") or "StDiagHint"
     return { text = table.concat(parts, " "), hl = hl, align = "l" }
+  end,
+
+  -- tipo de indentación del buffer: espacios o tabs + su ancho. Con expandtab se
+  -- usan espacios y el ancho efectivo es shiftwidth (o tabstop si sw=0); sin
+  -- expandtab son tabs de ancho tabstop. Se oculta en buffers sin archivo real.
+  -- Clic izquierdo: alterna espacios <-> tabs (ver statusline_indent_click).
+  indent = function()
+    if vim.bo.buftype ~= "" or vim.bo.filetype == "dashboard" or vim.bo.filetype == "explorer" then
+      return nil
+    end
+    local kind = vim.bo.expandtab and "spaces" or "tabs"
+    local sw = vim.bo.shiftwidth
+    local width = (sw > 0) and sw or vim.bo.tabstop
+    return {
+      text = cfg.icons.indent .. " " .. kind .. " " .. width,
+      hl = "StInfo",
+      align = "c",
+      click = "v:lua.statusline_indent_click",
+    }
   end,
 
   -- posición línea:columna

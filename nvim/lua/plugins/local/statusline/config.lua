@@ -14,7 +14,7 @@ return {
       layout = {
         left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "lsp", "filetype", "position", "percent" },
+        right = { "lsp", "indent", "filetype", "position", "percent" },
       },
     },
     -- Powerline: bloque de modo a la IZQUIERDA, segmentos de colores, flechas.
@@ -23,7 +23,7 @@ return {
       layout = {
         left = { "mode", "git", "label", "diagnostics" },
         center = {},
-        right = { "lsp", "filetype", "position", "percent" },
+        right = { "lsp", "indent", "filetype", "position", "percent" },
       },
       colors = function(pair, p)
         pair("StGit", p.bg, p.green, { bold = true }) -- rama sobre verde
@@ -36,7 +36,7 @@ return {
       layout = {
         left = { "label", "diagnostics" },
         center = { "mode" },
-        right = { "lsp", "position", "percent" },
+        right = { "lsp", "indent", "position", "percent" },
       },
       colors = function(pair, p)
         -- modo: solo texto del color del modo, sin fondo
@@ -57,7 +57,7 @@ return {
       layout = {
         left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "lsp", "filetype", "position", "percent" },
+        right = { "lsp", "indent", "filetype", "position", "percent" },
       },
       colors = function(pair, p)
         pair("StGit", p.bg, p.orange, { bold = true })
@@ -74,7 +74,7 @@ return {
       layout = {
         left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "lsp", "filetype", "position", "percent" },
+        right = { "lsp", "indent", "filetype", "position", "percent" },
       },
       colors = function(pair, p)
         local function t(name, fg)
@@ -100,7 +100,7 @@ return {
       layout = {
         left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "lsp", "position", "filetype" },
+        right = { "lsp", "indent", "position", "filetype" },
       },
       colors = function(pair)
         local bg, fg = "#007acc", "#ffffff"
@@ -127,7 +127,7 @@ return {
       layout = {
         left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "lsp", "position", "filetype" },
+        right = { "lsp", "indent", "position", "filetype" },
       },
       colors = function(pair)
         local bg, fg = "#2d2d2d", "#cccccc"
@@ -152,7 +152,7 @@ return {
       layout = {
         left = { "git", "label", "diagnostics" },
         center = { "mode" },
-        right = { "lsp", "filetype", "position", "percent" },
+        right = { "lsp", "indent", "filetype", "position", "percent" },
       },
       colors = function(pair, p)
         pair("StGit", p.bg, p.cyan, { bold = true }) -- rama sobre cian
@@ -198,6 +198,7 @@ return {
     terminal = "\u{f489}", --  buffer de terminal
     files = "\u{f07b}", --  explorador de archivos
     lsp = "\u{f085}", --  servidor(es) LSP activos
+    indent = "\u{f036}", --  tipo de indentación (espacios/tabs)
     diag_error = "\u{f057}", --  diagnóstico: error
     diag_warn = "\u{f071}", --  diagnóstico: aviso
     diag_info = "\u{f05a}", --  diagnóstico: info

@@ -29,6 +29,7 @@ opt.incsearch = true
 -- UI
 opt.signcolumn = "yes"  -- siempre mostrar la columna de signos (para LSP, git)
 opt.cursorline = true   -- resaltar línea actual
+opt.showmode = false    -- no mostrar "-- INSERT --"/"-- TERMINAL --": ya está en la statusline
 opt.scrolloff = 8       -- margen vertical al hacer scroll
 opt.wrap = false        -- no romper líneas largas
 opt.timeout = true

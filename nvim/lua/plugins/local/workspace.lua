@@ -83,6 +83,16 @@ function M.rename(name)
   vim.cmd("redrawtabline")
 end
 
+-- Salta al workspace (tab) número n — el mismo número que muestra la tabline.
+function M.jump(n)
+  local tabs = api.nvim_list_tabpages()
+  if tabs[n] then
+    api.nvim_set_current_tabpage(tabs[n])
+  else
+    vim.notify("No existe el workspace " .. n, vim.log.levels.WARN, { title = "Workspace" })
+  end
+end
+
 -- ── Buffers por workspace (tab) ────────────────────────────────────
 -- Los buffers en Neovim son globales; aquí rastreamos cuáles pertenecen
 -- a cada tab para que <Tab>/<S-Tab> ciclen solo dentro del workspace.

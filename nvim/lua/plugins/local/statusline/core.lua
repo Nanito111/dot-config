@@ -51,7 +51,14 @@ local function render_section(list, components, ctx)
     if seg and seg.text and seg.text ~= "" then
       local t = seg.width and M.fit(seg.text, seg.width, seg.align) or seg.text
       t = t:gsub("%%", "%%%%") -- escapar el % literal (no es código de statusline)
-      parts[#parts + 1] = M.pill(seg.hl, " " .. t .. " ")
+      local pill = M.pill(seg.hl, " " .. t .. " ")
+      -- seg.click = nombre de función (p. ej. "v:lua.Fn"): hace la píldora clicable.
+      -- Se envuelve AQUÍ (no en seg.text) para que los marcadores no se escapen ni
+      -- cuenten como ancho. La función recibe (minwid, clicks, botón, modificadores).
+      if seg.click then
+        pill = "%@" .. seg.click .. "@" .. pill .. "%X"
+      end
+      parts[#parts + 1] = pill
     end
   end
   return table.concat(parts, "%#" .. M.FILL .. "# ") -- espacio entre píldoras

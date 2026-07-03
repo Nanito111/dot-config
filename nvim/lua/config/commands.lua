@@ -193,6 +193,30 @@ usr_cmd("WorkspaceRename", function(o)
   require("plugins.local.workspace").rename(o.args)
 end, { nargs = 1, desc = "Renombrar el workspace actual" })
 
+-- Cerrar buffer respetando el workspace (misma lógica que <leader>x): al cerrar el
+-- actual se muestra otro del MISMO workspace, no uno global de otra tab. Con argumento
+-- (nº o nombre de buffer) se delega al :bdelete nativo; sin argumento cierra el actual.
+usr_cmd("Bdelete", function(o)
+  if o.args ~= "" then
+    vim.cmd("bdelete" .. (o.bang and "!" or "") .. " " .. o.args)
+  else
+    require("config.bufclose").close({ force = o.bang })
+  end
+end, { bang = true, nargs = "?", complete = "buffer", desc = "Cerrar buffer respetando el workspace" })
+
+-- Redirigir :bd / :bdelete a :Bdelete, pero SOLO cuando son el comando en sí (no
+-- cuando "bd" aparece como argumento de otro comando). Conserva bang y argumentos.
+local function bd_abbrev(lhs)
+  vim.cmd(string.format(
+    "cnoreabbrev <expr> %s (getcmdtype() ==# ':' && getcmdline() ==# %q) ? 'Bdelete' : %q",
+    lhs,
+    lhs,
+    lhs
+  ))
+end
+bd_abbrev("bd")
+bd_abbrev("bdelete")
+
 -- Barrer manualmente los buffers [No Name] vacíos huérfanos
 usr_cmd("WipeNoName", function()
   require("config.util").wipe_orphan_buffers()
