@@ -1,177 +1,39 @@
 -- Ajustes de la statusline EN UN SOLO LUGAR.
---   • presets -> bundles de { border + layout + colores opcionales }; el activo
---                se elige con preset / :StatuslinePreset / <leader>us (picker).
+--   • presets -> se autocargan desde presets/*.lua (un archivo = un preset, como
+--                los "plugins"). NO hay que registrarlos en ningún lado: basta crear
+--                el archivo. El activo se elige con :StatuslinePreset / <leader>us.
 --   • borders -> catálogo de extremos de píldora (eje rápido: <leader>ub / cycle).
 --   • width   -> ancho fijo (columnas) de cada componente.
 --   • icons   -> glifos usados por los componentes.
 -- Componentes nuevos -> components.lua. Forma de la píldora -> core.lua.
+--
+-- Para AÑADIR un preset: crea presets/<nombre>.lua que devuelva una tabla
+--   { border, fill?, transparent?, layout = { left, center, right }, colors? }
+-- donde colors = function(pair, palette) redefine grupos; pair(grupo, fg, bg, opts?)
+-- define el grupo y su "<grupo>Sep". Se detecta solo al reiniciar / :ReloadConfig.
+
+-- Carga todos los presets de presets/*.lua (nombre del archivo = nombre del preset).
+local function load_presets()
+  local presets = {}
+  local dir = "lua/plugins/local/statusline/presets"
+  for _, path in ipairs(vim.api.nvim_get_runtime_file(dir .. "/*.lua", true)) do
+    local name = vim.fn.fnamemodify(path, ":t:r")
+    local ok, preset = pcall(require, "plugins.local.statusline.presets." .. name)
+    if ok and type(preset) == "table" then
+      presets[name] = preset
+    else
+      vim.schedule(function()
+        vim.notify("Preset de statusline inválido: " .. name, vim.log.levels.WARN)
+      end)
+    end
+  end
+  return presets
+end
+
 return {
   -- ── Presets de statusline ─────────────────────────────────────────
-  preset = "default", -- preset activo al arrancar
-  presets = {
-    default = {
-      border = "round",
-      layout = {
-        left = { "git", "label", "diagnostics" },
-        center = { "mode" },
-        right = { "lsp", "indent", "filetype", "position", "percent" },
-      },
-    },
-    -- Powerline: bloque de modo a la IZQUIERDA, segmentos de colores, flechas.
-    powerline = {
-      border = "arrow",
-      layout = {
-        left = { "mode", "git", "label", "diagnostics" },
-        center = {},
-        right = { "lsp", "indent", "filetype", "position", "percent" },
-      },
-      colors = function(pair, p)
-        pair("StGit", p.bg, p.green, { bold = true }) -- rama sobre verde
-        pair("StFile", p.bg, p.blue) -- etiqueta sobre azul
-      end,
-    },
-    -- Fantasma: sin fondos, solo texto coloreado (bloques planos).
-    minimal = {
-      border = "square",
-      layout = {
-        left = { "label", "diagnostics" },
-        center = { "mode" },
-        right = { "lsp", "indent", "position", "percent" },
-      },
-      colors = function(pair, p)
-        -- modo: solo texto del color del modo, sin fondo
-        pair("StNormal", p.blue)
-        pair("StInsert", p.green)
-        pair("StVisual", p.purple)
-        pair("StReplace", p.red)
-        pair("StCommand", p.yellow)
-        pair("StTerminal", p.cyan)
-        pair("StFile", p.fg) -- etiqueta en texto normal
-        pair("StInfo", p.comment) -- info tenue
-        pair("StGit", p.comment)
-      end,
-    },
-    -- Atardecer: tonos cálidos y extremos diagonales.
-    slant = {
-      border = "slant",
-      layout = {
-        left = { "git", "label", "diagnostics" },
-        center = { "mode" },
-        right = { "lsp", "indent", "filetype", "position", "percent" },
-      },
-      colors = function(pair, p)
-        pair("StGit", p.bg, p.orange, { bold = true })
-        pair("StFile", p.bg, p.yellow)
-        pair("StInfo", p.orange, p.bg_highlight)
-      end,
-    },
-    -- Fino: fondo transparente (se ve el del terminal), extremos finos y texto en
-    -- negrita que destaca. Requiere transparent=true para que los caps finos se
-    -- pinten con el color del texto y la línea no tenga relleno.
-    thin = {
-      border = "thin",
-      transparent = true,
-      layout = {
-        left = { "git", "label", "diagnostics" },
-        center = { "mode" },
-        right = { "lsp", "indent", "filetype", "position", "percent" },
-      },
-      colors = function(pair, p)
-        local function t(name, fg)
-          pair(name, fg, nil, { bold = true })
-        end
-        t("StNormal", p.blue) -- modo: color del modo como texto
-        t("StInsert", p.green)
-        t("StVisual", p.purple)
-        t("StReplace", p.red)
-        t("StCommand", p.yellow)
-        t("StTerminal", p.cyan)
-        t("StGit", p.blue) -- rama
-        t("StFile", p.fg) -- etiqueta
-        t("StInfo", p.comment) -- info tenue
-      end,
-    },
-    -- Estilo VSCode: barra azul continua (sin píldoras), rama a la izquierda y
-    -- posición/lenguaje a la derecha. `fill` pinta los huecos del mismo azul para
-    -- que se vea como una sola barra; `colors` deja todos los segmentos planos.
-    vscode = {
-      border = "square",
-      fill = "#007acc",
-      layout = {
-        left = { "git", "label", "diagnostics" },
-        center = { "mode" },
-        right = { "lsp", "indent", "position", "filetype" },
-      },
-      colors = function(pair)
-        local bg, fg = "#007acc", "#ffffff"
-        for _, g in ipairs({
-          "StNormal",
-          "StInsert",
-          "StVisual",
-          "StReplace",
-          "StCommand",
-          "StTerminal",
-          "StGit",
-          "StFile",
-          "StInfo",
-        }) do
-          pair(g, fg, bg)
-        end
-      end,
-    },
-    -- VSCode monocromático: barra gris oscura continua, texto gris atenuado,
-    -- sin acento de color (mismo layout plano que vscode).
-    vscode_mono = {
-      border = "square",
-      fill = "#2d2d2d",
-      layout = {
-        left = { "git", "label", "diagnostics" },
-        center = { "mode" },
-        right = { "lsp", "indent", "position", "filetype" },
-      },
-      colors = function(pair)
-        local bg, fg = "#2d2d2d", "#cccccc"
-        for _, g in ipairs({
-          "StNormal",
-          "StInsert",
-          "StVisual",
-          "StReplace",
-          "StCommand",
-          "StTerminal",
-          "StGit",
-          "StFile",
-          "StInfo",
-        }) do
-          pair(g, fg, bg)
-        end
-      end,
-    },
-    -- Blocky: bloques sólidos y saturados, bordes rectos, todo en negrita.
-    blocky = {
-      border = "square",
-      layout = {
-        left = { "git", "label", "diagnostics" },
-        center = { "mode" },
-        right = { "lsp", "indent", "filetype", "position", "percent" },
-      },
-      colors = function(pair, p)
-        pair("StGit", p.bg, p.cyan, { bold = true }) -- rama sobre cian
-        pair("StFile", p.bg, p.purple, { bold = true }) -- etiqueta sobre morado
-        pair("StInfo", p.bg, p.blue, { bold = true }) -- info sobre azul (no gris)
-      end,
-    },
-    -- Un preset puede además redefinir colores con un hook `colors(pair, palette)`
-    -- donde pair(grupo, fg, bg, opts?) define el grupo y su "<grupo>Sep". Ej.:
-    --
-    -- focus = {
-    --   border = "slant",
-    --   layout = { left = {}, center = { "mode" }, right = { "position", "percent" } },
-    --   colors = function(pair, palette)
-    --     pair("StGit", palette.fg, palette.bg_highlight)
-    --     -- ...los grupos que quieras cambiar; el resto usa los del preset por defecto
-    --   end,
-    -- },
-  },
+  preset = "default", -- preset activo al arrancar (si no hay preferencia guardada)
+  presets = load_presets(),
 
   -- ── Catálogo de bordes (extremos de píldora) ──────────────────────
   borders = {

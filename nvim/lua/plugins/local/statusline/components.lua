@@ -58,11 +58,30 @@ function M.context()
   return { mode = m, color = mode_color(m) }
 end
 
--- Handler de clic del componente `indent`: alterna espacios <-> tabs en el buffer
--- actual y redibuja. Global porque la statusline lo referencia como v:lua.<nombre>.
--- Recibe (minwid, clicks, botón, modificadores); no necesitamos ninguno.
-function _G.statusline_indent_click()
+-- Handlers de clic del componente `indent` (dos botones). Globales porque la
+-- statusline los referencia como v:lua.<nombre>. Reciben (minwid, clicks, botón, mods).
+-- Botón 1 (tipo): alterna espacios <-> tabs en el buffer actual.
+function _G.statusline_indent_type_click()
   vim.bo.expandtab = not vim.bo.expandtab
+  vim.cmd("redrawstatus")
+end
+-- Botón 2 (cantidad): cicla el ancho 2 -> 4 -> 8 (clic derecho, al revés).
+function _G.statusline_indent_amount_click(_, _, button)
+  local steps = { 2, 4, 8 }
+  local cur = vim.bo.shiftwidth
+  if cur <= 0 then
+    cur = vim.bo.tabstop
+  end
+  local idx = 1
+  for i, v in ipairs(steps) do
+    if v == cur then
+      idx = i
+    end
+  end
+  local dir = (button == "r") and -1 or 1
+  local w = steps[((idx - 1 + dir) % #steps) + 1]
+  vim.bo.shiftwidth = w
+  vim.bo.tabstop = w
   vim.cmd("redrawstatus")
 end
 
@@ -91,6 +110,20 @@ M.components = {
     return { text = text, hl = "StGit", align = "l" }
   end,
 
+  -- contador de cambios sin stagear del archivo actual: +añadidas ~cambiadas -quitadas,
+  -- cada una con su color (verde/azul/rojo sobre el fondo de la píldora de git). Siempre
+  -- visible (aunque sea 0); solo se oculta si el archivo no está rastreado por git.
+  gitdiff = function()
+    local s = require("plugins.local.git").summary(0)
+    if not s then
+      return nil
+    end
+    local raw = "%#StGitAdd#+" .. (s.added or 0)
+      .. " %#StGitChange#~" .. (s.changed or 0)
+      .. " %#StGitDelete#-" .. (s.removed or 0)
+    return { raw = raw, hl = "StGit" }
+  end,
+
   -- etiqueta solo para buffers especiales (terminal/explorador) y [No Name];
   -- los archivos con nombre muestran su ruta en el winbar (breadcrumbs)
   label = function()
@@ -101,7 +134,7 @@ M.components = {
     elseif ft == "dashboard" then
       return nil
     elseif vim.bo.buftype == "terminal" then
-      text = vim.b.term_label or vim.b.term_name or "terminal"
+      return nil -- el nombre de la terminal ya no va aquí (lo muestra el winbar)
     else
       local name = api.nvim_buf_get_name(0)
       if name == "" then
@@ -140,28 +173,24 @@ M.components = {
     return { text = cfg.icons.lsp .. " " .. table.concat(names, ","), hl = "StInfo", align = "l" }
   end,
 
-  -- conteo de diagnósticos del buffer (errores/avisos/info/pistas); se oculta si no
-  -- hay ninguno. Una sola píldora coloreada según la severidad más alta presente.
+  -- conteo de diagnósticos del buffer (errores/avisos/info/pistas). Siempre visible
+  -- (aunque sean 0). Una sola píldora con cada conteo en el color de su severidad.
   diagnostics = function()
     local sev = vim.diagnostic.severity
     local c = vim.diagnostic.count(0)
     local e, w, i, h = c[sev.ERROR] or 0, c[sev.WARN] or 0, c[sev.INFO] or 0, c[sev.HINT] or 0
-    if e + w + i + h == 0 then
-      return nil
-    end
-    local parts = {}
-    if e > 0 then parts[#parts + 1] = cfg.icons.diag_error .. " " .. e end
-    if w > 0 then parts[#parts + 1] = cfg.icons.diag_warn .. " " .. w end
-    if i > 0 then parts[#parts + 1] = cfg.icons.diag_info .. " " .. i end
-    if h > 0 then parts[#parts + 1] = cfg.icons.diag_hint .. " " .. h end
-    local hl = (e > 0 and "StDiagError") or (w > 0 and "StDiagWarn") or (i > 0 and "StDiagInfo") or "StDiagHint"
-    return { text = table.concat(parts, " "), hl = hl, align = "l" }
+    local raw = "%#StDiagError#" .. cfg.icons.diag_error .. " " .. e
+      .. " %#StDiagWarn#" .. cfg.icons.diag_warn .. " " .. w
+      .. " %#StDiagInfo#" .. cfg.icons.diag_info .. " " .. i
+      .. " %#StDiagHint#" .. cfg.icons.diag_hint .. " " .. h
+    return { raw = raw, hl = "StInfo" }
   end,
 
   -- tipo de indentación del buffer: espacios o tabs + su ancho. Con expandtab se
   -- usan espacios y el ancho efectivo es shiftwidth (o tabstop si sw=0); sin
   -- expandtab son tabs de ancho tabstop. Se oculta en buffers sin archivo real.
-  -- Clic izquierdo: alterna espacios <-> tabs (ver statusline_indent_click).
+  -- DOS botones: el tipo (icono+espacios/tabs) alterna espacios<->tabs; la cantidad
+  -- cicla 2/4/8. (ver statusline_indent_type_click / statusline_indent_amount_click)
   indent = function()
     if vim.bo.buftype ~= "" or vim.bo.filetype == "dashboard" or vim.bo.filetype == "explorer" then
       return nil
@@ -170,10 +199,12 @@ M.components = {
     local sw = vim.bo.shiftwidth
     local width = (sw > 0) and sw or vim.bo.tabstop
     return {
-      text = cfg.icons.indent .. " " .. kind .. " " .. width,
       hl = "StInfo",
-      align = "c",
-      click = "v:lua.statusline_indent_click",
+      parts = {
+        { text = cfg.icons.indent .. " " .. kind, click = "v:lua.statusline_indent_type_click" },
+        { text = " " }, -- separador (sin click)
+        { text = tostring(width), click = "v:lua.statusline_indent_amount_click" },
+      },
     }
   end,
 

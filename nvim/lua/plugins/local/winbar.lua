@@ -26,33 +26,58 @@ function _G.breadcrumbs()
   end
 
   local parts = vim.split(vim.fn.fnamemodify(name, ":."), "[/\\]", { trimempty = true })
-  local out = { " " }
-  for i, p in ipairs(parts) do
-    local last = i == #parts
-    if last then
-      out[#out + 1] = "%#WinBarFile#" .. icon_for(p) .. "  " .. p:gsub("%%", "%%%%")
-    else
-      out[#out + 1] = "%#WinBarPath#" .. p:gsub("%%", "%%%%")
-      out[#out + 1] = "%#WinBarSep# ▸ "
-    end
-  end
+  local n = #parts
+  local file = parts[n] or ""
+  -- Orden invertido: primero el ARCHIVO actual, luego sus carpetas padre hacia la
+  -- derecha (padre inmediato → raíz). El separador ◂ se lee como "contenido en".
+  local out = { " %#WinBarFile#" .. icon_for(file) .. "  " .. file:gsub("%%", "%%%%") }
+  out[#out + 1] = "%#WinBarFile#%m" -- indicador de modificado, junto al archivo
   -- marca [deleted] si el archivo del buffer fue borrado en disco (la fija el
   -- autocomando FileChangedShell en config.autocmds; se limpia al reguardar)
   if vim.b[buf].file_deleted then
     out[#out + 1] = " %#WinBarDeleted#[deleted]"
   end
-  out[#out + 1] = " %#WinBarFile#%m" -- indicador de modificado
+  for i = n - 1, 1, -1 do
+    out[#out + 1] = "%#WinBarSep# ◂ "
+    out[#out + 1] = "%#WinBarPath#" .. parts[i]:gsub("%%", "%%%%")
+  end
   return table.concat(out)
 end
 
--- Activa el winbar solo en ventanas de archivo normales
+local TERM_ICON = "\u{f489}" --  icono de terminal (a juego con la statusline)
+
+-- Winbar de un buffer de terminal: su nombre (term_name; si no, se deriva del
+-- nombre term://). Se usa solo en terminales NO flotantes.
+function _G.terminal_winbar()
+  local win = vim.g.statusline_winid
+  if not (win and win ~= 0 and api.nvim_win_is_valid(win)) then
+    win = api.nvim_get_current_win()
+  end
+  local buf = api.nvim_win_get_buf(win)
+  local label = vim.b[buf].term_name
+  if not label or label == "" then
+    local name = api.nvim_buf_get_name(buf)
+    label = vim.fn.fnamemodify(name:gsub("^term://.*//%d+:", ""), ":t")
+    if label == "" then
+      label = "terminal"
+    end
+  end
+  return " %#WinBarFile#" .. TERM_ICON .. "  " .. label:gsub("%%", "%%%%")
+end
+
+-- Activa el winbar en archivos normales (breadcrumbs) y en terminales no flotantes
+-- (nombre de la terminal).
 local function set_winbar()
-  -- no tocar ventanas flotantes (pickers, blame, which-key): fijar winbar ahí
-  -- puede dar E36 "Not enough room" en flotantes de 1 línea
+  -- no tocar ventanas flotantes (pickers, blame, which-key, terminales flotantes de
+  -- claude/lazygit): fijar winbar ahí puede dar E36 "Not enough room" en 1 línea
   if api.nvim_win_get_config(0).relative ~= "" then
     return
   end
   local buf = api.nvim_get_current_buf()
+  if vim.bo[buf].buftype == "terminal" then
+    vim.wo.winbar = "%!v:lua.terminal_winbar()"
+    return
+  end
   local normal = vim.bo[buf].buftype == ""
     and api.nvim_buf_get_name(buf) ~= ""
     and vim.bo[buf].filetype ~= "netrw"

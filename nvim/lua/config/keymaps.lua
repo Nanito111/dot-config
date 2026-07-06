@@ -78,6 +78,56 @@ end, { silent = true, desc = "Siguiente diagnóstico" })
 map("n", "<leader>dp", function()
   vim.diagnostic.jump({ count = -1, float = true })
 end, { silent = true, desc = "Diagnóstico anterior" })
+-- Todos los diagnósticos del proyecto (buffers cargados) en el picker fuzzy, ordenados
+-- por severidad; al elegir salta al archivo/línea. Nota: solo aparecen los de archivos
+-- ya abiertos/analizados por el LSP (así funcionan los diagnósticos de LSP).
+local function diag_project()
+  local diags = vim.diagnostic.get(nil)
+  if #diags == 0 then
+    vim.notify("Sin diagnósticos en el proyecto", vim.log.levels.INFO, { title = "Diagnósticos" })
+    return
+  end
+  table.sort(diags, function(a, b)
+    if a.severity ~= b.severity then
+      return a.severity < b.severity -- ERROR(1) < WARN(2) < INFO(3) < HINT(4)
+    end
+    if a.bufnr ~= b.bufnr then
+      return a.bufnr < b.bufnr
+    end
+    return a.lnum < b.lnum
+  end)
+  local sev = {
+    [vim.diagnostic.severity.ERROR] = "E",
+    [vim.diagnostic.severity.WARN] = "W",
+    [vim.diagnostic.severity.INFO] = "I",
+    [vim.diagnostic.severity.HINT] = "H",
+  }
+  local display, map_d = {}, {}
+  for _, d in ipairs(diags) do
+    local name = vim.api.nvim_buf_get_name(d.bufnr)
+    local rel = (name ~= "") and vim.fn.fnamemodify(name, ":.") or ("buf " .. d.bufnr)
+    local msg = (d.message or ""):gsub("%s*\n.*$", "") -- solo la primera línea
+    local s = string.format("%s:%d:%d: [%s] %s", rel, d.lnum + 1, d.col + 1, sev[d.severity] or "?", msg)
+    display[#display + 1] = s
+    map_d[s] = d
+  end
+  require("plugins.local.picker").pick({
+    title = "Diagnósticos del proyecto",
+    items = display,
+    on_select = function(item, origin)
+      local d = map_d[item]
+      if not (d and vim.api.nvim_buf_is_valid(d.bufnr)) then
+        return
+      end
+      if origin and vim.api.nvim_win_is_valid(origin) then
+        vim.api.nvim_set_current_win(origin)
+      end
+      vim.api.nvim_set_current_buf(d.bufnr)
+      pcall(vim.api.nvim_win_set_cursor, 0, { d.lnum + 1, d.col })
+    end,
+  })
+end
+map("n", "<leader>dw", diag_project, { silent = true, desc = "Diagnósticos del proyecto (picker)" })
 
 -- Terminales flotantes
 map({ "n", "t" }, "<M-g>", "<cmd>Lazygit<CR>", { silent = true, desc = "Lazygit (flotante)" })

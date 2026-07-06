@@ -11,6 +11,7 @@ local ns = api.nvim_create_namespace("git_signs")
 local index_cache = {}
 local committed_cache = {}
 local hunk_cache = {}
+local summary_cache = {} -- summary_cache[buf] = { added, changed, removed } (sin stagear)
 local timers = {}
 
 local SIGNS = {
@@ -74,6 +75,7 @@ local function refresh(buf)
   end
   api.nvim_buf_clear_namespace(buf, ns, 0, -1)
   hunk_cache[buf] = {}
+  summary_cache[buf] = nil
 
   local index = index_cache[buf]
   if not index then
@@ -86,26 +88,35 @@ local function refresh(buf)
   local unstaged = vim.diff(index, cur, { result_type = "indices", algorithm = "histogram" }) or {}
 
   -- ── cambios sin stagear (buffer vs índice) ──
+  local added, changed, removed = 0, 0, 0
   for _, h in ipairs(unstaged) do
     local _, ca, sb, cb = h[1], h[2], h[3], h[4]
     local kind, first
     if ca == 0 then -- añadidas
       kind, first = "add", sb
+      added = added + cb
       for i = 0, cb - 1 do
         place(buf, sb + i, "add")
       end
     elseif cb == 0 then -- borradas
       first = math.max(sb, 1)
       kind = (sb == 0) and "topdelete" or "delete"
+      removed = removed + ca
       place(buf, first, kind)
     else -- modificadas (changedelete si además se quitaron líneas)
       kind, first = (ca > cb) and "changedelete" or "change", sb
+      changed = changed + cb
+      if ca > cb then
+        removed = removed + (ca - cb) -- además se quitaron líneas
+      end
       for i = 0, cb - 1 do
         place(buf, sb + i, kind)
       end
     end
     hunk_cache[buf][#hunk_cache[buf] + 1] = { start = first, kind = kind }
   end
+  summary_cache[buf] = { added = added, changed = changed, removed = removed }
+  pcall(vim.cmd, "redrawstatus") -- refrescar el contador de cambios de la statusline
 
   -- ── cambios staged (índice vs HEAD) ──
   local committed = committed_cache[buf]
@@ -206,6 +217,15 @@ local function goto_hunk(dir)
   vim.cmd("normal! zz")
 end
 
+-- Resumen de cambios SIN stagear del buffer: { added, changed, removed } o nil si el
+-- archivo no está rastreado / no hay cambios calculados aún.
+function M.summary(buf)
+  if not buf or buf == 0 then
+    buf = api.nvim_get_current_buf()
+  end
+  return summary_cache[buf]
+end
+
 function M.next_hunk()
   goto_hunk(1)
 end
@@ -240,6 +260,7 @@ autocmd("BufDelete", {
     index_cache[ev.buf] = nil
     committed_cache[ev.buf] = nil
     hunk_cache[ev.buf] = nil
+    summary_cache[ev.buf] = nil
   end,
 })
 

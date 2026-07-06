@@ -64,7 +64,13 @@ local active_colors = default_colors -- función de colores del preset activo
 -- y se registra en theme para reaplicarse en cada ColorScheme.
 local function apply_colors()
   local transparent = current.transparent
-  local fill = current.fill or palette.bg -- por defecto = fondo global del editor
+  -- fill puede ser un color fijo o una FUNCIÓN del palette (para seguir el tema);
+  -- se resuelve aquí, que corre en cada ColorScheme con la paleta fresca.
+  local fill = current.fill
+  if type(fill) == "function" then
+    fill = fill(palette)
+  end
+  fill = fill or palette.bg -- por defecto = fondo global del editor
   local hl = api.nvim_set_hl
   local function pair(name, fg, bg, opts)
     opts = opts or {}
@@ -88,6 +94,27 @@ local function apply_colors()
   local base = transparent and "NONE" or fill
   hl(0, core.FILL, { bg = base }) -- relleno entre píldoras
   hl(0, "StatusLine", { bg = base }) -- base de la línea
+
+  -- Sub-grupos coloreados que van DENTRO de una píldora (contador de git y
+  -- diagnósticos): comparten el fondo de SU píldora (StGit / StInfo) y solo cambian el
+  -- color del texto, para que el fondo sea uniforme sea cual sea el preset. En presets
+  -- `mono` no se aplica el acento de color: los contadores usan el color del texto de
+  -- la píldora (para respetar looks monocromáticos como vscode_mono).
+  local function tint(pill_group, defs)
+    local ok, ph = pcall(api.nvim_get_hl, 0, { name = pill_group, link = false })
+    local bg = (ok and ph.bg) and string.format("#%06x", ph.bg) or "NONE"
+    local mono_fg = (ok and ph.fg) and string.format("#%06x", ph.fg) or nil
+    for name, fg in pairs(defs) do
+      hl(0, name, { fg = current.mono and mono_fg or fg, bg = bg })
+    end
+  end
+  tint("StGit", { StGitAdd = palette.green, StGitChange = palette.blue, StGitDelete = palette.red })
+  tint("StInfo", {
+    StDiagError = palette.red,
+    StDiagWarn = palette.yellow,
+    StDiagInfo = palette.blue,
+    StDiagHint = palette.cyan,
+  })
 end
 
 -- ── Bordes ─────────────────────────────────────────────────────────
@@ -142,6 +169,7 @@ function M.set_preset(name)
   end
   current.fill = p.fill -- nil = seguir palette.bg dinámicamente
   current.transparent = p.transparent or false
+  current.mono = p.mono or false -- sin acento de color (contadores en el color del texto)
   active_colors = p.colors or default_colors
   apply_colors()
   if p.border then

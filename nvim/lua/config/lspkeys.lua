@@ -6,6 +6,47 @@
 local api = vim.api
 local M = {}
 
+-- Handler `on_list` compartido para referencias/implementaciones/símbolos…: recibe
+-- items estilo quickfix ({ filename, lnum, col, text }) y, en vez del quickfix nativo,
+-- los muestra en el picker fuzzy propio (o salta directo si hay un único resultado).
+local function open_locations(o)
+  local items = o.items or {}
+  if #items == 0 then
+    vim.notify("Sin resultados", vim.log.levels.INFO, { title = "LSP" })
+    return
+  end
+  local function jump(it, origin)
+    if origin and api.nvim_win_is_valid(origin) then
+      api.nvim_set_current_win(origin)
+    end
+    vim.cmd("edit " .. vim.fn.fnameescape(it.filename))
+    pcall(api.nvim_win_set_cursor, 0, { it.lnum, (it.col or 1) - 1 })
+  end
+  if #items == 1 then
+    jump(items[1]) -- un solo resultado: saltar sin picker
+    return
+  end
+  local display, map = {}, {}
+  for _, it in ipairs(items) do
+    local rel = vim.fn.fnamemodify(it.filename, ":.")
+    local text = (it.text or ""):gsub("^%s+", "")
+    local d = string.format("%s:%d:%d: %s", rel, it.lnum, it.col or 1, text)
+    display[#display + 1] = d
+    map[d] = it
+  end
+  require("plugins.local.picker").pick({
+    title = o.title or "LSP",
+    items = display,
+    on_select = function(item, origin)
+      local it = map[item]
+      if it then
+        jump(it, origin)
+      end
+    end,
+  })
+end
+M.open_locations = open_locations
+
 -- ── Diagnósticos (global; se reaplica en cada recarga) ─────────────
 vim.diagnostic.config({
   -- virtual_lines solo en la línea del cursor: mensaje completo en línea, sin llenar
@@ -51,6 +92,33 @@ function M.on_attach(buf)
   map("<leader>lf", function()
     vim.lsp.buf.format({ async = true })
   end, "LSP: formatear buffer")
+
+  -- Navegación por el picker fuzzy (o salto directo si hay un único resultado)
+  map("<leader>lR", function()
+    vim.lsp.buf.references(nil, { on_list = open_locations })
+  end, "LSP: referencias")
+  map("<leader>ld", function()
+    vim.lsp.buf.definition({ on_list = open_locations })
+  end, "LSP: definición(es)")
+  map("<leader>li", function()
+    vim.lsp.buf.implementation({ on_list = open_locations })
+  end, "LSP: implementaciones")
+  map("<leader>lt", function()
+    vim.lsp.buf.type_definition({ on_list = open_locations })
+  end, "LSP: definición de tipo")
+  map("<leader>ls", function()
+    vim.lsp.buf.document_symbol({ on_list = open_locations })
+  end, "LSP: símbolos del documento")
+  map("<leader>lS", function()
+    vim.ui.input({ prompt = "Símbolo del proyecto: " }, function(q)
+      if q ~= nil then
+        vim.lsp.buf.workspace_symbol(q, { on_list = open_locations })
+      end
+    end)
+  end, "LSP: símbolos del proyecto")
+  map("<leader>lh", function()
+    vim.lsp.buf.signature_help({ border = "rounded" })
+  end, "LSP: ayuda de firma")
 end
 
 -- Autocomando: al conectar, aplicar keymaps. require(self) al invocar para que, tras

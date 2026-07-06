@@ -48,14 +48,35 @@ local function render_section(list, components, ctx)
   for _, item in ipairs(list or {}) do
     local comp = type(item) == "function" and item or components[item]
     local seg = comp and comp(ctx)
-    if seg and seg.text and seg.text ~= "" then
-      local t = seg.width and M.fit(seg.text, seg.width, seg.align) or seg.text
-      t = t:gsub("%%", "%%%%") -- escapar el % literal (no es código de statusline)
-      local pill = M.pill(seg.hl, " " .. t .. " ")
-      -- seg.click = nombre de función (p. ej. "v:lua.Fn"): hace la píldora clicable.
+    if seg and (seg.raw or (seg.text and seg.text ~= "") or seg.parts) then
+      local content
+      if seg.raw then
+        -- contenido ya formateado por el componente (con sus propios %#grupo#): NO se
+        -- escapa. Sirve para colorear partes distintas dentro de una misma píldora
+        -- (p. ej. el contador de git +añadidas ~cambiadas -quitadas, o los diagnósticos).
+        content = seg.raw
+      elseif seg.parts then
+        -- Varias sub-regiones dentro de UNA misma píldora, cada una con su propio
+        -- click opcional (p. ej. indent: un botón para el tipo y otro para la cantidad).
+        -- Cada texto se escapa por separado y, si tiene click, se envuelve en
+        -- %@Fn@...%X (los marcadores no se escapan ni cuentan como ancho).
+        local buf = {}
+        for _, p in ipairs(seg.parts) do
+          local t = (p.text or ""):gsub("%%", "%%%%")
+          if p.click then
+            t = "%@" .. p.click .. "@" .. t .. "%X"
+          end
+          buf[#buf + 1] = t
+        end
+        content = table.concat(buf)
+      else
+        content = (seg.width and M.fit(seg.text, seg.width, seg.align) or seg.text):gsub("%%", "%%%%")
+      end
+      local pill = M.pill(seg.hl, " " .. content .. " ")
+      -- seg.click = nombre de función (p. ej. "v:lua.Fn"): hace TODA la píldora clicable.
       -- Se envuelve AQUÍ (no en seg.text) para que los marcadores no se escapen ni
       -- cuenten como ancho. La función recibe (minwid, clicks, botón, modificadores).
-      if seg.click then
+      if seg.click and not seg.parts then
         pill = "%@" .. seg.click .. "@" .. pill .. "%X"
       end
       parts[#parts + 1] = pill

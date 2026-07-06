@@ -3,7 +3,9 @@
 return {
   "saghen/blink.cmp",
   version = "*", -- usar la última release (incluye el binario de fuzzy precompilado)
-  event = "InsertEnter",
+  -- CmdlineEnter además de InsertEnter: sin él, blink no se carga al abrir ":" (si no
+  -- has entrado antes en inserción) y no hay completado en la línea de comandos.
+  event = { "InsertEnter", "CmdlineEnter" },
   dependencies = { "rafamadriz/friendly-snippets" },
   opts = {
     -- preset 'default': <C-y> confirma, <C-n>/<C-p> navegan. Encima añadimos:
@@ -27,6 +29,21 @@ return {
       menu = { border = "rounded" },
     },
     signature = { enabled = true, window = { border = "rounded" } },
+    -- Completado en la línea de comandos (":"): por defecto blink NO muestra el menú
+    -- automáticamente ahí (solo en la ventana de comandos q:). Lo forzamos a mostrarse
+    -- al escribir, con el borde a juego. Navegación: <Tab>/<S-Tab> (preset 'cmdline').
+    cmdline = {
+      -- Mismos atajos que en el editor: el preset 'cmdline' ya trae <C-n>/<C-p> para
+      -- moverse y <C-e> para cerrar; solo cambiamos <Tab> para que CONFIRME la opción
+      -- (como el <Tab> de inserción), en vez de mostrar/ciclar.
+      keymap = {
+        preset = "cmdline",
+        ["<Tab>"] = { "accept", "fallback" },
+      },
+      completion = {
+        menu = { auto_show = true },
+      },
+    },
     -- si no se pudo bajar el binario de Rust, cae al matcher en Lua con aviso
     fuzzy = { implementation = "prefer_rust_with_warning" },
   },

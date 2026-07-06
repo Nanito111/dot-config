@@ -30,6 +30,7 @@ theme.register(set_hl)
 -- ── API pública ────────────────────────────────────────────────────
 M.next_hunk = signs.next_hunk
 M.prev_hunk = signs.prev_hunk
+M.summary = signs.summary
 M.blame = blame.blame
 
 return M

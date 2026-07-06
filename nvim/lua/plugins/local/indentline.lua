@@ -243,6 +243,17 @@ api.nvim_create_autocmd({ "BufWinEnter", "FileType", "TextChanged", "TextChanged
   end,
 })
 
+-- Redibujar al cambiar el ancho/tipo de indentación (p. ej. el botón de la statusline,
+-- :set sw=4, editorconfig…): esos cambios no disparan eventos de texto.
+api.nvim_create_autocmd("OptionSet", {
+  group = group,
+  pattern = { "shiftwidth", "tabstop", "expandtab", "softtabstop" },
+  desc = "Redibujar las guías al cambiar la indentación",
+  callback = function()
+    schedule(api.nvim_get_current_buf())
+  end,
+})
+
 -- limpiar el timer al descargar el buffer
 api.nvim_create_autocmd({ "BufDelete", "BufWipeout" }, {
   group = group,
