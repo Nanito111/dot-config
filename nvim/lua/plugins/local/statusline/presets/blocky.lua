@@ -1,6 +1,7 @@
 -- Blocky: bloques sólidos y saturados, bordes rectos, todo en negrita.
 return {
   border = "square",
+  mono = true, -- fondos saturados: gitdiff/diagnósticos usan el color del texto (legibles)
   layout = {
     left = { "git", "gitdiff", "label", "diagnostics" },
     center = { "mode" },

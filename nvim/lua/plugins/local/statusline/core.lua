@@ -37,6 +37,35 @@ function M.fit(s, w, align)
   return s .. string.rep(" ", pad)
 end
 
+-- Ancho VISIBLE de un contenido de statusline: descuenta los códigos de resaltado
+-- (%#grupo#), de click (%@fn@ … %X) y desescapa el %% -> % antes de medir.
+local function visible_width(s)
+  local plain = s
+    :gsub("%%#[^#]*#", "")
+    :gsub("%%@[^@]*@", "")
+    :gsub("%%X", "")
+    :gsub("%%%%", "%%")
+  return vim.fn.strdisplaywidth(plain)
+end
+
+-- Rellena `content` (que puede llevar códigos %#..#) hasta un ancho VISIBLE mínimo,
+-- según align ("l"/"c"/"r"). No trunca: solo estabiliza el ancho para que un módulo
+-- de tamaño variable no desplace a sus vecinos.
+local function pad_min(content, min_w, align)
+  local vis = visible_width(content)
+  if vis >= min_w then
+    return content
+  end
+  local pad = min_w - vis
+  if align == "r" then
+    return string.rep(" ", pad) .. content
+  elseif align == "c" then
+    local l = math.floor(pad / 2)
+    return string.rep(" ", l) .. content .. string.rep(" ", pad - l)
+  end
+  return content .. string.rep(" ", pad)
+end
+
 -- Envuelve `content` en una píldora con extremos redondeados del color `hl`
 function M.pill(hl, content)
   return "%#" .. hl .. "Sep#" .. M.CAP_L .. "%#" .. hl .. "#" .. content .. "%#" .. hl .. "Sep#" .. M.CAP_R
@@ -71,6 +100,10 @@ local function render_section(list, components, ctx)
         content = table.concat(buf)
       else
         content = (seg.width and M.fit(seg.text, seg.width, seg.align) or seg.text):gsub("%%", "%%%%")
+      end
+      -- ancho mínimo (estabiliza módulos variables sin truncar): sirve para raw/parts/texto
+      if seg.min_width then
+        content = pad_min(content, seg.min_width, seg.align)
       end
       local pill = M.pill(seg.hl, " " .. content .. " ")
       -- seg.click = nombre de función (p. ej. "v:lua.Fn"): hace TODA la píldora clicable.

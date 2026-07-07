@@ -64,6 +64,21 @@ local function eligible(buf)
     and not EXCLUDE_FT[vim.bo[buf].filetype]
 end
 
+-- Desplazamiento horizontal (leftcol) de la ventana que muestra `buf` (la actual si
+-- corresponde, si no la primera). Sirve para colocar las guías de las líneas en blanco,
+-- que no tienen texto donde anclarse y usan columna de ventana.
+local function win_leftcol(buf)
+  local cur = api.nvim_get_current_win()
+  local win = (api.nvim_win_get_buf(cur) == buf) and cur or vim.fn.win_findbuf(buf)[1]
+  if not win then
+    return 0
+  end
+  local ok, lc = pcall(api.nvim_win_call, win, function()
+    return vim.fn.winsaveview().leftcol
+  end)
+  return (ok and lc) or 0
+end
+
 -- Redibuja TODAS las guías del buffer (limpia y vuelve a poner). Barato porque las
 -- guías dependen solo del contenido; los extmarks se ven en cualquier ventana del buffer.
 local function render(buf)
@@ -126,6 +141,11 @@ local function render(buf)
     nxt[i] = nlast
   end
 
+  -- Desplazamiento horizontal: la guía de la columna c se dibuja en la columna de
+  -- ventana (c - leftcol). Así acompaña al scroll y, si queda a la izquierda del borde
+  -- (c < leftcol), se OMITE (no se queda pegada en la primera columna). Como las guías
+  -- solo caen en columnas del sangrado (espacios), nunca tapan contenido real.
+  local leftcol = win_leftcol(buf)
   for i = 1, n do
     local indent = raw[i]
     if indent == false then
@@ -133,12 +153,15 @@ local function render(buf)
     end
     local c = 0
     while c < indent do
-      pcall(api.nvim_buf_set_extmark, buf, ns, i - 1, 0, {
-        virt_text = { { char, "IndentLine" } },
-        virt_text_win_col = c, -- columna de ventana (funciona en líneas vacías)
-        hl_mode = "combine", -- respeta cursorline/otros fondos
-        priority = 1,
-      })
+      local wincol = c - leftcol
+      if wincol >= 0 then
+        pcall(api.nvim_buf_set_extmark, buf, ns, i - 1, 0, {
+          virt_text = { { char, "IndentLine" } },
+          virt_text_win_col = wincol,
+          hl_mode = "combine",
+          priority = 1,
+        })
+      end
       c = c + sw
     end
   end
@@ -240,6 +263,22 @@ api.nvim_create_autocmd({ "BufWinEnter", "FileType", "TextChanged", "TextChanged
   desc = "Redibujar las guías de indentación",
   callback = function(a)
     schedule(a.buf)
+  end,
+})
+
+-- Reajustar las guías de las líneas en blanco al hacer scroll HORIZONTAL (leftcol):
+-- dependen de la columna de ventana, así que hay que recolocarlas. Solo cuando cambia
+-- leftcol (no en scroll vertical, que no las afecta).
+api.nvim_create_autocmd("WinScrolled", {
+  group = group,
+  desc = "Reajustar guías de indentación al scroll horizontal",
+  callback = function(a)
+    local ev = vim.v.event
+    -- solo al cambiar leftcol (scroll horizontal); render inmediato para que las guías
+    -- no se queden un instante en la posición anterior tapando texto
+    if ev and ev.all and (ev.all.leftcol or 0) ~= 0 and api.nvim_buf_is_valid(a.buf) then
+      render(a.buf)
+    end
   end,
 })
 

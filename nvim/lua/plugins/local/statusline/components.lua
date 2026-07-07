@@ -107,7 +107,7 @@ M.components = {
     if behind > 0 then
       text = text .. " " .. cfg.icons.behind .. behind
     end
-    return { text = text, hl = "StGit", align = "l" }
+    return { text = text, hl = "StGit", align = "l", min_width = 14 }
   end,
 
   -- contador de cambios sin stagear del archivo actual: +añadidas ~cambiadas -quitadas,
@@ -121,7 +121,8 @@ M.components = {
     local raw = "%#StGitAdd#+" .. (s.added or 0)
       .. " %#StGitChange#~" .. (s.changed or 0)
       .. " %#StGitDelete#-" .. (s.removed or 0)
-    return { raw = raw, hl = "StGit" }
+    -- ancho mínimo para que crecer de 1 a 2 dígitos no desplace a los vecinos
+    return { raw = raw, hl = "StGit", min_width = 14, align = "l" }
   end,
 
   -- etiqueta solo para buffers especiales (terminal/explorador) y [No Name];
@@ -143,7 +144,7 @@ M.components = {
         return nil -- archivo con nombre: lo muestra el winbar
       end
     end
-    return { text = text, hl = "StFile" }
+    return { text = text, hl = "StFile", align = "l", min_width = 12 }
   end,
 
   -- filetype: icono + extensión corta (o term/files para buffers especiales)
@@ -170,7 +171,7 @@ M.components = {
     if #names == 0 then
       return nil
     end
-    return { text = cfg.icons.lsp .. " " .. table.concat(names, ","), hl = "StInfo", align = "l" }
+    return { text = cfg.icons.lsp .. " " .. table.concat(names, ","), hl = "StInfo", align = "l", min_width = 10 }
   end,
 
   -- conteo de diagnósticos del buffer (errores/avisos/info/pistas). Siempre visible
@@ -183,7 +184,8 @@ M.components = {
       .. " %#StDiagWarn#" .. cfg.icons.diag_warn .. " " .. w
       .. " %#StDiagInfo#" .. cfg.icons.diag_info .. " " .. i
       .. " %#StDiagHint#" .. cfg.icons.diag_hint .. " " .. h
-    return { raw = raw, hl = "StInfo" }
+    -- ancho mínimo para que los conteos (1↔2 dígitos) no desplacen a los vecinos
+    return { raw = raw, hl = "StInfo", min_width = 22, align = "l" }
   end,
 
   -- tipo de indentación del buffer: espacios o tabs + su ancho. Con expandtab se
@@ -200,6 +202,8 @@ M.components = {
     local width = (sw > 0) and sw or vim.bo.tabstop
     return {
       hl = "StInfo",
+      align = "l",
+      min_width = 10, -- "spaces 2" / "tabs 4" no cambian de ancho al alternar
       parts = {
         { text = cfg.icons.indent .. " " .. kind, click = "v:lua.statusline_indent_type_click" },
         { text = " " }, -- separador (sin click)
@@ -208,10 +212,17 @@ M.components = {
     }
   end,
 
-  -- posición línea:columna
+  -- posición línea:columna (formato compacto, resto de presets)
   position = function()
     local cur = api.nvim_win_get_cursor(0)
     return { text = cur[1] .. ":" .. (cur[2] + 1), hl = "StInfo", width = cfg.width.position, align = "r" }
+  end,
+
+  -- posición estilo VSCode: "Ln n, Col n" (solo lo usan los presets vscode)
+  -- min_width para que al moverse el cursor (más dígitos) no desplace a filetype
+  position_lncol = function()
+    local cur = api.nvim_win_get_cursor(0)
+    return { text = "Ln " .. cur[1] .. ", Col " .. (cur[2] + 1), hl = "StInfo", align = "r", min_width = 18 }
   end,
 
   -- porcentaje de avance en el archivo, coloreado según el modo

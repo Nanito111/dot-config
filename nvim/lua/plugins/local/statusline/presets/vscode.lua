@@ -1,35 +1,24 @@
 -- Estilo VSCode: barra continua (sin píldoras), rama a la izquierda y posición/lenguaje
--- a la derecha. El color de la barra viene del TEMA: un azul oscurecido a partir de
--- palette.blue; `fill` pinta los huecos del mismo color para que se vea como una sola barra.
-local function bar(p)
-  local h = p.blue:gsub("#", "")
-  local r = math.floor(tonumber(h:sub(1, 2), 16) * 0.6)
-  local g = math.floor(tonumber(h:sub(3, 4), 16) * 0.6)
-  local b = math.floor(tonumber(h:sub(5, 6), 16) * 0.6)
-  return string.format("#%02x%02x%02x", r, g, b)
-end
-
+-- a la derecha. El color de la barra viene del PROPIO TEMA: usa el color que el
+-- colorscheme define para la StatusLine (palette.statusline_bg/fg); si el tema no lo
+-- define, cae a un fondo oscuro derivado. `fill` pinta los huecos del mismo color para
+-- que se vea como una sola barra.
 return {
   border = "square",
-  fill = bar, -- barra del azul del tema, oscurecido
+  fill = function(p)
+    return p.statusline_bg -- barra del color de statusline del tema
+  end,
   layout = {
-    left = { "git", "gitdiff", "mode" },
-    center = { "diagnostics" },
-    right = { "lsp", "indent", "position", "filetype" },
+    left = { "git", "gitdiff", "diagnostics", "mode" },
+    center = {},
+    right = { "lsp", "indent", "position_lncol", "filetype" },
   },
   colors = function(pair, p)
-    local bg, fg = bar(p), p.fg -- texto claro del tema sobre la barra azul oscura
-    for _, g in ipairs({
-      "StNormal",
-      "StInsert",
-      "StVisual",
-      "StReplace",
-      "StCommand",
-      "StTerminal",
-      "StGit",
-      "StFile",
-      "StInfo",
-    }) do
+    local bg, fg = p.statusline_bg, p.statusline_fg -- colores de statusline del tema
+    -- Aplanar solo los segmentos NO-modo al color de la barra; los grupos del modo
+    -- (StNormal/StInsert/…) se dejan con su color por modo (default_colors) para que el
+    -- bloque de modo destaque como acento sobre la barra oscura.
+    for _, g in ipairs({ "StGit", "StFile", "StInfo" }) do
       pair(g, fg, bg)
     end
   end,

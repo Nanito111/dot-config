@@ -15,6 +15,10 @@ local function set_hl()
   -- invisible en temas oscuros). Lo fijamos al color de comentario para que se vea.
   api.nvim_set_hl(0, "WinSeparator", { bg = bg, fg = palette.comment })
 
+  -- Línea de comandos y área de mensajes (MsgArea): con el color que el tema define
+  -- para la StatusLine, para que la franja inferior sea coherente.
+  api.nvim_set_hl(0, "MsgArea", { bg = palette.statusline_bg, fg = palette.statusline_fg })
+
   -- Completado (blink): el menú enlaza a Pmenu (color distinto); lo igualamos al
   -- fondo del editor, con la selección apenas resaltada y bordes tenues como el
   -- resto de la UI. La doc/firma ya enlazan a NormalFloat (ya fundido arriba).

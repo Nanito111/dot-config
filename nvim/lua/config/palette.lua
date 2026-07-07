@@ -97,6 +97,19 @@ function M.refresh()
   -- Fondos derivados: preferir grupos del tema; si no, oscurecer/aclarar la base
   M.bg_dark = bg("StatusLine", "StatusLineNC")
     or (light and blend(base_bg, "#000000", 0.06) or blend(base_bg, "#000000", 0.30))
+
+  -- Color propio del tema para la statusline (bg y fg de StatusLine); si el tema no lo
+  -- define, cae a bg_dark / fg. Lo usa el preset vscode para seguir el tema.
+  M.statusline_bg = bg("StatusLine", "StatusLineNC") or M.bg_dark
+  M.statusline_fg = fg("StatusLine", "StatusLineNC") or M.fg
+
+  -- Colores SEMÁNTICOS de diagnósticos: tomados de los grupos Diagnostic* del tema (no
+  -- de la sintaxis), para que la statusline coincida con el gutter y el virtual text.
+  -- Fallback a los colores generales del palette si el tema no los define.
+  M.diag_error = fg("DiagnosticError", "Error", "ErrorMsg") or M.red
+  M.diag_warn = fg("DiagnosticWarn", "WarningMsg") or M.yellow
+  M.diag_info = fg("DiagnosticInfo") or M.blue
+  M.diag_hint = fg("DiagnosticHint") or M.cyan
   M.bg_highlight = bg("CursorLine", "Visual")
     or (light and blend(base_bg, "#000000", 0.08) or blend(base_bg, "#ffffff", 0.10))
 

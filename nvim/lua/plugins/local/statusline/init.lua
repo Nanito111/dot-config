@@ -98,8 +98,9 @@ local function apply_colors()
   -- Sub-grupos coloreados que van DENTRO de una píldora (contador de git y
   -- diagnósticos): comparten el fondo de SU píldora (StGit / StInfo) y solo cambian el
   -- color del texto, para que el fondo sea uniforme sea cual sea el preset. En presets
-  -- `mono` no se aplica el acento de color: los contadores usan el color del texto de
-  -- la píldora (para respetar looks monocromáticos como vscode_mono).
+  -- `mono` (barra de color sólido: vscode/vscode_mono/blocky) NO se aplica el acento de
+  -- color —los contadores usan el color del TEXTO de la píldora—, porque colores como el
+  -- azul del info o el cian del hint se confundirían con el fondo azulado y no se verían.
   local function tint(pill_group, defs)
     local ok, ph = pcall(api.nvim_get_hl, 0, { name = pill_group, link = false })
     local bg = (ok and ph.bg) and string.format("#%06x", ph.bg) or "NONE"
@@ -110,10 +111,10 @@ local function apply_colors()
   end
   tint("StGit", { StGitAdd = palette.green, StGitChange = palette.blue, StGitDelete = palette.red })
   tint("StInfo", {
-    StDiagError = palette.red,
-    StDiagWarn = palette.yellow,
-    StDiagInfo = palette.blue,
-    StDiagHint = palette.cyan,
+    StDiagError = palette.diag_error,
+    StDiagWarn = palette.diag_warn,
+    StDiagInfo = palette.diag_info,
+    StDiagHint = palette.diag_hint,
   })
 end
 
