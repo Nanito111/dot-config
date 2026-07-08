@@ -114,10 +114,34 @@ local function is_tab_term(buf)
     and not vim.b[buf].term_label
 end
 
--- Registra `buf` en `store[tab actual]` con propiedad EXCLUSIVA: pertenece a la
--- última tab donde se entró, así que se quita de las listas de las demás tabs.
-local function record_exclusive(store, buf)
-  local tab = api.nvim_get_current_tabpage()
+-- ¿`path` está dentro del directorio `dir`? (ambos normalizados)
+local function is_under(path, dir)
+  if not dir or dir == "" then
+    return false
+  end
+  path = vim.fs.normalize(path)
+  dir = vim.fs.normalize(dir)
+  return path == dir or path:sub(1, #dir + 1) == dir .. "/"
+end
+
+-- Tab DUEÑA de un archivo según su path: la tab cuyo cwd lo contiene. Si varios cwd lo
+-- contienen (workspaces anidados), gana el más específico (cwd más largo). nil si nadie.
+local function owner_tab_by_path(name)
+  local path = vim.fn.fnamemodify(name, ":p")
+  local best, best_len = nil, -1
+  for _, tab in ipairs(api.nvim_list_tabpages()) do
+    local cwd = vim.fn.getcwd(-1, api.nvim_tabpage_get_number(tab))
+    if is_under(path, cwd) and #cwd > best_len then
+      best, best_len = tab, #cwd
+    end
+  end
+  return best
+end
+
+-- Registra `buf` en `store[tab]` (por defecto la tab actual) con propiedad EXCLUSIVA:
+-- se quita de las listas de las demás tabs.
+local function record_exclusive(store, buf, tab)
+  tab = tab or api.nvim_get_current_tabpage()
   for t, list in pairs(store) do
     if t ~= tab then
       for i = #list, 1, -1 do
@@ -137,13 +161,16 @@ local function record_exclusive(store, buf)
   list[#list + 1] = buf
 end
 
--- Registra el buffer actual en su tab (archivo o terminal)
+-- Registra el buffer actual en su tab (archivo o terminal). Para archivos, el dueño se
+-- decide por el PATH: si está bajo el cwd de alguna tab, pertenece a esa (aunque lo
+-- hayas abierto desde otra); si no encaja en ninguna, se queda en la tab actual.
 local function record_buffer()
   local buf = api.nvim_get_current_buf()
   if is_file_buf(buf) then
-    record_exclusive(tab_buffers, buf)
+    local owner = owner_tab_by_path(api.nvim_buf_get_name(buf)) or api.nvim_get_current_tabpage()
+    record_exclusive(tab_buffers, buf, owner)
   elseif is_tab_term(buf) then
-    record_exclusive(tab_terms, buf)
+    record_exclusive(tab_terms, buf) -- terminales: por tab actual (no tienen path de archivo)
   end
 end
 

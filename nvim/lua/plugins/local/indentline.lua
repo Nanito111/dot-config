@@ -10,7 +10,7 @@ local theme = require("config.theme")
 local M = {}
 local ns = api.nvim_create_namespace("indentline")
 local char = "\u{250a}" -- ┊ carácter de la guía (configurable con el picker)
-local MAX_LINES = 5000 -- por encima de esto no se dibuja (protección de rendimiento)
+local CTX = 120 -- líneas de contexto sobre/bajo el viewport (para líneas en blanco)
 local active = true -- estado global (toggle con :IndentLines / picker "vacío")
 
 -- Catálogo de estilos para el selector (M.pick). char "" = ocultar las guías.
@@ -64,12 +64,18 @@ local function eligible(buf)
     and not EXCLUDE_FT[vim.bo[buf].filetype]
 end
 
--- Desplazamiento horizontal (leftcol) de la ventana que muestra `buf` (la actual si
--- corresponde, si no la primera). Sirve para colocar las guías de las líneas en blanco,
--- que no tienen texto donde anclarse y usan columna de ventana.
-local function win_leftcol(buf)
+-- Ventana que muestra `buf`: la actual si lo muestra, si no la primera que lo tenga.
+local function win_of(buf)
   local cur = api.nvim_get_current_win()
-  local win = (api.nvim_win_get_buf(cur) == buf) and cur or vim.fn.win_findbuf(buf)[1]
+  if api.nvim_win_get_buf(cur) == buf then
+    return cur
+  end
+  return vim.fn.win_findbuf(buf)[1]
+end
+
+-- Desplazamiento horizontal (leftcol) de una ventana. Sirve para colocar las guías, que
+-- usan columna de ventana, ajustadas al scroll horizontal.
+local function win_leftcol(win)
   if not win then
     return 0
   end
@@ -87,8 +93,10 @@ local function render(buf)
     return
   end
   api.nvim_buf_clear_namespace(buf, ns, 0, -1)
-  local n = api.nvim_buf_line_count(buf)
-  if n > MAX_LINES then
+
+  -- Ventana que muestra el buffer: sin ella no hay nada visible que dibujar.
+  local win = win_of(buf)
+  if not win then
     return
   end
 
@@ -101,9 +109,24 @@ local function render(buf)
     return
   end
 
-  local lines = api.nvim_buf_get_lines(buf, 0, -1, false)
+  -- Rango VISIBLE de la ventana (líneas de buffer). Solo dibujamos ahí -> el render es
+  -- O(altura de pantalla), no O(tamaño del archivo).
+  local n = api.nvim_buf_line_count(buf)
+  local info = vim.fn.getwininfo(win)[1]
+  local top = math.max(1, info.topline)
+  local bot = math.min(n, info.botline)
+  if bot < top then
+    return
+  end
+  local leftcol = win_leftcol(win)
 
-  -- indentación en COLUMNAS de pantalla de cada línea (false = línea en blanco)
+  -- Bloque = visible + contexto (CTX): el sangrado de las líneas en blanco de los bordes
+  -- depende de su vecino no-vacío, que puede quedar fuera de pantalla.
+  local b_first = math.max(1, top - CTX)
+  local b_last = math.min(n, bot + CTX)
+  local lines = api.nvim_buf_get_lines(buf, b_first - 1, b_last, false)
+
+  -- indentación en COLUMNAS de pantalla de cada línea del bloque (false = línea en blanco)
   local raw = {}
   for i, l in ipairs(lines) do
     if l == "" or l:match("^%s*$") then
@@ -124,38 +147,37 @@ local function render(buf)
     end
   end
 
-  -- indentación efectiva de las líneas en blanco: el MÍNIMO de sus vecinos no vacíos,
-  -- para que las guías fluyan por los huecos internos de un bloque sin sobrar al cerrarlo.
-  local prev, last = {}, 0
-  for i = 1, n do
+  -- vecinos no-vacíos (mínimo) para el sangrado de las líneas en blanco, dentro del bloque
+  local m = #lines
+  local prev, plast = {}, 0
+  for i = 1, m do
     if raw[i] ~= false then
-      last = raw[i]
+      plast = raw[i]
     end
-    prev[i] = last
+    prev[i] = plast
   end
   local nxt, nlast = {}, 0
-  for i = n, 1, -1 do
+  for i = m, 1, -1 do
     if raw[i] ~= false then
       nlast = raw[i]
     end
     nxt[i] = nlast
   end
 
-  -- Desplazamiento horizontal: la guía de la columna c se dibuja en la columna de
-  -- ventana (c - leftcol). Así acompaña al scroll y, si queda a la izquierda del borde
-  -- (c < leftcol), se OMITE (no se queda pegada en la primera columna). Como las guías
-  -- solo caen en columnas del sangrado (espacios), nunca tapan contenido real.
-  local leftcol = win_leftcol(buf)
-  for i = 1, n do
-    local indent = raw[i]
+  -- Dibujar SOLO las líneas visibles [top, bot]. La guía de la columna c va en la columna
+  -- de ventana (c - leftcol): acompaña el scroll horizontal y, si queda fuera por la
+  -- izquierda, se omite. Como caen en el sangrado (espacios), no tapan contenido.
+  for bl = top, bot do
+    local idx = bl - b_first + 1
+    local indent = raw[idx]
     if indent == false then
-      indent = math.min(prev[i], nxt[i])
+      indent = math.min(prev[idx], nxt[idx])
     end
     local c = 0
     while c < indent do
       local wincol = c - leftcol
       if wincol >= 0 then
-        pcall(api.nvim_buf_set_extmark, buf, ns, i - 1, 0, {
+        pcall(api.nvim_buf_set_extmark, buf, ns, bl - 1, 0, {
           virt_text = { { char, "IndentLine" } },
           virt_text_win_col = wincol,
           hl_mode = "combine",
@@ -266,19 +288,14 @@ api.nvim_create_autocmd({ "BufWinEnter", "FileType", "TextChanged", "TextChanged
   end,
 })
 
--- Reajustar las guías de las líneas en blanco al hacer scroll HORIZONTAL (leftcol):
--- dependen de la columna de ventana, así que hay que recolocarlas. Solo cuando cambia
--- leftcol (no en scroll vertical, que no las afecta).
-api.nvim_create_autocmd("WinScrolled", {
+-- Redibujar al cambiar el RANGO VISIBLE (scroll vertical u horizontal) o el tamaño de la
+-- ventana: como solo dibujamos el viewport, hay que rehacerlo cuando este cambia.
+-- Con debounce (schedule) para coalescer ráfagas de scroll; el render es barato (O(alto)).
+api.nvim_create_autocmd({ "WinScrolled", "WinResized" }, {
   group = group,
-  desc = "Reajustar guías de indentación al scroll horizontal",
+  desc = "Redibujar las guías al cambiar el viewport (scroll/resize)",
   callback = function(a)
-    local ev = vim.v.event
-    -- solo al cambiar leftcol (scroll horizontal); render inmediato para que las guías
-    -- no se queden un instante en la posición anterior tapando texto
-    if ev and ev.all and (ev.all.leftcol or 0) ~= 0 and api.nvim_buf_is_valid(a.buf) then
-      render(a.buf)
-    end
+    schedule(a.buf)
   end,
 })
 
