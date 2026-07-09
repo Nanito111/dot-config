@@ -23,6 +23,17 @@ autocmd("BufWritePost", {
   end,
 })
 
+-- Refrescar las marcas de git ante operaciones EXTERNAS que el watcher no capta (en
+-- Linux fs_event no es recursivo y no ve los cambios en .git/): al volver el foco a
+-- Neovim, al salir/cerrar una terminal embebida (lazygit, git en :terminal) o tras un
+-- comando de shell (:!git ...). Así stage/commit/checkout se reflejan sin quedar marcas.
+autocmd({ "FocusGained", "TermLeave", "TermClose", "ShellCmdPost" }, {
+  group = group,
+  callback = function()
+    git.schedule_git(cur())
+  end,
+})
+
 -- Limpiar estados (watchers/timers) de tabs cerradas
 autocmd("TabClosed", {
   group = group,

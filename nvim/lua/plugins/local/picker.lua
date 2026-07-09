@@ -2,6 +2,7 @@ local api = vim.api
 local M = {}
 
 local ns = api.nvim_create_namespace("picker")
+local ns_prev = api.nvim_create_namespace("picker_preview")
 local MAX = 300 -- máximo de resultados mostrados
 
 -- state: { prompt_buf, prompt_win, res_buf, res_win, origin,
@@ -19,6 +20,10 @@ local function close()
   pcall(api.nvim_win_close, s.res_win, true)
   pcall(api.nvim_buf_delete, s.prompt_buf, { force = true })
   pcall(api.nvim_buf_delete, s.res_buf, { force = true })
+  if s.preview_win then
+    pcall(api.nvim_win_close, s.preview_win, true)
+    pcall(api.nvim_buf_delete, s.preview_buf, { force = true })
+  end
   if s.origin and api.nvim_win_is_valid(s.origin) then
     api.nvim_set_current_win(s.origin)
   end
@@ -28,11 +33,59 @@ local function close()
   end
 end
 
+-- Actualiza el panel de preview (si está activo) con el archivo/línea del elemento
+-- resaltado. preview_fn(item) devuelve { path, lnum, col? } o nil.
+local function update_preview()
+  local s = state
+  if not (s.preview_win and s.preview_fn and api.nvim_win_is_valid(s.preview_win)) then
+    return
+  end
+  local item = s.count > 0 and s.shown[s.idx] or nil
+  local info = item and s.preview_fn(item)
+  if not (info and info.path) then
+    vim.bo[s.preview_buf].modifiable = true
+    api.nvim_buf_set_lines(s.preview_buf, 0, -1, false, {})
+    vim.bo[s.preview_buf].modifiable = false
+    s.preview_path = nil
+    return
+  end
+  -- cargar el contenido solo si cambió el archivo (del buffer si está abierto, si no del disco)
+  if s.preview_path ~= info.path then
+    s.preview_path = info.path
+    local b = vim.fn.bufadd(info.path)
+    local loaded = api.nvim_buf_is_loaded(b)
+    local lines = loaded and api.nvim_buf_get_lines(b, 0, -1, false)
+      or (vim.fn.filereadable(info.path) == 1 and vim.fn.readfile(info.path))
+      or {}
+    vim.bo[s.preview_buf].modifiable = true
+    api.nvim_buf_set_lines(s.preview_buf, 0, -1, false, lines)
+    vim.bo[s.preview_buf].modifiable = false
+    local ft = (loaded and vim.bo[b].filetype ~= "" and vim.bo[b].filetype)
+      or vim.filetype.match({ filename = info.path })
+      or ""
+    if ft ~= "" then
+      pcall(function()
+        vim.bo[s.preview_buf].filetype = ft
+      end)
+    end
+  end
+  -- ir a la línea y resaltarla, centrada
+  local nlines = api.nvim_buf_line_count(s.preview_buf)
+  local lnum = math.min(math.max(info.lnum or 1, 1), nlines)
+  pcall(api.nvim_win_set_cursor, s.preview_win, { lnum, math.max((info.col or 1) - 1, 0) })
+  pcall(api.nvim_win_call, s.preview_win, function()
+    vim.cmd("normal! zz")
+  end)
+  api.nvim_buf_clear_namespace(s.preview_buf, ns_prev, 0, -1)
+  api.nvim_buf_set_extmark(s.preview_buf, ns_prev, lnum - 1, 0, { line_hl_group = "Visual", hl_eol = true })
+end
+
 -- Resalta la línea seleccionada y la mantiene visible
 local function highlight()
   local s = state
   api.nvim_buf_clear_namespace(s.res_buf, ns, 0, -1)
   if s.count == 0 then
+    update_preview()
     return
   end
   api.nvim_buf_set_extmark(s.res_buf, ns, s.idx - 1, 0, {
@@ -40,8 +93,9 @@ local function highlight()
     hl_eol = true,
   })
   pcall(api.nvim_win_set_cursor, s.res_win, { s.idx, 0 })
+  update_preview() -- panel de preview (si está activo)
   if s.on_move then
-    s.on_move(s.shown[s.idx]) -- preview en vivo del elemento resaltado
+    s.on_move(s.shown[s.idx]) -- callback de preview en vivo (statusline, etc.)
   end
 end
 
@@ -115,10 +169,11 @@ local function confirm()
   end
 end
 
--- Crea las dos ventanas flotantes (prompt arriba, resultados abajo)
-local function create_windows(title)
-  local width = math.min(100, math.floor(vim.o.columns * 0.8))
-  local height = math.min(20, math.max(5, math.floor(vim.o.lines * 0.5)))
+-- Crea las ventanas flotantes: prompt arriba y resultados abajo. Si `preview` es true,
+-- los resultados ocupan la izquierda y se añade un panel de preview a la derecha.
+local function create_windows(title, preview)
+  local width = math.min(preview and 140 or 100, math.floor(vim.o.columns * (preview and 0.9 or 0.8)))
+  local height = math.min(preview and 26 or 20, math.max(5, math.floor(vim.o.lines * (preview and 0.6 or 0.5))))
   local col = math.floor((vim.o.columns - width) / 2)
   local row = math.max(0, math.floor((vim.o.lines - height - 3) / 2))
 
@@ -136,10 +191,11 @@ local function create_windows(title)
     title_pos = "center",
   })
 
+  local res_w = preview and math.floor(width * 0.4) or width
   local res_buf = api.nvim_create_buf(false, true)
   local res_win = api.nvim_open_win(res_buf, false, {
     relative = "editor",
-    width = width,
+    width = res_w,
     height = height,
     row = row + 3, -- 1 línea de prompt + 2 de borde
     col = col,
@@ -147,7 +203,24 @@ local function create_windows(title)
     border = "rounded",
   })
 
-  return prompt_buf, prompt_win, res_buf, res_win
+  local preview_buf, preview_win
+  if preview then
+    preview_buf = api.nvim_create_buf(false, true)
+    preview_win = api.nvim_open_win(preview_buf, false, {
+      relative = "editor",
+      width = width - res_w - 2, -- el resto, a la derecha (el -2 son los bordes)
+      height = height,
+      row = row + 3,
+      col = col + res_w + 2,
+      style = "minimal",
+      border = "rounded",
+    })
+    vim.wo[preview_win].number = true
+    vim.wo[preview_win].cursorline = false
+    vim.wo[preview_win].wrap = false
+  end
+
+  return prompt_buf, prompt_win, res_buf, res_win, preview_buf, preview_win
 end
 
 -- Picker genérico.
@@ -157,6 +230,7 @@ end
 --   on_select(item, origin),
 --   on_move(item)?,         -- al cambiar el resaltado (para preview en vivo)
 --   on_cancel()?,           -- al cerrar sin elegir (para deshacer el preview)
+--   preview(item)?,         -- devuelve { path, lnum, col? } para el panel de preview
 -- }
 function M.pick(opts)
   if state then
@@ -164,13 +238,17 @@ function M.pick(opts)
   end
 
   local origin = api.nvim_get_current_win()
-  local prompt_buf, prompt_win, res_buf, res_win = create_windows(opts.title)
+  local prompt_buf, prompt_win, res_buf, res_win, preview_buf, preview_win =
+    create_windows(opts.title, opts.preview ~= nil)
 
   state = {
     prompt_buf = prompt_buf,
     prompt_win = prompt_win,
     res_buf = res_buf,
     res_win = res_win,
+    preview_buf = preview_buf,
+    preview_win = preview_win,
+    preview_fn = opts.preview,
     origin = origin,
     items = opts.items,
     source = opts.source,
@@ -301,6 +379,13 @@ function M.grep()
           cb(lines)
         end
       )
+    end,
+    preview = function(item)
+      -- formato vimgrep: archivo:línea:columna:texto (ruta relativa al cwd)
+      local file, lnum, col = item:match("^(.-):(%d+):(%d+):")
+      if file then
+        return { path = vim.fn.fnamemodify(file, ":p"), lnum = tonumber(lnum), col = tonumber(col) }
+      end
     end,
     on_select = function(item, origin)
       -- formato vimgrep: archivo:línea:columna:texto

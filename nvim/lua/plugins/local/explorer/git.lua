@@ -7,15 +7,23 @@ local render = require("plugins.local.explorer.render")
 local normpath = util.normpath
 local M = {}
 
--- Obtiene el estado de git de la raíz (async) y re-renderiza con las marcas
+-- Obtiene el estado de git de la raíz (async) y re-renderiza con las marcas.
+-- Guard de GENERACIÓN: cada llamada incrementa s.git_gen; los callbacks async solo
+-- aplican su resultado si siguen siendo la generación más reciente. Evita que un
+-- refresco viejo (que terminó tarde) pise a uno nuevo y deje marcas obsoletas.
 function M.update_git(s)
   if not s or vim.fn.executable("git") == 0 then
     return
   end
+  s.git_gen = (s.git_gen or 0) + 1
+  local gen = s.git_gen
   local root = s.root
   vim.system({ "git", "-C", root, "rev-parse", "--show-toplevel" }, { text = true }, function(r1)
     if r1.code ~= 0 then -- no es un repo
       vim.schedule(function()
+        if s.git_gen ~= gen then
+          return -- resultado obsoleto
+        end
         s.git = {}
         if s.win and api.nvim_win_is_valid(s.win) then
           render.render(s)
@@ -53,6 +61,9 @@ function M.update_git(s)
         end
       end
       vim.schedule(function()
+        if s.git_gen ~= gen then
+          return -- resultado obsoleto (llegó un refresco más nuevo)
+        end
         s.git = map
         if s.win and api.nvim_win_is_valid(s.win) then
           render.render(s)

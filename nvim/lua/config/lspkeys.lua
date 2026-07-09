@@ -37,6 +37,12 @@ local function open_locations(o)
   require("plugins.local.picker").pick({
     title = o.title or "LSP",
     items = display,
+    preview = function(item)
+      local it = map[item]
+      if it then
+        return { path = it.filename, lnum = it.lnum, col = it.col }
+      end
+    end,
     on_select = function(item, origin)
       local it = map[item]
       if it then

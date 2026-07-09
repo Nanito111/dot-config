@@ -155,6 +155,12 @@ function M.render(s)
     cursor[1] = math.max(1, math.min(cursor[1], #lines))
     pcall(api.nvim_win_set_cursor, s.win, cursor)
   end
+
+  -- Ajustar los watchers a las carpetas ahora visibles (raíz + expandidas). require
+  -- perezoso: watch.lua depende de render, así que no se puede requerir arriba.
+  pcall(function()
+    require("plugins.local.explorer.watch").reconcile(s)
+  end)
 end
 
 function M.node_at_cursor(s)

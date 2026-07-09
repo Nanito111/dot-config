@@ -117,6 +117,19 @@ local function dir_of(s)
   return n.is_dir and n.path or vim.fn.fnamemodify(n.path, ":h")
 end
 
+-- Ruta relativa al cwd para mostrar en los prompts (más corta): "" si es el propio
+-- cwd, la parte relativa si está dentro, o la ruta absoluta si queda fuera del cwd.
+local function rel_cwd(path)
+  local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":p"):gsub("/$", "")
+  local abs = vim.fn.fnamemodify(path, ":p"):gsub("/$", "")
+  if abs == cwd then
+    return ""
+  elseif abs:sub(1, #cwd + 1) == cwd .. "/" then
+    return abs:sub(#cwd + 2)
+  end
+  return abs -- fuera del cwd: se muestra la ruta absoluta completa
+end
+
 -- Si el archivo está abierto en un buffer, mover el buffer al nombre nuevo
 local function rename_buf(old, new)
   local b = vim.fn.bufnr(old)
@@ -132,16 +145,21 @@ function M.create()
     return
   end
   local base = dir_of(s)
-  vim.ui.input({ prompt = "Crear (/ al final = carpeta): ", default = base .. "/", completion = "dir" }, function(input)
+  -- prompt con la ruta relativa al cwd (más corta); "" si es el propio cwd
+  local rel = rel_cwd(base)
+  local default = (rel ~= "" and rel .. "/") or ""
+  vim.ui.input({ prompt = "Crear (/ al final = carpeta): ", default = default, completion = "dir" }, function(input)
     if not input or input == "" or input:sub(-1) == ":" then
       return
     end
-    if input:sub(-1) == "/" then
-      vim.fn.mkdir(input, "p")
+    local is_dir = input:sub(-1) == "/"
+    local path = vim.fn.fnamemodify(input, ":p") -- resolver (relativo al cwd) a absoluto
+    if is_dir then
+      vim.fn.mkdir(path, "p")
     else
-      vim.fn.mkdir(vim.fn.fnamemodify(input, ":h"), "p")
-      if vim.fn.filereadable(input) == 0 then
-        vim.fn.writefile({}, input)
+      vim.fn.mkdir(vim.fn.fnamemodify(path, ":h"), "p")
+      if vim.fn.filereadable(path) == 0 then
+        vim.fn.writefile({}, path)
       end
     end
     s.expanded[base] = true
@@ -178,13 +196,17 @@ function M.rename()
   if not n then
     return
   end
-  vim.ui.input({ prompt = "Renombrar/mover: ", default = n.path, completion = "file" }, function(input)
-    if not input or input == "" or input == n.path then
+  vim.ui.input({ prompt = "Renombrar/mover: ", default = rel_cwd(n.path), completion = "file" }, function(input)
+    if not input or input == "" then
       return
     end
-    vim.fn.mkdir(vim.fn.fnamemodify(input, ":h"), "p")
-    if vim.fn.rename(n.path, input) == 0 and not n.is_dir then
-      rename_buf(n.path, input)
+    local target = vim.fn.fnamemodify(input, ":p") -- resolver (relativo al cwd) a absoluto
+    if target == vim.fn.fnamemodify(n.path, ":p") then
+      return -- sin cambios
+    end
+    vim.fn.mkdir(vim.fn.fnamemodify(target, ":h"), "p")
+    if vim.fn.rename(n.path, target) == 0 and not n.is_dir then
+      rename_buf(n.path, target)
     end
     render.render(s)
   end)
