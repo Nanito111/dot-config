@@ -114,6 +114,7 @@ local function diag_project()
   require("plugins.local.picker").pick({
     title = "Diagnósticos del proyecto",
     items = display,
+    backdrop = true,
     on_select = function(item, origin)
       local d = map_d[item]
       if not (d and vim.api.nvim_buf_is_valid(d.bufnr)) then

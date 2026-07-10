@@ -53,6 +53,9 @@ function M.confirm(files, title, encoding, on_confirm)
   local list_w = math.max(24, math.min(38, math.floor(W * 0.32)))
   local prev_w = W - list_w - 3
 
+  -- Oscurecer el fondo (backdrop) para diferenciar el diálogo del buffer de código
+  local close_backdrop = require("plugins.local.backdrop").open()
+
   -- ── Preview (derecha, sin foco): buffer scratch con el resultado ──
   local preview_buf = api.nvim_create_buf(false, true)
   local preview_win = api.nvim_open_win(preview_buf, false, {
@@ -129,15 +132,16 @@ function M.confirm(files, title, encoding, on_confirm)
     local src = loaded and api.nvim_buf_get_lines(rb, 0, -1, false) or vim.fn.readfile(path)
     local ft = (loaded and vim.bo[rb].filetype ~= "" and vim.bo[rb].filetype)
       or vim.filetype.match({ filename = path })
-      or ""
+      or nil
 
-    vim.bo[preview_buf].modifiable = true
-    api.nvim_buf_set_lines(preview_buf, 0, -1, false, src)
-    pcall(vim.lsp.util.apply_text_edits, f.edits, preview_buf, encoding or "utf-16")
-    vim.bo[preview_buf].modifiable = false
-    if ft ~= "" then
-      vim.bo[preview_buf].filetype = ft -- dispara el resaltado de sintaxis
-    end
+    -- utilidad compartida: vuelca el contenido, aplica el rename encima (apply) y fija
+    -- el filetype solo si el archivo es chico (no congela con archivos grandes).
+    require("plugins.local.preview").load(preview_buf, src, {
+      filetype = ft,
+      apply = function(b)
+        pcall(vim.lsp.util.apply_text_edits, f.edits, b, encoding or "utf-16")
+      end,
+    })
 
     -- resaltar el texto nuevo en sus posiciones ya desplazadas
     api.nvim_buf_clear_namespace(preview_buf, ns_prev, 0, -1)
@@ -194,6 +198,7 @@ function M.confirm(files, title, encoding, on_confirm)
       return
     end
     answered = true
+    close_backdrop()
     pcall(api.nvim_win_close, list_win, true)
     pcall(api.nvim_win_close, preview_win, true)
     pcall(api.nvim_buf_delete, preview_buf, { force = true })
@@ -293,6 +298,17 @@ function M.rename()
         local title = string.format("Renombrar '%s' → '%s' — %d archivo(s)", cword, new_name, #files)
         M.confirm(files, title, client.offset_encoding, function(ok)
           if not ok then
+            return
+          end
+          -- Popup final de confirmación (¿seguro?) con la pista de deshacer, tras revisar
+          -- los cambios en el diálogo de preview.
+          local sure = require("plugins.local.confirm").confirm(
+            string.format("¿Aplicar el rename en %d archivo(s)?\nSe puede deshacer con <leader>lu", #files),
+            "&Sí\n&No",
+            1,
+            { backdrop = true }
+          )
+          if sure ~= 1 then
             return
           end
           M.apply(result, client.offset_encoding)

@@ -37,6 +37,7 @@ local function open_locations(o)
   require("plugins.local.picker").pick({
     title = o.title or "LSP",
     items = display,
+    backdrop = true,
     preview = function(item)
       local it = map[item]
       if it then

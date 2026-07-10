@@ -121,6 +121,10 @@ usr_cmd("Terminals", function()
   require("plugins.local.picker").terminals()
 end, { desc = "Terminales del workspace (excepto claude/lazygit)" })
 
+usr_cmd("PickerIcons", function()
+  require("plugins.local.picker").toggle_icons()
+end, { desc = "Alternar los iconos de archivo en los pickers" })
+
 usr_cmd("TermNew", function(o)
   require("config.terminal").new(o.args)
 end, { nargs = "?", desc = "Nueva terminal (con nombre opcional)" })

@@ -9,7 +9,8 @@ local M = {}
 local LEFT = api.nvim_replace_termcodes("<Left>", true, false, true)
 local RIGHT = api.nvim_replace_termcodes("<Right>", true, false, true)
 
-function M.confirm(msg, choices, default)
+-- opts (opcional): { backdrop = true } para oscurecer el editor detrás del popup.
+function M.confirm(msg, choices, default, opts)
   -- parsear etiquetas y aceleradores
   local labels, accels = {}, {}
   for c in ((choices or "&OK") .. "\n"):gmatch("(.-)\n") do
@@ -41,6 +42,19 @@ function M.confirm(msg, choices, default)
     width = math.max(width, vim.fn.strdisplaywidth(l))
   end
   width = math.min(width + 1, math.floor(vim.o.columns * 0.8))
+
+  -- centrar la línea de botones dentro del ancho del popup (y desplazar los rangos del
+  -- resaltado para que sigan cayendo sobre los botones)
+  local pad = math.max(0, math.floor((width - vim.fn.strdisplaywidth(btn)) / 2))
+  if pad > 0 then
+    content[#content] = string.rep(" ", pad) .. btn
+    for _, r in ipairs(ranges) do
+      r[1], r[2] = r[1] + pad, r[2] + pad
+    end
+  end
+
+  -- backdrop opcional (por debajo del popup, que usa zindex 250)
+  local close_backdrop = (opts and opts.backdrop) and require("plugins.local.backdrop").open({ zindex = 240 }) or nil
 
   local buf = api.nvim_create_buf(false, true)
   api.nvim_buf_set_lines(buf, 0, -1, false, content)
@@ -100,6 +114,9 @@ function M.confirm(msg, choices, default)
     end
   end
 
+  if close_backdrop then
+    close_backdrop()
+  end
   if api.nvim_win_is_valid(win) then
     api.nvim_win_close(win, true)
   end

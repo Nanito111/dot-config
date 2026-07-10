@@ -3,7 +3,43 @@ local M = {}
 
 local ns = api.nvim_create_namespace("picker")
 local ns_prev = api.nvim_create_namespace("picker_preview")
+local ns_disp = api.nvim_create_namespace("picker_display") -- highlights del listado (iconos)
 local MAX = 300 -- máximo de resultados mostrados
+
+-- ── Iconos en el listado (opción activable) ────────────────────────
+-- Un picker muestra iconos solo si (1) declara cómo obtener la ruta de cada item
+-- (opts.icon_path) —"iconos disponibles"— y (2) esta opción está activada.
+M.icons_enabled = true
+local icons_pref = vim.fn.stdpath("data") .. "/picker_icons"
+do
+  local ok, data = pcall(vim.fn.readfile, icons_pref)
+  if ok and data and data[1] == "0" then
+    M.icons_enabled = false
+  end
+end
+
+-- Alterna la opción y la persiste
+function M.toggle_icons()
+  M.icons_enabled = not M.icons_enabled
+  pcall(vim.fn.writefile, { M.icons_enabled and "1" or "0" }, icons_pref)
+  vim.notify(
+    "Iconos en el picker " .. (M.icons_enabled and "activados" or "desactivados"),
+    vim.log.levels.INFO,
+    { title = "Picker" }
+  )
+end
+
+-- Grupo de resaltado para un color de icono (cacheado por color, estilo devicons)
+local icon_groups = {}
+local function icon_group(col)
+  local name = icon_groups[col]
+  if not name then
+    name = "PickerIcon_" .. col:gsub("#", "")
+    pcall(api.nvim_set_hl, 0, name, { fg = col })
+    icon_groups[col] = name
+  end
+  return name
+end
 
 -- state: { prompt_buf, prompt_win, res_buf, res_win, origin,
 --          items, source, on_select, shown, idx, count, seq }
@@ -20,9 +56,18 @@ local function close()
   pcall(api.nvim_win_close, s.res_win, true)
   pcall(api.nvim_buf_delete, s.prompt_buf, { force = true })
   pcall(api.nvim_buf_delete, s.res_buf, { force = true })
+  if s.close_backdrop then
+    s.close_backdrop() -- cerrar la capa oscura antes que las ventanas
+  end
   if s.preview_win then
     pcall(api.nvim_win_close, s.preview_win, true)
     pcall(api.nvim_buf_delete, s.preview_buf, { force = true })
+  end
+  if s.preview_timer then
+    pcall(function()
+      s.preview_timer:stop()
+      s.preview_timer:close()
+    end)
   end
   if s.origin and api.nvim_win_is_valid(s.origin) then
     api.nvim_set_current_win(s.origin)
@@ -33,51 +78,160 @@ local function close()
   end
 end
 
--- Actualiza el panel de preview (si está activo) con el archivo/línea del elemento
--- resaltado. preview_fn(item) devuelve { path, lnum, col? } o nil.
-local function update_preview()
-  local s = state
-  if not (s.preview_win and s.preview_fn and api.nvim_win_is_valid(s.preview_win)) then
+-- ── Preview (carga acotada + asíncrona) ────────────────────────────
+-- Para no congelar el picker con archivos grandes, el preview:
+--   • lee SOLO hasta el match + contexto (no el archivo entero),
+--   • lee de disco en un SUBPROCESO (sed, async) -> no bloquea la UI,
+--   • aplica sintaxis solo si el contenido es chico (evita el freeze de treesitter),
+--   • usa debounce + guard de secuencia: navegar rápido no dispara una carga por móvil.
+local PREVIEW_CONTEXT = 100 -- líneas tras el match a leer (para centrarlo)
+local PREVIEW_MAX = 10000 -- tope de líneas leídas (protección con archivos enormes)
+
+-- ¿sigue vigente esta carga? (mismo picker y misma secuencia)
+local function preview_current(s, seq)
+  return state == s and s.preview_seq == seq and s.preview_win and api.nvim_win_is_valid(s.preview_win)
+end
+
+-- Salta a la línea/columna en el preview y la resalta, centrada
+local function preview_jump(s, seq, lnum, col)
+  if not preview_current(s, seq) then
     return
   end
-  local item = s.count > 0 and s.shown[s.idx] or nil
-  local info = item and s.preview_fn(item)
-  if not (info and info.path) then
-    vim.bo[s.preview_buf].modifiable = true
-    api.nvim_buf_set_lines(s.preview_buf, 0, -1, false, {})
-    vim.bo[s.preview_buf].modifiable = false
-    s.preview_path = nil
-    return
-  end
-  -- cargar el contenido solo si cambió el archivo (del buffer si está abierto, si no del disco)
-  if s.preview_path ~= info.path then
-    s.preview_path = info.path
-    local b = vim.fn.bufadd(info.path)
-    local loaded = api.nvim_buf_is_loaded(b)
-    local lines = loaded and api.nvim_buf_get_lines(b, 0, -1, false)
-      or (vim.fn.filereadable(info.path) == 1 and vim.fn.readfile(info.path))
-      or {}
-    vim.bo[s.preview_buf].modifiable = true
-    api.nvim_buf_set_lines(s.preview_buf, 0, -1, false, lines)
-    vim.bo[s.preview_buf].modifiable = false
-    local ft = (loaded and vim.bo[b].filetype ~= "" and vim.bo[b].filetype)
-      or vim.filetype.match({ filename = info.path })
-      or ""
-    if ft ~= "" then
-      pcall(function()
-        vim.bo[s.preview_buf].filetype = ft
-      end)
-    end
-  end
-  -- ir a la línea y resaltarla, centrada
-  local nlines = api.nvim_buf_line_count(s.preview_buf)
-  local lnum = math.min(math.max(info.lnum or 1, 1), nlines)
-  pcall(api.nvim_win_set_cursor, s.preview_win, { lnum, math.max((info.col or 1) - 1, 0) })
+  local n = math.max(api.nvim_buf_line_count(s.preview_buf), 1)
+  lnum = math.min(math.max(lnum or 1, 1), n)
+  pcall(api.nvim_win_set_cursor, s.preview_win, { lnum, math.max((col or 1) - 1, 0) })
   pcall(api.nvim_win_call, s.preview_win, function()
     vim.cmd("normal! zz")
   end)
   api.nvim_buf_clear_namespace(s.preview_buf, ns_prev, 0, -1)
   api.nvim_buf_set_extmark(s.preview_buf, ns_prev, lnum - 1, 0, { line_hl_group = "Visual", hl_eol = true })
+end
+
+-- Muestra un placeholder "Cargando…" mientras llega el contenido async. Solo se nota
+-- si la lectura tarda (archivos grandes); en los chicos se reemplaza casi al instante.
+local function preview_loading(s, seq)
+  if not preview_current(s, seq) then
+    return
+  end
+  vim.bo[s.preview_buf].modifiable = true
+  api.nvim_buf_set_lines(s.preview_buf, 0, -1, false, { "", "   Cargando…" })
+  vim.bo[s.preview_buf].modifiable = false
+  pcall(function()
+    vim.bo[s.preview_buf].filetype = ""
+  end)
+  api.nvim_buf_clear_namespace(s.preview_buf, ns_prev, 0, -1)
+  api.nvim_buf_set_extmark(s.preview_buf, ns_prev, 1, 0, { line_hl_group = "Comment" })
+end
+
+-- Vuelca las líneas en el buffer de preview (usa la utilidad compartida, que aplica el
+-- filetype solo si el contenido es chico para no congelar con archivos grandes)
+local function preview_set(s, seq, path, lines)
+  if not preview_current(s, seq) then
+    return false
+  end
+  require("plugins.local.preview").load(s.preview_buf, lines, { path = path })
+  s.preview_loaded = { path = path, count = #lines }
+  return true
+end
+
+-- Carga real del preview del elemento actual (llamada desde el debounce)
+local function do_preview(s, seq)
+  if not preview_current(s, seq) then
+    return
+  end
+  local item = s.count > 0 and s.shown[s.idx] or nil
+  local info = item and s.preview_fn(item)
+
+  -- Contenido PERSONALIZADO ya calculado por el consumidor ({ lines, filetype?, cursor?,
+  -- extmarks? }): se vuelca tal cual, con sus propios highlights (p. ej. el resultado de
+  -- un rename con el diff resaltado). No usa lectura de disco ni caché.
+  if info and info.lines then
+    require("plugins.local.preview").load(s.preview_buf, info.lines, { filetype = info.filetype })
+    s.preview_loaded = nil
+    api.nvim_buf_clear_namespace(s.preview_buf, ns_prev, 0, -1)
+    for _, m in ipairs(info.extmarks or {}) do
+      pcall(api.nvim_buf_set_extmark, s.preview_buf, ns_prev, m[1], m[2], m[3] or {})
+    end
+    if info.cursor then
+      local nn = math.max(api.nvim_buf_line_count(s.preview_buf), 1)
+      local l = math.min(math.max(info.cursor[1] or 1, 1), nn)
+      pcall(api.nvim_win_set_cursor, s.preview_win, { l, math.max((info.cursor[2] or 1) - 1, 0) })
+      pcall(api.nvim_win_call, s.preview_win, function()
+        vim.cmd("normal! zz")
+      end)
+    end
+    return
+  end
+
+  if not (info and info.path) then
+    preview_set(s, seq, nil, {}) -- sin resultado: limpiar
+    return
+  end
+  local path, lnum, col = info.path, info.lnum or 1, info.col or 1
+
+  -- ya cargado ese archivo y la línea cae dentro -> solo saltar (sin recargar)
+  if s.preview_loaded and s.preview_loaded.path == path and lnum <= s.preview_loaded.count then
+    preview_jump(s, seq, lnum, col)
+    return
+  end
+
+  local last = math.min(lnum + PREVIEW_CONTEXT, PREVIEW_MAX)
+
+  -- si el archivo ya está abierto en un buffer: leer del buffer (rápido, en memoria)
+  local b = vim.fn.bufnr(path)
+  if b > 0 and api.nvim_buf_is_loaded(b) then
+    local lines = api.nvim_buf_get_lines(b, 0, last, false)
+    if preview_set(s, seq, path, lines) then
+      preview_jump(s, seq, lnum, col)
+    end
+    return
+  end
+
+  -- de disco: leer SOLO [1, last] en un subproceso (sed), sin bloquear la UI
+  if vim.fn.executable("sed") == 1 then
+    preview_loading(s, seq) -- placeholder mientras llega (se nota solo si tarda)
+    vim.system({ "sed", "-n", "1," .. last .. "p", path }, { text = true }, function(res)
+      vim.schedule(function()
+        if not preview_current(s, seq) then
+          return
+        end
+        local lines = vim.split(res.stdout or "", "\n", { plain = true })
+        if lines[#lines] == "" then
+          lines[#lines] = nil -- quitar el salto final
+        end
+        if preview_set(s, seq, path, lines) then
+          preview_jump(s, seq, lnum, col)
+        end
+      end)
+    end)
+  else
+    -- sin sed: lectura acotada (síncrona, pero limitada a `last` líneas)
+    local ok, lines = pcall(vim.fn.readfile, path, "", last)
+    if ok and preview_set(s, seq, path, lines or {}) then
+      preview_jump(s, seq, lnum, col)
+    end
+  end
+end
+
+-- Punto de entrada con debounce: agenda la carga y descarta las anteriores (secuencia).
+local function update_preview()
+  local s = state
+  if not (s and s.preview_win and s.preview_fn) then
+    return
+  end
+  s.preview_seq = (s.preview_seq or 0) + 1
+  local seq = s.preview_seq
+  if not s.preview_timer then
+    s.preview_timer = (vim.uv or vim.loop).new_timer()
+  end
+  s.preview_timer:stop()
+  s.preview_timer:start(
+    30,
+    0,
+    vim.schedule_wrap(function()
+      do_preview(s, seq)
+    end)
+  )
 end
 
 -- Resalta la línea seleccionada y la mantiene visible
@@ -99,22 +253,38 @@ local function highlight()
   end
 end
 
--- Vuelca una lista de resultados en la ventana
+-- Vuelca una lista de resultados en la ventana. `s.display(item)` transforma el texto
+-- mostrado (p. ej. añadir icono) sin afectar el filtrado/selección (que usan el item
+-- crudo). `s.display_hl(item)` devuelve highlights por línea (p. ej. color del icono).
 local function set_results(lines)
   local s = state
   if not s then
     return
   end
+  local n = math.min(#lines, MAX)
   local display = {}
-  for i = 1, math.min(#lines, MAX) do
-    display[i] = lines[i]
+  for i = 1, n do
+    display[i] = s.display and s.display(lines[i]) or lines[i]
   end
   s.shown = lines
-  s.count = #display
+  s.count = n
 
   vim.bo[s.res_buf].modifiable = true
   api.nvim_buf_set_lines(s.res_buf, 0, -1, false, display)
   vim.bo[s.res_buf].modifiable = false
+
+  -- highlights del listado (iconos coloreados, etc.)
+  api.nvim_buf_clear_namespace(s.res_buf, ns_disp, 0, -1)
+  if s.display_hl then
+    for i = 1, n do
+      for _, h in ipairs(s.display_hl(lines[i]) or {}) do
+        pcall(api.nvim_buf_set_extmark, s.res_buf, ns_disp, i - 1, h.col or 0, {
+          end_col = h.end_col,
+          hl_group = h.group,
+        })
+      end
+    end
+  end
 
   s.idx = 1
   highlight()
@@ -140,8 +310,22 @@ local function refilter()
       end)
     end)
   else
-    -- Modo estático: filtrado fuzzy con matchfuzzy
-    local res = (query == "") and s.items or vim.fn.matchfuzzy(s.items, query)
+    -- Modo estático: coincidencia fuzzy (matchfuzzy) o exacta (substring, sin importar
+    -- mayúsculas), según s.fuzzy.
+    local res
+    if query == "" then
+      res = s.items
+    elseif s.fuzzy then
+      res = vim.fn.matchfuzzy(s.items, query)
+    else
+      res = {}
+      local q = query:lower()
+      for _, item in ipairs(s.items) do
+        if item:lower():find(q, 1, true) then
+          res[#res + 1] = item
+        end
+      end
+    end
     set_results(res)
   end
 end
@@ -169,39 +353,51 @@ local function confirm()
   end
 end
 
--- Crea las ventanas flotantes: prompt arriba y resultados abajo. Si `preview` es true,
--- los resultados ocupan la izquierda y se añade un panel de preview a la derecha.
-local function create_windows(title, preview)
+-- Crea las ventanas flotantes. Con `input`, un prompt arriba (búsqueda) y los resultados
+-- debajo; sin `input`, no hay prompt y la lista lleva el título. Con `preview`, la lista
+-- ocupa la izquierda y se añade un panel de preview a la derecha.
+local function create_windows(title, preview, input, footer)
   local width = math.min(preview and 140 or 100, math.floor(vim.o.columns * (preview and 0.9 or 0.8)))
   local height = math.min(preview and 26 or 20, math.max(5, math.floor(vim.o.lines * (preview and 0.6 or 0.5))))
   local col = math.floor((vim.o.columns - width) / 2)
   local row = math.max(0, math.floor((vim.o.lines - height - 3) / 2))
+  local res_row = input and (row + 3) or row -- sin prompt, la lista empieza arriba
 
-  local prompt_buf = api.nvim_create_buf(false, true)
-  vim.b[prompt_buf].completion = false -- sin autocompletado (blink) en el prompt de búsqueda
-  local prompt_win = api.nvim_open_win(prompt_buf, true, {
-    relative = "editor",
-    width = width,
-    height = 1,
-    row = row,
-    col = col,
-    style = "minimal",
-    border = "rounded",
-    title = " " .. title .. " ",
-    title_pos = "center",
-  })
+  local prompt_buf, prompt_win
+  if input then
+    prompt_buf = api.nvim_create_buf(false, true)
+    vim.b[prompt_buf].completion = false -- sin autocompletado (blink) en el prompt
+    prompt_win = api.nvim_open_win(prompt_buf, true, {
+      relative = "editor",
+      width = width,
+      height = 1,
+      row = row,
+      col = col,
+      style = "minimal",
+      border = "rounded",
+      title = " " .. title .. " ",
+      title_pos = "center",
+    })
+  end
 
   local res_w = preview and math.floor(width * 0.4) or width
   local res_buf = api.nvim_create_buf(false, true)
-  local res_win = api.nvim_open_win(res_buf, false, {
+  local res_win = api.nvim_open_win(res_buf, not input, {
     relative = "editor",
     width = res_w,
     height = height,
-    row = row + 3, -- 1 línea de prompt + 2 de borde
+    row = res_row,
     col = col,
     style = "minimal",
     border = "rounded",
+    title = (not input) and (" " .. title .. " ") or nil, -- el título va aquí si no hay prompt
+    title_pos = (not input) and "center" or nil,
+    footer = footer and (" " .. footer .. " ") or nil, -- pista de teclas opcional
+    footer_pos = footer and "center" or nil,
   })
+  if not input then
+    vim.wo[res_win].cursorline = false -- el resaltado lo da el extmark de la selección
+  end
 
   local preview_buf, preview_win
   if preview then
@@ -210,7 +406,7 @@ local function create_windows(title, preview)
       relative = "editor",
       width = width - res_w - 2, -- el resto, a la derecha (el -2 son los bordes)
       height = height,
-      row = row + 3,
+      row = res_row,
       col = col + res_w + 2,
       style = "minimal",
       border = "rounded",
@@ -223,25 +419,64 @@ local function create_windows(title, preview)
   return prompt_buf, prompt_win, res_buf, res_win, preview_buf, preview_win
 end
 
--- Picker genérico.
+-- Picker genérico y componible: todas las features son opcionales, activables por opts.
 -- opts = {
 --   title,
 --   items | source,        -- lista estática (fuzzy) o fuente live async
 --   on_select(item, origin),
---   on_move(item)?,         -- al cambiar el resaltado (para preview en vivo)
+--   on_move(item)?,         -- al cambiar el resaltado (para preview en vivo externo)
 --   on_cancel()?,           -- al cerrar sin elegir (para deshacer el preview)
---   preview(item)?,         -- devuelve { path, lnum, col? } para el panel de preview
+--   preview(item)?,         -- panel de preview. Devuelve:
+--                           --   { path, lnum, col? }                    -> lee el archivo
+--                           --   { lines, filetype?, cursor?, extmarks? } -> contenido custom
+--   icon_path(item)?,       -- ruta del item para el icono (activa iconos si M.icons_enabled)
+--   input = true?,          -- false = sin input de búsqueda: solo el selector navegable
+--   fuzzy = true?,          -- true = coincidencia fuzzy; false = exacta (substring)
+--   footer?,                -- texto de pie (pista de teclas) en la ventana de la lista
+--   keymaps = { [lhs] = fn(ctx) }?, -- teclas extra; ctx = { item(), index(), count(),
+--                           --   list_win/buf, preview_win/buf, move(d), confirm(), close() }
+--   backdrop = false?,      -- true = oscurece el editor detrás (modal). No usar en pickers
+--                           --   que previsualizan el aspecto del editor (tema/statusline).
 -- }
 function M.pick(opts)
   if state then
     close()
   end
 
+  -- Iconos: si el picker sabe la ruta de cada item (icon_path) y la opción está activa,
+  -- se añade el icono al MOSTRAR (el filtrado/selección siguen con el item crudo).
+  local display, display_hl
+  if opts.icon_path and M.icons_enabled then
+    local ic = require("config.icons")
+    display = function(item)
+      local p = opts.icon_path(item)
+      return p and (ic.icon(p) .. "  " .. item) or item
+    end
+    display_hl = function(item)
+      local p = opts.icon_path(item)
+      local col = p and ic.color(p)
+      if col then
+        return { { group = icon_group(col), col = 0, end_col = #ic.icon(p) } }
+      end
+    end
+  end
+
+  local input = opts.input ~= false -- mostrar el input de búsqueda (false = solo selector)
+  local fuzzy = opts.fuzzy ~= false -- coincidencia fuzzy; si false, exacta (substring)
+
   local origin = api.nvim_get_current_win()
   local prompt_buf, prompt_win, res_buf, res_win, preview_buf, preview_win =
-    create_windows(opts.title, opts.preview ~= nil)
+    create_windows(opts.title, opts.preview ~= nil, input, opts.footer)
+
+  -- backdrop opcional: oscurece el editor detrás del picker (por debajo de sus ventanas)
+  local close_backdrop = opts.backdrop and require("plugins.local.backdrop").open() or nil
 
   state = {
+    display = display,
+    display_hl = display_hl,
+    close_backdrop = close_backdrop,
+    input = input,
+    fuzzy = fuzzy,
     prompt_buf = prompt_buf,
     prompt_win = prompt_win,
     res_buf = res_buf,
@@ -261,29 +496,64 @@ function M.pick(opts)
     seq = 0,
   }
 
-  api.nvim_create_autocmd({ "TextChangedI", "TextChanged" }, {
-    buffer = prompt_buf,
-    callback = refilter,
-  })
-  api.nvim_create_autocmd("BufLeave", {
-    buffer = prompt_buf,
-    once = true,
-    callback = close,
-  })
-
-  local function kmap(lhs, fn)
-    vim.keymap.set({ "i", "n" }, lhs, fn, { buffer = prompt_buf, nowait = true, silent = true })
+  -- teclas de navegación/confirmación/cierre (compartidas por ambos modos)
+  local function nav(kmap)
+    kmap("<CR>", confirm)
+    kmap("<C-n>", function() move(1) end)
+    kmap("<C-p>", function() move(-1) end)
+    kmap("<Down>", function() move(1) end)
+    kmap("<Up>", function() move(-1) end)
+    kmap("<Esc>", close)
+    kmap("<C-c>", close)
   end
-  kmap("<CR>", confirm)
-  kmap("<C-n>", function() move(1) end)
-  kmap("<C-p>", function() move(-1) end)
-  kmap("<Down>", function() move(1) end)
-  kmap("<Up>", function() move(-1) end)
-  kmap("<Esc>", close)
-  kmap("<C-c>", close)
 
-  refilter()
-  vim.cmd("startinsert")
+  if input then
+    -- Con input: prompt con foco, filtrado al teclear (fuzzy o exacto según s.fuzzy)
+    api.nvim_create_autocmd({ "TextChangedI", "TextChanged" }, {
+      buffer = prompt_buf,
+      callback = refilter,
+    })
+    api.nvim_create_autocmd("BufLeave", { buffer = prompt_buf, once = true, callback = close })
+    nav(function(lhs, fn)
+      vim.keymap.set({ "i", "n" }, lhs, fn, { buffer = prompt_buf, nowait = true, silent = true })
+    end)
+    refilter()
+    vim.cmd("startinsert")
+  else
+    -- Modo lista: sin prompt; se navega la lista en modo normal (j/k además de C-n/C-p)
+    api.nvim_create_autocmd("BufLeave", { buffer = res_buf, once = true, callback = close })
+    nav(function(lhs, fn)
+      vim.keymap.set("n", lhs, fn, { buffer = res_buf, nowait = true, silent = true })
+    end)
+    vim.keymap.set("n", "j", function() move(1) end, { buffer = res_buf, nowait = true, silent = true })
+    vim.keymap.set("n", "k", function() move(-1) end, { buffer = res_buf, nowait = true, silent = true })
+    vim.keymap.set("n", "q", close, { buffer = res_buf, nowait = true, silent = true })
+    set_results(opts.items or {}) -- volcar la lista tal cual (sin filtrar)
+    pcall(api.nvim_set_current_win, res_win)
+  end
+
+  -- Keymaps PERSONALIZADOS (opt-in): reciben un `ctx` con el estado y acciones del picker.
+  -- Se aplican después de los por defecto, así pueden sobrescribirlos (p. ej. un diálogo
+  -- de rename que use <C-n>/<C-p> para saltar entre cambios en vez de mover items).
+  if opts.keymaps then
+    local ctx = {
+      item = function() return state and state.count > 0 and state.shown[state.idx] or nil end,
+      index = function() return state and state.idx or 0 end,
+      count = function() return state and state.count or 0 end,
+      list_win = res_win,
+      list_buf = res_buf,
+      preview_win = preview_win,
+      preview_buf = preview_buf,
+      move = function(d) if state then move(d) end end,
+      confirm = function() if state then confirm() end end,
+      close = close,
+    }
+    local target = input and prompt_buf or res_buf
+    local modes = input and { "i", "n" } or { "n" }
+    for lhs, fn in pairs(opts.keymaps) do
+      vim.keymap.set(modes, lhs, function() fn(ctx) end, { buffer = target, nowait = true, silent = true })
+    end
+  end
 end
 
 local pick = M.pick -- alias para los buscadores de abajo
@@ -321,6 +591,10 @@ function M.files()
   pick({
     title = "Archivos",
     items = files,
+    backdrop = true,
+    icon_path = function(f)
+      return f -- el item ya es la ruta
+    end,
     on_select = function(file, origin)
       goto_normal_win(origin)
       vim.cmd("edit " .. vim.fn.fnameescape(file))
@@ -345,6 +619,12 @@ function M.buffers()
   pick({
     title = "Buffers",
     items = items,
+    backdrop = true,
+    icon_path = function(item)
+      local b = map[item]
+      local name = b and api.nvim_buf_get_name(b)
+      return (name and name ~= "") and name or nil
+    end,
     on_select = function(item, origin)
       local b = map[item]
       if b and api.nvim_buf_is_valid(b) then
@@ -363,6 +643,10 @@ function M.grep()
   end
   pick({
     title = "Contenido (cwd)",
+    backdrop = true,
+    icon_path = function(item)
+      return item:match("^(.-):%d+:%d+:") -- ruta del formato vimgrep
+    end,
     source = function(query, cb)
       if query == "" then
         cb({})
@@ -424,6 +708,7 @@ function M.terminals()
   pick({
     title = "Terminales",
     items = items,
+    backdrop = true,
     on_select = function(item, origin)
       local buf = map[item]
       if not (buf and api.nvim_buf_is_valid(buf)) then
