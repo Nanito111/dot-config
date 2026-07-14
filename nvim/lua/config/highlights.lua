@@ -15,6 +15,15 @@ local function set_hl()
   -- invisible en temas oscuros). Lo fijamos al color de comentario para que se vea.
   api.nvim_set_hl(0, "WinSeparator", { bg = bg, fg = palette.comment })
 
+  -- Gutter (números de línea, signos de git, plegado): algunos temas lo pintan como
+  -- una banda distinta del buffer (kanagawa el número, gruvbox la columna de signos).
+  -- Conservamos el color de texto de cada grupo y solo igualamos el fondo.
+  for _, name in ipairs({ "LineNr", "LineNrAbove", "LineNrBelow", "SignColumn", "FoldColumn" }) do
+    local h = api.nvim_get_hl(0, { name = name, link = false })
+    h.bg = bg
+    api.nvim_set_hl(0, name, h)
+  end
+
   -- Línea de comandos y área de mensajes (MsgArea): con el color que el tema define
   -- para la StatusLine, para que la franja inferior sea coherente.
   api.nvim_set_hl(0, "MsgArea", { bg = palette.statusline_bg, fg = palette.statusline_fg })

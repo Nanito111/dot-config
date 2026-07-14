@@ -4,10 +4,13 @@ local theme = require("config.theme")
 local M = {}
 
 local function set_hl()
-  api.nvim_set_hl(0, "WinBarPath", { fg = palette.comment }) -- carpetas (tenue)
-  api.nvim_set_hl(0, "WinBarFile", { fg = palette.fg, bold = true }) -- archivo
-  api.nvim_set_hl(0, "WinBarSep", { fg = palette.blue }) -- separador
-  api.nvim_set_hl(0, "WinBarDeleted", { fg = palette.red, bold = true }) -- archivo borrado
+  local bg = palette.bg -- el fondo del buffer: el winbar no debe formar una banda aparte
+  api.nvim_set_hl(0, "WinBar", { bg = bg })
+  api.nvim_set_hl(0, "WinBarNC", { bg = bg })
+  api.nvim_set_hl(0, "WinBarPath", { fg = palette.comment, bg = bg }) -- carpetas (tenue)
+  api.nvim_set_hl(0, "WinBarFile", { fg = palette.fg, bg = bg, bold = true }) -- archivo
+  api.nvim_set_hl(0, "WinBarSep", { fg = palette.blue, bg = bg }) -- separador
+  api.nvim_set_hl(0, "WinBarDeleted", { fg = palette.red, bg = bg, bold = true }) -- archivo borrado
 end
 theme.register(set_hl)
 
