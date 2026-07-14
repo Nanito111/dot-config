@@ -1,7 +1,4 @@
--- Markdown: tratarlo como prosa, no como código
+-- Markdown: tratarlo como prosa, no como código.
+-- wrap/linebreak/breakindent/conceallevel/spell son opciones de VENTANA y las aplica
+-- config.winopts: puestas aquí se quedarían pegadas al siguiente buffer de esa ventana.
 require("config.ft").indent(2)
-vim.wo.wrap = true         -- envolver líneas largas en pantalla
-vim.wo.linebreak = true    -- romper en espacios, no a mitad de palabra
-vim.wo.breakindent = true  -- mantener la sangría al envolver
-vim.wo.conceallevel = 2    -- ocultar marcas (**, _, etc.) mostrando el formato
-vim.wo.spell = true        -- corrector ortográfico

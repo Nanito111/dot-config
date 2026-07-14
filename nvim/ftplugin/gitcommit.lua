@@ -1,4 +1,3 @@
--- Mensajes de commit: ortografía y ancho recomendado de 72 columnas
-vim.wo.spell = true
+-- Mensajes de commit: ancho recomendado de 72 columnas.
+-- spell y colorcolumn son opciones de VENTANA y las aplica config.winopts.
 vim.bo.textwidth = 72
-vim.wo.colorcolumn = "73"

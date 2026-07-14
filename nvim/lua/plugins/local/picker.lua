@@ -92,8 +92,10 @@ local function preview_current(s, seq)
   return state == s and s.preview_seq == seq and s.preview_win and api.nvim_win_is_valid(s.preview_win)
 end
 
--- Salta a la línea/columna en el preview y la resalta, centrada
-local function preview_jump(s, seq, lnum, col)
+-- Salta a la línea/columna en el preview y la resalta, centrada. Con `hl`
+-- ({ end_lnum, end_col, group? }; 1-based, end_col exclusiva) marca solo ese rango en vez
+-- de la línea entera; si el rango es vacío o inválido, cae de vuelta a la línea.
+local function preview_jump(s, seq, lnum, col, hl)
   if not preview_current(s, seq) then
     return
   end
@@ -104,6 +106,29 @@ local function preview_jump(s, seq, lnum, col)
     vim.cmd("normal! zz")
   end)
   api.nvim_buf_clear_namespace(s.preview_buf, ns_prev, 0, -1)
+
+  if hl then
+    local el = math.min(math.max(hl.end_lnum or lnum, lnum), n)
+    local sc = math.max((col or 1) - 1, 0)
+    local ec = math.max((hl.end_col or 1) - 1, 0)
+    -- acotar a la longitud real de las líneas (el rango del LSP puede desbordarlas)
+    local function len(l)
+      return #(api.nvim_buf_get_lines(s.preview_buf, l - 1, l, false)[1] or "")
+    end
+    sc = math.min(sc, len(lnum))
+    ec = math.min(ec, len(el))
+    if el > lnum or ec > sc then
+      local ok = pcall(api.nvim_buf_set_extmark, s.preview_buf, ns_prev, lnum - 1, sc, {
+        end_row = el - 1,
+        end_col = ec,
+        hl_group = hl.group or "Visual",
+      })
+      if ok then
+        return
+      end
+    end
+  end
+
   api.nvim_buf_set_extmark(s.preview_buf, ns_prev, lnum - 1, 0, { line_hl_group = "Visual", hl_eol = true })
 end
 
@@ -129,7 +154,7 @@ local function preview_set(s, seq, path, lines)
   if not preview_current(s, seq) then
     return false
   end
-  require("plugins.local.preview").load(s.preview_buf, lines, { path = path })
+  require("plugins.local.preview").load(s.preview_buf, lines, { path = path, win = s.preview_win })
   s.preview_loaded = { path = path, count = #lines }
   return true
 end
@@ -146,7 +171,10 @@ local function do_preview(s, seq)
   -- extmarks? }): se vuelca tal cual, con sus propios highlights (p. ej. el resultado de
   -- un rename con el diff resaltado). No usa lectura de disco ni caché.
   if info and info.lines then
-    require("plugins.local.preview").load(s.preview_buf, info.lines, { filetype = info.filetype })
+    require("plugins.local.preview").load(s.preview_buf, info.lines, {
+      filetype = info.filetype,
+      win = s.preview_win,
+    })
     s.preview_loaded = nil
     api.nvim_buf_clear_namespace(s.preview_buf, ns_prev, 0, -1)
     for _, m in ipairs(info.extmarks or {}) do
@@ -167,11 +195,11 @@ local function do_preview(s, seq)
     preview_set(s, seq, nil, {}) -- sin resultado: limpiar
     return
   end
-  local path, lnum, col = info.path, info.lnum or 1, info.col or 1
+  local path, lnum, col, hl = info.path, info.lnum or 1, info.col or 1, info.hl
 
   -- ya cargado ese archivo y la línea cae dentro -> solo saltar (sin recargar)
   if s.preview_loaded and s.preview_loaded.path == path and lnum <= s.preview_loaded.count then
-    preview_jump(s, seq, lnum, col)
+    preview_jump(s, seq, lnum, col, hl)
     return
   end
 
@@ -182,7 +210,7 @@ local function do_preview(s, seq)
   if b > 0 and api.nvim_buf_is_loaded(b) then
     local lines = api.nvim_buf_get_lines(b, 0, last, false)
     if preview_set(s, seq, path, lines) then
-      preview_jump(s, seq, lnum, col)
+      preview_jump(s, seq, lnum, col, hl)
     end
     return
   end
@@ -200,7 +228,7 @@ local function do_preview(s, seq)
           lines[#lines] = nil -- quitar el salto final
         end
         if preview_set(s, seq, path, lines) then
-          preview_jump(s, seq, lnum, col)
+          preview_jump(s, seq, lnum, col, hl)
         end
       end)
     end)
@@ -208,7 +236,7 @@ local function do_preview(s, seq)
     -- sin sed: lectura acotada (síncrona, pero limitada a `last` líneas)
     local ok, lines = pcall(vim.fn.readfile, path, "", last)
     if ok and preview_set(s, seq, path, lines or {}) then
-      preview_jump(s, seq, lnum, col)
+      preview_jump(s, seq, lnum, col, hl)
     end
   end
 end
@@ -427,9 +455,13 @@ end
 --   on_move(item)?,         -- al cambiar el resaltado (para preview en vivo externo)
 --   on_cancel()?,           -- al cerrar sin elegir (para deshacer el preview)
 --   preview(item)?,         -- panel de preview. Devuelve:
---                           --   { path, lnum, col? }                    -> lee el archivo
+--                           --   { path, lnum, col?, hl? }               -> lee el archivo
+--                           --     hl = { end_lnum, end_col, group? }: resalta solo ese
+--                           --     rango (1-based, end_col exclusiva) en vez de la línea
 --                           --   { lines, filetype?, cursor?, extmarks? } -> contenido custom
 --   icon_path(item)?,       -- ruta del item para el icono (activa iconos si M.icons_enabled)
+--   display(item)?,         -- texto mostrado del item (el filtrado/selección usan el crudo)
+--   display_hl(item)?,      -- highlights de esa línea: { { group, col, end_col }, ... }
 --   input = true?,          -- false = sin input de búsqueda: solo el selector navegable
 --   fuzzy = true?,          -- true = coincidencia fuzzy; false = exacta (substring)
 --   footer?,                -- texto de pie (pista de teclas) en la ventana de la lista
@@ -445,8 +477,8 @@ function M.pick(opts)
 
   -- Iconos: si el picker sabe la ruta de cada item (icon_path) y la opción está activa,
   -- se añade el icono al MOSTRAR (el filtrado/selección siguen con el item crudo).
-  local display, display_hl
-  if opts.icon_path and M.icons_enabled then
+  local display, display_hl = opts.display, opts.display_hl
+  if not display and opts.icon_path and M.icons_enabled then
     local ic = require("config.icons")
     display = function(item)
       local p = opts.icon_path(item)
@@ -636,11 +668,16 @@ function M.buffers()
 end
 
 -- ── Búsqueda de contenido en el cwd (live grep con rg) ──────────────
+-- Se usa `rg --json` (y no --vimgrep) porque trae los offsets de inicio Y FIN de cada
+-- coincidencia: con eso el preview resalta el match exacto, no la línea entera.
 function M.grep()
   if vim.fn.executable("rg") == 0 then
     vim.notify("ripgrep (rg) no está en el PATH", vim.log.levels.ERROR)
     return
   end
+  -- item mostrado -> posición del match. Se acumula (no se reinicia por consulta) para que
+  -- una respuesta lenta y ya descartada no borre las posiciones de la lista visible.
+  local meta = {}
   pick({
     title = "Contenido (cwd)",
     backdrop = true,
@@ -652,23 +689,40 @@ function M.grep()
         cb({})
         return
       end
-      vim.system(
-        { "rg", "--vimgrep", "--smart-case", "--path-separator", "/", query },
-        { text = true },
-        function(res)
-          local lines = {}
-          for line in (res.stdout or ""):gmatch("[^\r\n]+") do
-            lines[#lines + 1] = line
+      vim.system({ "rg", "--json", "--smart-case", "--path-separator", "/", query }, { text = true }, function(res)
+        local lines, seen = {}, {}
+        for line in (res.stdout or ""):gmatch("[^\r\n]+") do
+          local ok, ev = pcall(vim.json.decode, line)
+          if ok and type(ev) == "table" and ev.type == "match" then
+            local d = ev.data
+            local path = d.path and d.path.text
+            local text = (d.lines and d.lines.text or ""):gsub("[\r\n]+$", "")
+            for _, sm in ipairs(d.submatches or {}) do
+              -- offsets de rg: bytes 0-based dentro de la línea, `end` exclusivo
+              if path and sm.start then
+                local col = sm.start + 1
+                local item = string.format("%s:%d:%d:%s", path, d.line_number, col, text)
+                if not seen[item] then
+                  seen[item] = true
+                  lines[#lines + 1] = item
+                  meta[item] = { path = path, lnum = d.line_number, col = col, end_col = sm["end"] + 1 }
+                end
+              end
+            end
           end
-          cb(lines)
         end
-      )
+        cb(lines)
+      end)
     end,
     preview = function(item)
-      -- formato vimgrep: archivo:línea:columna:texto (ruta relativa al cwd)
-      local file, lnum, col = item:match("^(.-):(%d+):(%d+):")
-      if file then
-        return { path = vim.fn.fnamemodify(file, ":p"), lnum = tonumber(lnum), col = tonumber(col) }
+      local it = meta[item]
+      if it then
+        return {
+          path = vim.fn.fnamemodify(it.path, ":p"),
+          lnum = it.lnum,
+          col = it.col,
+          hl = { end_lnum = it.lnum, end_col = it.end_col, group = "Search" },
+        }
       end
     end,
     on_select = function(item, origin)

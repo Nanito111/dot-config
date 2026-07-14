@@ -83,6 +83,16 @@ function M.rename(name)
   vim.cmd("redrawtabline")
 end
 
+-- Va al workspace siguiente (delta > 0) o anterior. Con uno solo, `gt`/`gT` no harían
+-- nada en silencio: mejor decirlo.
+function M.cycle(delta)
+  if #api.nvim_list_tabpages() < 2 then
+    vim.notify("No hay otros workspaces", vim.log.levels.WARN, { title = "Workspace" })
+    return
+  end
+  vim.cmd(delta > 0 and "tabnext" or "tabprevious")
+end
+
 -- Salta al workspace (tab) número n — el mismo número que muestra la tabline.
 function M.jump(n)
   local tabs = api.nvim_list_tabpages()

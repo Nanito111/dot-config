@@ -7,9 +7,22 @@ local M = {}
 
 M.HIGHLIGHT_MAX = 2000 -- por encima de esto: sin filetype (sin resaltado), para no congelar
 
+-- Opciones de VENTANA que fija el preview tras cada carga. Al aplicar el filetype se
+-- ejecuta su ftplugin, que puede tocar la ventana (markdown activa spell y conceallevel);
+-- como son locales a la ventana, se quedarían pegadas en los items siguientes.
+local WIN_OPTS = {
+  spell = false,
+  wrap = false,
+  linebreak = false,
+  breakindent = false,
+  conceallevel = 0,
+  list = false,
+}
+
 -- Vuelca `lines` en `buf`. opts:
 --   • path      -> deriva el filetype del nombre de archivo
 --   • filetype  -> filetype explícito (tiene prioridad sobre path)
+--   • win       -> ventana donde se muestra: se le reponen las opciones del preview
 --   • apply(b)  -> mutaciones extra sobre el buffer tras volcar (p. ej. text edits del
 --                  rename), aún modificable
 -- El filetype solo se aplica si el contenido no supera HIGHLIGHT_MAX. Deja el buffer no
@@ -19,6 +32,11 @@ function M.load(buf, lines, opts)
   if not (buf and api.nvim_buf_is_valid(buf)) then
     return
   end
+  -- El buffer se REUTILIZA entre items, y treesitter no suelta su highlighter al cambiar
+  -- de filetype: sin esto, el parser del item anterior sigue enganchado y, además, deja
+  -- el syntax clásico apagado -> los filetypes sin parser (tsx, ts…) salen sin color.
+  pcall(vim.treesitter.stop, buf)
+
   vim.bo[buf].modifiable = true
   api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   if opts.apply then
@@ -35,6 +53,14 @@ function M.load(buf, lines, opts)
   pcall(function()
     vim.bo[buf].filetype = ft
   end)
+
+  if opts.win and api.nvim_win_is_valid(opts.win) then
+    for opt, val in pairs(WIN_OPTS) do
+      pcall(function()
+        vim.wo[opts.win][opt] = val
+      end)
+    end
+  end
 end
 
 return M

@@ -96,27 +96,95 @@ local function diag_project()
     end
     return a.lnum < b.lnum
   end)
+  -- hl: color del icono/mensaje en la lista. vt: fondo del rango marcado en el preview.
   local sev = {
-    [vim.diagnostic.severity.ERROR] = "E",
-    [vim.diagnostic.severity.WARN] = "W",
-    [vim.diagnostic.severity.INFO] = "I",
-    [vim.diagnostic.severity.HINT] = "H",
+    [vim.diagnostic.severity.ERROR] = {
+      letter = "E",
+      icon = "\u{f057}",
+      hl = "DiagnosticError",
+      vt = "DiagnosticVirtualTextError",
+    },
+    [vim.diagnostic.severity.WARN] = {
+      letter = "W",
+      icon = "\u{f071}",
+      hl = "DiagnosticWarn",
+      vt = "DiagnosticVirtualTextWarn",
+    },
+    [vim.diagnostic.severity.INFO] = {
+      letter = "I",
+      icon = "\u{f05a}",
+      hl = "DiagnosticInfo",
+      vt = "DiagnosticVirtualTextInfo",
+    },
+    [vim.diagnostic.severity.HINT] = {
+      letter = "H",
+      icon = "\u{f0eb}",
+      hl = "DiagnosticHint",
+      vt = "DiagnosticVirtualTextHint",
+    },
   }
-  local display, map_d = {}, {}
+  local unknown = { letter = "?", icon = "\u{f059}", hl = "Comment", vt = "Visual" }
+
+  -- El item CRUDO (lo que se filtra) lleva la ruta completa y la severidad; lo MOSTRADO
+  -- es más corto (icono + archivo:línea + mensaje) porque la lista comparte ancho con el
+  -- preview. `meta` guarda ambos, más los tramos a colorear.
+  local items, meta = {}, {}
   for _, d in ipairs(diags) do
     local name = vim.api.nvim_buf_get_name(d.bufnr)
     local rel = (name ~= "") and vim.fn.fnamemodify(name, ":.") or ("buf " .. d.bufnr)
     local msg = (d.message or ""):gsub("%s*\n.*$", "") -- solo la primera línea
-    local s = string.format("%s:%d:%d: [%s] %s", rel, d.lnum + 1, d.col + 1, sev[d.severity] or "?", msg)
-    display[#display + 1] = s
-    map_d[s] = d
+    local s = sev[d.severity] or unknown
+
+    local raw = string.format("%s:%d:%d: [%s] %s", rel, d.lnum + 1, d.col + 1, s.letter, msg)
+    while meta[raw] do
+      raw = raw .. " " -- desempatar duplicados exactos (dos servidores, mismo aviso)
+    end
+
+    local loc = string.format("%s:%d", vim.fn.fnamemodify(rel, ":t"), d.lnum + 1)
+    local a = #s.icon + 2 -- inicio de loc (icono + 2 espacios)
+    local b = a + #loc + 2 -- inicio del mensaje
+    items[#items + 1] = raw
+    meta[raw] = {
+      d = d,
+      vt = s.vt,
+      path = (name ~= "") and name or nil,
+      text = string.format("%s  %s  %s", s.icon, loc, msg),
+      hls = {
+        { group = s.hl, col = 0, end_col = #s.icon },
+        { group = "Comment", col = a, end_col = a + #loc },
+        { group = s.hl, col = b, end_col = b + #msg },
+      },
+    }
   end
+
   require("plugins.local.picker").pick({
     title = "Diagnósticos del proyecto",
-    items = display,
+    items = items,
     backdrop = true,
+    display = function(item)
+      return meta[item] and meta[item].text or item
+    end,
+    display_hl = function(item)
+      return meta[item] and meta[item].hls
+    end,
+    preview = function(item)
+      local m = meta[item]
+      if m and m.path then
+        return {
+          path = m.path,
+          lnum = m.d.lnum + 1,
+          col = m.d.col + 1,
+          -- rango exacto del diagnóstico (el LSP lo da 0-based, end exclusiva)
+          hl = {
+            end_lnum = (m.d.end_lnum or m.d.lnum) + 1,
+            end_col = (m.d.end_col or m.d.col) + 1,
+            group = m.vt,
+          },
+        }
+      end
+    end,
     on_select = function(item, origin)
-      local d = map_d[item]
+      local d = meta[item] and meta[item].d
       if not (d and vim.api.nvim_buf_is_valid(d.bufnr)) then
         return
       end
@@ -179,8 +247,12 @@ map("n", "<leader>sr", function()
   end)
 end, { silent = true, desc = "Renombrar workspace" })
 map("n", "<leader>sx", "<cmd>tabclose<CR>", { silent = true, desc = "Cerrar workspace (tab)" })
-map("n", "<leader>sl", "gt", { silent = true, desc = "Workspace siguiente" })
-map("n", "<leader>sh", "gT", { silent = true, desc = "Workspace anterior" })
+map("n", "<leader>sl", function()
+  require("plugins.local.workspace").cycle(1)
+end, { silent = true, desc = "Workspace siguiente" })
+map("n", "<leader>sh", function()
+  require("plugins.local.workspace").cycle(-1)
+end, { silent = true, desc = "Workspace anterior" })
 -- Ir directo al workspace N (mismo número que muestra la tabline): <leader>s1 … s9
 for i = 1, 9 do
   map("n", "<leader>s" .. i, function()

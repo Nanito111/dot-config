@@ -38,6 +38,8 @@ local function open_locations(o)
     title = o.title or "LSP",
     items = display,
     backdrop = true,
+    input = o.input ~= false, -- las listas de ubicaciones (referencias) van sin buscador
+    footer = (o.input == false) and "j/k mover · Enter abrir · q cerrar" or nil,
     preview = function(item)
       local it = map[item]
       if it then
@@ -56,9 +58,8 @@ M.open_locations = open_locations
 
 -- ── Diagnósticos (global; se reaplica en cada recarga) ─────────────
 vim.diagnostic.config({
-  -- virtual_lines solo en la línea del cursor: mensaje completo en línea, sin llenar
-  -- la pantalla. Sin virtual_text.
-  virtual_lines = { current_line = true },
+  -- Sin texto/líneas virtuales: el mensaje se lee en el flotante (D / <leader>dd).
+  virtual_lines = false,
   virtual_text = false,
   signs = {
     text = {
@@ -100,9 +101,14 @@ function M.on_attach(buf)
     vim.lsp.buf.format({ async = true })
   end, "LSP: formatear buffer")
 
-  -- Navegación por el picker fuzzy (o salto directo si hay un único resultado)
+  -- Navegación por el picker (o salto directo si hay un único resultado)
   map("<leader>lR", function()
-    vim.lsp.buf.references(nil, { on_list = open_locations })
+    vim.lsp.buf.references(nil, {
+      on_list = function(o)
+        o.input = false -- solo el listado navegable, sin buscador
+        open_locations(o)
+      end,
+    })
   end, "LSP: referencias")
   map("<leader>ld", function()
     vim.lsp.buf.definition({ on_list = open_locations })
