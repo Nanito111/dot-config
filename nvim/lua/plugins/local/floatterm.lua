@@ -17,7 +17,6 @@ local function open_win(buf, title)
     row = math.floor((rows - height - 2) / 2),
     col = math.floor((cols - width) / 2),
     style = "minimal",
-    border = "rounded",
     title = " " .. title .. " ",
     title_pos = "center",
   })

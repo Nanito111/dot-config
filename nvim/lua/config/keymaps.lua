@@ -65,7 +65,7 @@ map("n", "<leader>m", ":marks a-z<CR>", { silent = true, desc = "Listar marcas a
 -- Diagnósticos (grupo <leader>d*) — son de vim.diagnostic, independientes del LSP.
 -- D: acceso rápido al flotante de la línea (reemplaza el D por defecto = d$).
 local function diag_float()
-  vim.diagnostic.open_float({ scope = "line", border = "rounded" })
+  vim.diagnostic.open_float({ scope = "line" })
 end
 map("n", "D", diag_float, { silent = true, desc = "Diagnóstico de la línea (flotante)" })
 map("n", "<leader>dd", diag_float, { silent = true, desc = "Diagnóstico de la línea (flotante)" })
@@ -295,6 +295,9 @@ end, { silent = true, desc = "Ocultar/mostrar valores en .env" })
 map("n", "<leader>ui", function()
   require("plugins.local.indentline").pick()
 end, { silent = true, desc = "Guías de indentación (picker)" })
+map("n", "<leader>uw", function()
+  require("config.borders").pick()
+end, { silent = true, desc = "Borde de las ventanas flotantes (picker)" })
 
 -- Explorador: alternar el foco entre el panel y el editor (lo abre si no está)
 map("n", "<leader>e", function()

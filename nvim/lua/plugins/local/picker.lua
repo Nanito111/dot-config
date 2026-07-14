@@ -402,7 +402,6 @@ local function create_windows(title, preview, input, footer)
       row = row,
       col = col,
       style = "minimal",
-      border = "rounded",
       title = " " .. title .. " ",
       title_pos = "center",
     })
@@ -417,7 +416,6 @@ local function create_windows(title, preview, input, footer)
     row = res_row,
     col = col,
     style = "minimal",
-    border = "rounded",
     title = (not input) and (" " .. title .. " ") or nil, -- el título va aquí si no hay prompt
     title_pos = (not input) and "center" or nil,
     footer = footer and (" " .. footer .. " ") or nil, -- pista de teclas opcional
@@ -437,7 +435,6 @@ local function create_windows(title, preview, input, footer)
       row = res_row,
       col = col + res_w + 2,
       style = "minimal",
-      border = "rounded",
     })
     vim.wo[preview_win].number = true
     vim.wo[preview_win].cursorline = false

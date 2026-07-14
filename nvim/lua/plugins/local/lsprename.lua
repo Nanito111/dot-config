@@ -60,7 +60,7 @@ function M.confirm(files, title, encoding, on_confirm)
   local preview_buf = api.nvim_create_buf(false, true)
   local preview_win = api.nvim_open_win(preview_buf, false, {
     relative = "editor", row = row, col = col + list_w + 3, width = prev_w, height = H,
-    style = "minimal", border = "rounded", title = " Preview ", title_pos = "center",
+    style = "minimal", title = " Preview ", title_pos = "center",
   })
   vim.wo[preview_win].cursorline = true
   vim.wo[preview_win].number = true
@@ -91,7 +91,7 @@ function M.confirm(files, title, encoding, on_confirm)
   local lh = math.min(total + 2, H)
   local list_win = api.nvim_open_win(list_buf, true, {
     relative = "editor", row = row, col = col, width = list_w, height = lh,
-    style = "minimal", border = "rounded", title = " " .. title .. " ", title_pos = "left",
+    style = "minimal", title = " " .. title .. " ", title_pos = "left",
     footer = " j/k archivos · C-n/p cambios · ←→ · ⏎ ",
     footer_pos = "center",
   })

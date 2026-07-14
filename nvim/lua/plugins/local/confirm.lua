@@ -66,7 +66,6 @@ function M.confirm(msg, choices, default, opts)
     width = width,
     height = #content,
     style = "minimal",
-    border = "rounded",
     title = " Confirmar ",
     title_pos = "center",
     focusable = false,

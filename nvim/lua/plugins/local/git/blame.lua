@@ -52,7 +52,6 @@ local function open_popup(lines, line_hls)
     width = width,
     height = #lines,
     style = "minimal",
-    border = "rounded",
     title = "  git blame ",
     title_pos = "left",
   })

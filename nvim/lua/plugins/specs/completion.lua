@@ -24,11 +24,11 @@ return {
       documentation = {
         auto_show = true,
         auto_show_delay_ms = 200,
-        window = { border = "rounded" }, -- borde en el popup de documentación
+        window = {}, -- el borde lo da vim.o.winborder
       },
-      menu = { border = "rounded" },
+      menu = {},
     },
-    signature = { enabled = true, window = { border = "rounded" } },
+    signature = { enabled = true },
     -- Completado en la línea de comandos (":"): por defecto blink NO muestra el menú
     -- automáticamente ahí (solo en la ventana de comandos q:). Lo forzamos a mostrarse
     -- al escribir, con el borde a juego. Navegación: <Tab>/<S-Tab> (preset 'cmdline').

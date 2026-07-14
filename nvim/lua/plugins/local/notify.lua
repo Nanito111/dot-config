@@ -137,7 +137,6 @@ local function show(msg, level, opts)
     width = width,
     height = #body,
     style = "minimal",
-    border = "rounded",
     title = title,
     title_pos = "left",
     focusable = false,
@@ -212,7 +211,6 @@ function M.show_history()
     row = math.floor((vim.o.lines - height) / 2),
     col = math.floor((vim.o.columns - width) / 2),
     style = "minimal",
-    border = "rounded",
     title = " Notificaciones ",
     title_pos = "center",
   })

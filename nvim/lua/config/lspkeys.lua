@@ -72,7 +72,7 @@ vim.diagnostic.config({
   underline = true,
   update_in_insert = false,
   severity_sort = true,
-  float = { border = "rounded", source = true },
+  float = { source = true },
 })
 
 -- ── Keymaps al conectar (buffer-local) ─────────────────────────────
@@ -90,7 +90,7 @@ function M.on_attach(buf)
   map("gD", vim.lsp.buf.declaration, "LSP: ir a declaración")
   -- K: hover con borde redondeado (a juego con el resto)
   map("K", function()
-    vim.lsp.buf.hover({ border = "rounded" })
+    vim.lsp.buf.hover()
   end, "LSP: hover (documentación)")
   -- rename propio (confirmación + undo). require() al invocar -> recargable
   map("<leader>lr", function() require("plugins.local.lsprename").rename() end, "LSP: renombrar símbolo (con confirmación)")
@@ -130,7 +130,7 @@ function M.on_attach(buf)
     end)
   end, "LSP: símbolos del proyecto")
   map("<leader>lh", function()
-    vim.lsp.buf.signature_help({ border = "rounded" })
+    vim.lsp.buf.signature_help()
   end, "LSP: ayuda de firma")
 end
 

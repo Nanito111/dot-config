@@ -25,7 +25,6 @@ function M.input(opts, on_confirm)
     width = width,
     height = 1,
     style = "minimal",
-    border = "rounded",
     title = " " .. prompt .. " ",
     title_pos = "center",
   }

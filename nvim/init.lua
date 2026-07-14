@@ -8,6 +8,9 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 require("config.options")
+-- Antes de lazy: fija 'winborder' (el borde de TODAS las flotantes, incluida la ventana
+-- de lazy, que lo lee de su propia config al arrancar).
+require("config.borders").setup()
 
 -- ── Gestor de plugins (lazy.nvim) ──────────────────────────────────
 -- Solo en el PRIMER arranque. Al re-ejecutar init.lua (p. ej. :ReloadConfig) lazy
@@ -37,7 +40,7 @@ if not vim.g.lazy_did_setup then
     spec = { { import = "plugins.specs" } },
     install = { colorscheme = {} }, -- usamos nuestra paleta, no instalar tema
     change_detection = { notify = false },
-    ui = { border = "rounded" },
+    ui = { border = vim.o.winborder },
     -- Checker periódico de actualizaciones: hace fetch en segundo plano cada
     -- `frequency` segundos y avisa (toast) al arrancar si hay plugins por actualizar.
     -- No descarga en cada inicio: al arrancar usa lo ya descargado (instantáneo).

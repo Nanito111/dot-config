@@ -41,7 +41,6 @@ local function open_popup(seq, entries)
     width = math.min(width, vim.o.columns),
     height = #lines,
     style = "minimal",
-    border = "rounded",
     title = " " .. vim.fn.keytrans(seq) .. " ",
     title_pos = "left",
     focusable = false,

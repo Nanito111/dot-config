@@ -6,7 +6,7 @@ return {
   {
     "mason-org/mason.nvim",
     cmd = "Mason",
-    opts = { ui = { border = "rounded" } },
+    opts = {}, -- el borde lo pone 'winborder' (ver config.borders)
   },
 
   -- Puente mason <-> lspconfig + nvim-lspconfig

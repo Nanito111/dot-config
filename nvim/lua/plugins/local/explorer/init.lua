@@ -179,6 +179,7 @@ local function peek_update()
     width = math.max(1, w),
     height = 1,
     style = "minimal",
+    border = "none", -- explícito: se superpone a la línea, sin marco (el winborder no aplica)
     focusable = false,
     noautocmd = true,
     zindex = 60,
@@ -187,6 +188,7 @@ local function peek_update()
     api.nvim_win_set_config(peek_win, cfg)
   else
     peek_win = api.nvim_open_win(peek_buf, false, cfg)
+    vim.w[peek_win].borderless = true -- se superpone a la línea: nunca lleva marco
     vim.wo[peek_win].winhighlight = "NormalFloat:ExplorerPeek"
   end
 end

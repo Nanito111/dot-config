@@ -219,7 +219,6 @@ local function field(title, row, width, col)
     row = row,
     col = col,
     style = "minimal",
-    border = "rounded",
     title = " " .. title .. " ",
     title_pos = "left",
   })
