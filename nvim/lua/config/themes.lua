@@ -9,29 +9,33 @@ local M = {}
 --   cs       -> nombre real de :colorscheme (por defecto = la etiqueta)
 --   bg       -> "dark"/"light" (por defecto "dark")
 -- Variantes claro/oscuro que comparten colorscheme (p. ej. gruvbox) se separan
--- aquí con distinto bg. Edita a gusto.
+-- aquí con distinto bg. Primero los oscuros y luego los claros. Edita a gusto.
 M.themes = {
+  -- ── Oscuros ──
   { "tokyonight-night" },
   { "tokyonight-storm" },
   { "tokyonight-moon" },
-  { "tokyonight-day", bg = "light" },
   { "catppuccin-mocha" },
   { "catppuccin-macchiato" },
   { "catppuccin-frappe" },
-  { "catppuccin-latte", bg = "light" },
   { "kanagawa-wave" },
   { "kanagawa-dragon" },
-  { "kanagawa-lotus", bg = "light" },
   { "gruvbox-dark", cs = "gruvbox", bg = "dark" },
-  { "gruvbox-light", cs = "gruvbox", bg = "light" },
   { "rose-pine" },
   { "rose-pine-moon" },
-  { "rose-pine-dawn", bg = "light" },
   { "nightfox" },
-  { "dayfox", bg = "light" },
   { "duskfox" },
   { "nordfox" },
   { "carbonfox" },
+  { "flexoki-dark" },
+  -- ── Claros ──
+  { "tokyonight-day", bg = "light" },
+  { "catppuccin-latte", bg = "light" },
+  { "kanagawa-lotus", bg = "light" },
+  { "gruvbox-light", cs = "gruvbox", bg = "light" },
+  { "rose-pine-dawn", bg = "light" },
+  { "dayfox", bg = "light" },
+  { "flexoki-light", bg = "light" },
 }
 
 local DEFAULT = "tokyonight-night"
@@ -93,6 +97,81 @@ function M.setup()
   end
 end
 
+-- ── Preview del selector ───────────────────────────────────────────
+-- Código de ejemplo (lo resalta treesitter con el tema YA aplicado por on_move, así que
+-- muestra los colores reales) y debajo la paleta que la UI propia deriva de ese tema.
+local SAMPLE = {
+  "-- Ejemplo de código",
+  "local M = {}",
+  "",
+  "---@param n number",
+  "function M.fib(n)",
+  "  if n < 2 then",
+  "    return n -- caso base",
+  "  end",
+  "  return M.fib(n - 1) + M.fib(n - 2)",
+  "end",
+  "",
+  'local msg = ("fib(%d) = %d"):format(10, M.fib(10))',
+  "vim.notify(msg, vim.log.levels.INFO)",
+  "",
+  "return M",
+}
+
+-- Colores de la paleta que se muestran como muestrario, en orden. Sin `bg`: su muestra
+-- sería un bloque del color del fondo SOBRE el fondo, es decir, invisible (y el fondo del
+-- tema ya se ve en el propio panel).
+local SWATCHES = { "bg_highlight", "fg", "comment", "blue", "cyan", "green", "yellow", "orange", "red", "purple" }
+
+-- Grupo de resaltado para un color. Se (re)define SIEMPRE: aplicar un colorscheme hace
+-- `hi clear`, así que un grupo creado antes del cambio de tema quedaría vacío.
+local function swatch_group(color)
+  local name = "ThemeSwatch_" .. color:gsub("#", "")
+  pcall(vim.api.nvim_set_hl, 0, name, { fg = color })
+  return name
+end
+
+local BLOCK = "███"
+
+-- Ancho del nombre más largo, para que las dos columnas cuadren (bg_highlight mide 12)
+local KEY_W = 0
+for _, key in ipairs(SWATCHES) do
+  KEY_W = math.max(KEY_W, #key)
+end
+
+-- La paleta va ARRIBA y en dos columnas: el panel de preview suele mostrar ~14 líneas,
+-- así que al final del ejemplo quedaría fuera de pantalla.
+local function preview()
+  local pal = require("config.palette")
+  local lines, extmarks = { "-- Paleta del tema" }, {}
+
+  for i = 1, #SWATCHES, 2 do
+    local text = "--"
+    for j = i, math.min(i + 1, #SWATCHES) do
+      local key = SWATCHES[j]
+      local color = pal[key]
+      if type(color) == "string" and color:match("^#%x%x%x%x%x%x$") then
+        text = text .. "  "
+        local col = #text -- byte donde empieza el bloque de color
+        -- el nombre va al ancho del más largo y el hex siempre mide 7: columnas cuadradas
+        text = text .. BLOCK .. " " .. string.format("%-" .. KEY_W .. "s %s", key, color)
+        -- el bloque lleva el color real; el extmark gana por prioridad a treesitter,
+        -- que si no lo pintaría como comentario
+        extmarks[#extmarks + 1] = {
+          #lines, -- fila 0-based: la que estamos a punto de añadir
+          col,
+          { end_col = col + #BLOCK, hl_group = swatch_group(color) },
+        }
+      end
+    end
+    lines[#lines + 1] = text
+  end
+
+  lines[#lines + 1] = ""
+  vim.list_extend(lines, SAMPLE)
+  return { lines = lines, filetype = "lua", extmarks = extmarks }
+end
+
 -- Selector con vista previa en vivo y restauración si se cancela
 function M.pick()
   -- estado actual para restaurar al cancelar (colorscheme + fondo)
@@ -101,6 +180,7 @@ function M.pick()
   require("plugins.local.picker").pick({
     title = "Temas",
     items = M.labels(),
+    preview = preview,
     on_move = function(label)
       if label then
         apply(label) -- vista previa sin guardar
