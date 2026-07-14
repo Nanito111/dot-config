@@ -182,8 +182,20 @@ function M.set_preset(name)
 end
 
 -- ── Render ─────────────────────────────────────────────────────────
+-- Con laststatus=3 la línea es única y se construye con la ventana ACTUAL. Si el foco
+-- está en un flotante (picker, Mason, hover…), sus componentes pasarían a describir ESE
+-- buffer: posición, porcentaje, modo… Además de no aportar nada, se recalculan a cada
+-- movimiento del cursor del flotante (Mason mueve el suyo al redibujar el spinner), y
+-- repintar la línea bajo una capa translúcida hace parpadear la pantalla. Mientras haya
+-- un flotante enfocado se reutiliza el último render de una ventana normal.
+local last_line = ""
+
 function _G.statusline()
-  return core.build(current.layout, C.components, C.context)
+  if api.nvim_win_get_config(api.nvim_get_current_win()).relative ~= "" then
+    return last_line
+  end
+  last_line = core.build(current.layout, C.components, C.context)
+  return last_line
 end
 
 -- ── Pickers (reutilizan el picker genérico con preview + restaurar) ──
@@ -343,7 +355,13 @@ autocmd("DiagnosticChanged", {
   group = group,
   desc = "Redibujar la statusline al cambiar los diagnósticos",
   callback = function()
-    vim.cmd("redrawstatus | redrawtabline")
+    -- APLAZADO, no en el propio evento: quien fija los diagnósticos puede estar a mitad
+    -- de su render (Mason reemplaza las líneas, fija diagnósticos y SOLO DESPUÉS reaplica
+    -- sus highlights). Un redraw síncrono aquí vacía la pantalla a medio pintar -> la UI
+    -- de Mason parpadea. En el siguiente tick del bucle ya está todo dibujado.
+    vim.schedule(function()
+      vim.cmd("redrawstatus | redrawtabline")
+    end)
   end,
 })
 
