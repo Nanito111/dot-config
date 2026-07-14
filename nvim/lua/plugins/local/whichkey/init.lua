@@ -19,6 +19,7 @@ local GROUP_NAMES = {
   [leader .. "l"] = "LSP",
   [leader .. "n"] = "Notificaciones",
   [leader .. "p"] = "Pet",
+  [leader .. "r"] = "Reemplazar",
   [leader .. "s"] = "Workspaces",
   [leader .. "t"] = "Terminales",
   [leader .. "u"] = "Apariencia",

@@ -198,6 +198,19 @@ local function diag_project()
 end
 map("n", "<leader>dw", diag_project, { silent = true, desc = "Diagnósticos del proyecto (picker)" })
 
+-- Buscar y reemplazar en el archivo actual (widget flotante)
+map("n", "<leader>rr", function()
+  require("plugins.local.replace").open(vim.fn.expand("<cword>"))
+end, { silent = true, desc = "Buscar y reemplazar (archivo actual)" })
+map("x", "<leader>rr", function()
+  -- la selección hay que leerla ANTES de salir del modo visual
+  local sel = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = vim.fn.mode() })[1] or ""
+  vim.cmd("normal! \27")
+  vim.schedule(function()
+    require("plugins.local.replace").open(sel)
+  end)
+end, { silent = true, desc = "Buscar y reemplazar la selección" })
+
 -- Terminales flotantes
 map({ "n", "t" }, "<M-g>", "<cmd>Lazygit<CR>", { silent = true, desc = "Lazygit (flotante)" })
 map({ "n", "t" }, "<M-c>", "<cmd>Claude<CR>", { silent = true, desc = "Claude (flotante)" })
