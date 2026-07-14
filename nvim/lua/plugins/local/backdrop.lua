@@ -7,6 +7,14 @@ local M = {}
 -- Abre el backdrop. Devuelve una función para cerrarlo. opts:
 --   • blend  -> 'winblend' (0 = negro opaco, 100 = transparente). Menor = más oscuro.
 --   • zindex -> por debajo del modal (default 45; los flotantes normales usan 50)
+--
+-- La opacidad por defecto depende del fondo del tema: el mismo 50% de negro que en un
+-- tema oscuro apenas se nota (el fondo ya es casi negro), en uno claro convierte el
+-- editor en un gris sucio. En claro basta un velo suave.
+local function default_blend()
+  return vim.o.background == "light" and 80 or 50
+end
+
 function M.open(opts)
   opts = opts or {}
   api.nvim_set_hl(0, "Backdrop", { bg = "#000000" })
@@ -19,6 +27,7 @@ function M.open(opts)
     height = math.max(1, vim.o.lines - vim.o.cmdheight),
     focusable = false,
     style = "minimal",
+    border = "none", -- explícito: es una capa a pantalla completa, el winborder global no aplica
     zindex = opts.zindex or 45,
     noautocmd = true,
   })
@@ -26,7 +35,8 @@ function M.open(opts)
     pcall(api.nvim_buf_delete, buf, { force = true })
     return function() end
   end
-  vim.wo[win].winblend = opts.blend or 50
+  vim.w[win].borderless = true -- capa a pantalla completa: nunca lleva marco (ver config.borders)
+  vim.wo[win].winblend = opts.blend or default_blend()
   vim.wo[win].winhighlight = "Normal:Backdrop,NormalNC:Backdrop,EndOfBuffer:Backdrop"
 
   return function()
