@@ -16,7 +16,6 @@ M.styles = {
 }
 
 local DEFAULT = "rounded"
-local savefile = vim.fn.stdpath("data") .. "/winborder"
 
 function M.labels()
   return vim.tbl_map(function(s)
@@ -41,6 +40,7 @@ local function reborder(style)
   end
 end
 
+-- Aplica sin persistir (lo usa la vista previa del selector/panel)
 local function apply(style)
   vim.o.winborder = style
   reborder(style)
@@ -50,22 +50,15 @@ local function apply(style)
     require("lazy.core.config").options.ui.border = style
   end)
 end
+M.apply = apply
 
 function M.set(style)
   apply(style)
-  pcall(vim.fn.writefile, { style }, savefile)
-end
-
-function M.saved()
-  local ok, lines = pcall(vim.fn.readfile, savefile)
-  if ok and lines and lines[1] and lines[1] ~= "" then
-    return lines[1]
-  end
-  return DEFAULT
+  require("config.settings").record("ui.border", style)
 end
 
 function M.setup()
-  vim.o.winborder = M.saved()
+  apply(require("config.settings").value("ui.border", DEFAULT))
 end
 
 -- Selector con vista previa en vivo (el propio picker cambia de borde al moverte)

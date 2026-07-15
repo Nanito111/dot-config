@@ -77,6 +77,12 @@ local function set_winbar()
     return
   end
   local buf = api.nvim_get_current_buf()
+  -- El sidebar (explorador / configuración) gestiona su propia winbar de pestañas: el
+  -- breadcrumb no debe pisarla. (Sin esto, entrar a la ventana lateral la borra con "".)
+  local ft = vim.bo[buf].filetype
+  if ft == "explorer" or ft == "settings" then
+    return
+  end
   if vim.bo[buf].buftype == "terminal" then
     vim.wo.winbar = "%!v:lua.terminal_winbar()"
     return

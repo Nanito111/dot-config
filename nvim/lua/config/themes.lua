@@ -39,7 +39,7 @@ M.themes = {
 }
 
 local DEFAULT = "tokyonight-night"
-local savefile = vim.fn.stdpath("data") .. "/colorscheme"
+local current_label = DEFAULT -- último tema aplicado (para el panel de configuración)
 
 -- Etiquetas (strings) para el selector y el autocompletado
 function M.labels()
@@ -59,39 +59,36 @@ local function find(label)
   return { label }
 end
 
--- Aplica un tema (fondo + colorscheme), con protección si la variante no existe
+-- Aplica un tema (fondo + colorscheme), con protección si la variante no existe.
+-- No persiste: solo cambia el aspecto (lo usa la vista previa del selector/panel).
 local function apply(label)
   local t = find(label)
   vim.o.background = t.bg or "dark"
-  return pcall(vim.cmd.colorscheme, t.cs or t[1])
+  local ok = pcall(vim.cmd.colorscheme, t.cs or t[1])
+  if ok then
+    current_label = label
+  end
+  return ok
+end
+M.apply = apply
+
+-- Etiqueta del tema activo (para el panel de configuración)
+function M.current()
+  return current_label
 end
 
--- Guarda la elección para la próxima sesión
-local function save(label)
-  pcall(vim.fn.writefile, { label }, savefile)
-end
-
--- Aplica y persiste
+-- Aplica y persiste (solo si difiere del default se guarda; lo gestiona config.settings)
 function M.set(label)
   if apply(label) then
-    save(label)
+    require("config.settings").record("ui.theme", label)
   else
     vim.notify("No se pudo aplicar el tema: " .. label, vim.log.levels.WARN)
   end
 end
 
--- Lee el tema guardado (o el por defecto)
-function M.saved()
-  local ok, lines = pcall(vim.fn.readfile, savefile)
-  if ok and lines and lines[1] and lines[1] ~= "" then
-    return lines[1]
-  end
-  return DEFAULT
-end
-
--- Aplica al arrancar el tema guardado; si falla, cae al por defecto
+-- Aplica al arrancar el tema guardado (solo se carga si se cambió); si falla, el default
 function M.setup()
-  local name = M.saved()
+  local name = require("config.settings").value("ui.theme", DEFAULT)
   if not apply(name) and name ~= DEFAULT then
     apply(DEFAULT)
   end
@@ -171,6 +168,7 @@ local function preview()
   vim.list_extend(lines, SAMPLE)
   return { lines = lines, filetype = "lua", extmarks = extmarks }
 end
+M.preview = preview
 
 -- Selector con vista previa en vivo y restauración si se cancela
 function M.pick()

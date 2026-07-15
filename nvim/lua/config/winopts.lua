@@ -24,18 +24,18 @@ local PROSE = {
   gitcommit = { spell = true, colorcolumn = "73" },
 }
 
--- Valores por defecto: el global de cada opción (lo que fija options.lua). Se lee
--- con scope "global" para ser robusto ante :ReloadConfig (no depende de la
--- ventana actual, que podría ser el dashboard al recargar).
-local DEFAULT = {}
-for name in pairs(CLEAN) do
-  DEFAULT[name] = api.nvim_get_option_value(name, { scope = "global" })
+-- El valor por defecto de una opción es su GLOBAL, leído en vivo (no cacheado): así el
+-- panel de configuración puede cambiar un global (number, wrap…) y esta regla lo respeta
+-- en vez de reponer un valor viejo. scope="global" no depende de la ventana actual, así
+-- que sigue siendo robusto ante :ReloadConfig (el dashboard podría ser la ventana activa).
+local function global_of(name)
+  return api.nvim_get_option_value(name, { scope = "global" })
 end
--- Los de prosa se reponen a su global cuando el buffer no es de prosa
-local PROSE_DEFAULT = {}
+-- Opciones de prosa que hay que reponer a su global en buffers que no son prosa
+local PROSE_KEYS = {}
 for _, opts in pairs(PROSE) do
   for name in pairs(opts) do
-    PROSE_DEFAULT[name] = api.nvim_get_option_value(name, { scope = "global" })
+    PROSE_KEYS[name] = true
   end
 end
 
@@ -44,6 +44,7 @@ local function is_special(buf)
   local ft = vim.bo[buf].filetype
   return ft == "dashboard"
     or ft == "explorer"
+    or ft == "settings"
     or ft == "netrw"
     or vim.bo[buf].buftype == "terminal"
 end
@@ -58,32 +59,47 @@ function M.apply(win)
   end
   local buf = api.nvim_win_get_buf(win)
 
+  -- scope="local" en todos los sets: fijar una opción window-local en la ventana ACTUAL
+  -- sin él también cambia el default global (como :set), y al limpiar el sidebar enfocado
+  -- (number=false) contaminaría a las demás ventanas.
+
   if api.nvim_win_get_config(win).relative ~= "" then
     -- Las flotantes (hover del LSP, diagnósticos, pickers) son visores: nunca corrigen
     -- ortografía. Heredan las opciones de la ventana desde la que se abren, así que
     -- desde un markdown llegaban con el corrector puesto. El resto no se toca.
-    api.nvim_set_option_value("spell", false, { win = win })
+    api.nvim_set_option_value("spell", false, { win = win, scope = "local" })
     return
   end
 
-  local opts = is_special(buf) and CLEAN or DEFAULT
-  for name, value in pairs(opts) do
-    api.nvim_set_option_value(name, value, { win = win })
+  if is_special(buf) then
+    for name, value in pairs(CLEAN) do
+      api.nvim_set_option_value(name, value, { win = win, scope = "local" })
+    end
+    -- especiales: nunca prosa (sin ajuste de línea ni corrector), pase lo que pase con
+    -- los globales del usuario (el panel de configuración puede activarlos).
+    api.nvim_set_option_value("spell", false, { win = win, scope = "local" })
+    api.nvim_set_option_value("wrap", false, { win = win, scope = "local" })
+    -- explorador y configuración: con el cursor oculto, la línea marcada es la única
+    -- señal de la posición.
+    local ft = vim.bo[buf].filetype
+    if ft == "explorer" or ft == "settings" then
+      api.nvim_set_option_value("cursorline", true, { win = win, scope = "local" })
+    end
+    return
+  end
+
+  for name in pairs(CLEAN) do -- buffer normal: el global del usuario (en vivo)
+    api.nvim_set_option_value(name, global_of(name), { win = win, scope = "local" })
   end
 
   -- Prosa (markdown, gitcommit) o su valor global si el buffer no lo es
   local prose = PROSE[vim.bo[buf].filetype]
-  for name, default in pairs(PROSE_DEFAULT) do
+  for name in pairs(PROSE_KEYS) do
     local value = prose and prose[name]
     if value == nil then
-      value = default
+      value = global_of(name)
     end
-    api.nvim_set_option_value(name, value, { win = win })
-  end
-  -- El explorador es "especial" (limpio) pero SÍ quiere cursorline: con el cursor
-  -- oculto, la línea marcada es la única señal de la posición.
-  if vim.bo[buf].filetype == "explorer" then
-    api.nvim_set_option_value("cursorline", true, { win = win })
+    api.nvim_set_option_value(name, value, { win = win, scope = "local" })
   end
 end
 

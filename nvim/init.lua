@@ -8,6 +8,9 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 require("config.options")
+-- Overrides de opciones de Vim guardados en el panel (config.settings): tras options.lua
+-- para pisar sus defaults, y antes de nada más para que todo arranque con el valor final.
+require("config.settings").apply_vim_overrides()
 -- Antes de lazy: fija 'winborder' (el borde de TODAS las flotantes, incluida la ventana
 -- de lazy, que lo lee de su propia config al arrancar).
 require("config.borders").setup()
@@ -72,4 +75,5 @@ require("plugins.local.explorer")
 require("plugins.local.indentline") -- guías de indentación en buffers de código
 require("plugins.local.cursor") -- cursor + línea del cursor coloreados según el modo
 require("plugins.local.envcloak") -- ocultar valores en archivos .env
+require("plugins.local.settings.panel") -- panel de configuración (:Settings, <leader>uu)
 require("config.highlights")

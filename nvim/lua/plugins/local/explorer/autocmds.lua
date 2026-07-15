@@ -142,8 +142,9 @@ autocmd("BufWinEnter", {
     local name = api.nvim_buf_get_name(buf)
     local is_dir = name ~= "" and vim.fn.isdirectory(name) == 1
 
-    -- A) el explorador fue reemplazado en su propia ventana
-    if win == s.win and buf ~= s.buf then
+    -- A) el explorador fue reemplazado en su propia ventana (por un :e accidental; NO por
+    --    el cambio de vista a configuración con <Tab>, que es intencional)
+    if win == s.win and buf ~= s.buf and buf ~= s.settings_buf then
       vim.schedule(function()
         if not (api.nvim_win_is_valid(s.win) and s.buf and api.nvim_buf_is_valid(s.buf)) then
           return

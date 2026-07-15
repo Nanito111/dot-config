@@ -9,19 +9,17 @@ local MAX = 300 -- máximo de resultados mostrados
 -- ── Iconos en el listado (opción activable) ────────────────────────
 -- Un picker muestra iconos solo si (1) declara cómo obtener la ruta de cada item
 -- (opts.icon_path) —"iconos disponibles"— y (2) esta opción está activada.
-M.icons_enabled = true
-local icons_pref = vim.fn.stdpath("data") .. "/picker_icons"
-do
-  local ok, data = pcall(vim.fn.readfile, icons_pref)
-  if ok and data and data[1] == "0" then
-    M.icons_enabled = false
-  end
+M.icons_enabled = require("config.settings").value("ui.picker_icons", true)
+
+-- Fija el estado (sin notificar): lo usa el panel de configuración
+function M.set_icons(v)
+  M.icons_enabled = v
+  require("config.settings").record("ui.picker_icons", v)
 end
 
--- Alterna la opción y la persiste
+-- Alterna la opción, la persiste y avisa
 function M.toggle_icons()
-  M.icons_enabled = not M.icons_enabled
-  pcall(vim.fn.writefile, { M.icons_enabled and "1" or "0" }, icons_pref)
+  M.set_icons(not M.icons_enabled)
   vim.notify(
     "Iconos en el picker " .. (M.icons_enabled and "activados" or "desactivados"),
     vim.log.levels.INFO,

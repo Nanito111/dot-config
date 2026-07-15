@@ -20,22 +20,13 @@ local M = {}
 -- fresca en cada ColorScheme y así la statusline sigue al tema activo.
 local current = { layout = {}, border = "round", fill = nil, transparent = false }
 
--- ── Persistencia de la elección (preset + borde) entre sesiones ────
-local prefs_file = vim.fn.stdpath("data") .. "/statusline.json"
-
--- Guarda el estado activo (preset y borde) para restaurarlo al reabrir Neovim
+-- ── Persistencia (preset + borde) vía config.settings ──────────────
+-- El preset y el borde son ejes independientes: se guardan como dos claves. Solo se
+-- persiste lo que difiere del default (lo gestiona config.settings).
 local function save_prefs()
-  pcall(vim.fn.writefile, { vim.json.encode({ preset = cfg.preset, border = current.border }) }, prefs_file)
-end
-
--- Lee las preferencias guardadas (o {} si no hay / están corruptas)
-local function load_prefs()
-  local ok, lines = pcall(vim.fn.readfile, prefs_file)
-  if not ok or not lines or not lines[1] then
-    return {}
-  end
-  local decoded_ok, prefs = pcall(vim.json.decode, lines[1])
-  return (decoded_ok and type(prefs) == "table") and prefs or {}
+  local settings = require("config.settings")
+  settings.record("ui.statusline_preset", cfg.preset)
+  settings.record("ui.statusline_border", current.border)
 end
 
 -- ── Colores ────────────────────────────────────────────────────────
@@ -158,8 +149,14 @@ function M.presets()
   return vim.tbl_keys(cfg.presets)
 end
 
--- Aplica un preset completo: layout, colores y borde. Redibuja.
-function M.set_preset(name)
+-- Preset activo (para el panel de configuración)
+function M.current_preset()
+  return cfg.preset
+end
+
+-- Aplica un preset completo: layout, colores y borde. Redibuja. Con persist=false solo
+-- aplica sin guardar (vista previa del panel).
+function M.set_preset(name, persist)
   local p = cfg.presets[name]
   if not p then
     return false
@@ -176,7 +173,9 @@ function M.set_preset(name)
   if p.border then
     apply_border(p.border)
   end
-  save_prefs()
+  if persist ~= false then
+    save_prefs()
+  end
   vim.cmd("redrawstatus | redrawtabline")
   return true
 end
@@ -305,14 +304,16 @@ end
 -- ── Activación ─────────────────────────────────────────────────────
 theme.register(apply_colors) -- reaplica los colores del preset activo en ColorScheme
 
--- Restaurar la elección guardada (preset + borde); si no hay o es inválida, usar
--- el preset por defecto de config.lua.
-local prefs = load_prefs()
-if not (prefs.preset and M.set_preset(prefs.preset)) then
-  M.set_preset(cfg.preset) -- fija layout + colores + borde del preset inicial
+-- Restaurar la elección guardada (preset + borde); si no hay o es inválida, usar el
+-- preset por defecto de config.lua. persist=false: no reescribir el json al arrancar.
+local settings = require("config.settings")
+local saved_preset = settings.value("ui.statusline_preset", cfg.preset)
+if not M.set_preset(saved_preset, false) then
+  M.set_preset(cfg.preset, false) -- fija layout + colores + borde del preset inicial
 end
-if prefs.border then
-  M.set_border(prefs.border) -- restaurar el borde exacto (eje independiente del preset)
+local saved_border = settings.value("ui.statusline_border")
+if saved_border then
+  M.set_border(saved_border) -- restaurar el borde exacto (eje independiente del preset)
 end
 vim.o.laststatus = 3 -- una sola statusline global
 vim.o.statusline = "%!v:lua.statusline()"

@@ -26,7 +26,14 @@ theme.register(function()
   api.nvim_set_hl(0, "ExplorerPeek", { bg = palette.bg_highlight, fg = palette.fg }) -- fondo del tooltip
   api.nvim_set_hl(0, "ExplorerBold", { bold = true }) -- negrita del item seleccionado
   api.nvim_set_hl(0, "ExplorerDim", { fg = palette.comment }) -- panel atenuado (sin foco)
+  -- pestañas de la winbar del sidebar (icono de la vista activa vs la inactiva)
+  api.nvim_set_hl(0, "SidebarTabOn", { fg = palette.blue, bold = true })
+  api.nvim_set_hl(0, "SidebarTabOff", { fg = palette.comment })
 end)
+
+-- Filetypes que viven en el sidebar (explorador + configuración): comparten cursor
+-- oculto, atenuado sin foco y la winbar de pestañas.
+local SIDEBAR_FT = { explorer = true, settings = true }
 
 -- ── Negrita en el item seleccionado (línea del cursor) ─────────────
 -- El bold de CursorLine no se propaga al texto (los highlights del nombre lo pisan),
@@ -94,6 +101,9 @@ local function apply_focus(focused)
   if not (s and s.win and api.nvim_win_is_valid(s.win)) then
     return
   end
+  if s.view == "settings" then
+    return -- la vista de configuración gestiona su propio aspecto (settings.view)
+  end
   local wo = vim.wo[s.win]
   if focused then
     wo.winhighlight = FOCUSED_WINHL
@@ -112,7 +122,7 @@ api.nvim_create_autocmd({ "WinEnter", "BufEnter" }, {
   group = api.nvim_create_augroup("ExplorerFocus", { clear = true }),
   desc = "Atenuar el explorador cuando no tiene el foco",
   callback = function()
-    apply_focus(vim.bo[api.nvim_get_current_buf()].filetype == "explorer")
+    apply_focus(SIDEBAR_FT[vim.bo[api.nvim_get_current_buf()].filetype] or false)
   end,
 })
 
@@ -218,9 +228,9 @@ api.nvim_create_autocmd({ "WinLeave", "BufLeave", "CursorMovedI" }, {
 local saved_guicursor
 api.nvim_create_autocmd("BufEnter", {
   group = api.nvim_create_augroup("ExplorerCursor", { clear = true }),
-  desc = "Ocultar el cursor dentro del explorador",
+  desc = "Ocultar el cursor dentro del sidebar (explorador / configuración)",
   callback = function(ev)
-    if vim.bo[ev.buf].filetype == "explorer" then
+    if SIDEBAR_FT[vim.bo[ev.buf].filetype] then
       if not saved_guicursor then
         saved_guicursor = vim.o.guicursor
         vim.o.guicursor = "n:ExplorerHiddenCursor"
@@ -245,13 +255,13 @@ function M.open()
   -- tab para no acumular paneles duplicados.
   for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
     local b = api.nvim_win_get_buf(w)
-    if api.nvim_buf_is_valid(b) and vim.bo[b].filetype == "explorer" then
+    if api.nvim_buf_is_valid(b) and SIDEBAR_FT[vim.bo[b].filetype] then
       pcall(api.nvim_win_close, w, true)
       pcall(api.nvim_buf_delete, b, { force = true })
     end
   end
 
-  local s = { root = vim.fn.getcwd(), expanded = {}, nodes = {} }
+  local s = { root = vim.fn.getcwd(), expanded = {}, nodes = {}, view = "explorer" }
   states[api.nvim_get_current_tabpage()] = s
 
   s.buf = api.nvim_create_buf(false, true)
@@ -286,8 +296,8 @@ function M.open()
     render.render(cur())
   end, "Refrescar el árbol")
   map("q", M.close, "Cerrar el explorador")
-  map("<Tab>", "<Nop>")
-  map("<S-Tab>", "<Nop>")
+  map("<Tab>", function() M.switch_view() end, "Cambiar a configuración")
+  map("<S-Tab>", function() M.switch_view() end, "Cambiar a configuración")
   map("<leader>x", "<Nop>") -- desactivar cerrar-buffer global dentro del explorador
   -- operaciones de archivo
   map("a", actions.create, "Crear archivo/carpeta")
@@ -309,6 +319,67 @@ function M.open()
   render.render(s)
   watch.start_watch(s)
   git.update_git(s) -- marcas de git
+  M.set_winbar(s)
+end
+
+-- ── Sidebar: winbar de pestañas + cambio de vista (explorer / settings) ──
+-- Iconos centrados; la vista activa resaltada. Clicables (v:lua) para saltar directo.
+function M.set_winbar(s)
+  if not (s and s.win and api.nvim_win_is_valid(s.win)) then
+    return
+  end
+  local function cell(view, icon, fn)
+    local hl = (s.view == view) and "%#SidebarTabOn#" or "%#SidebarTabOff#"
+    return string.format("%%@v:lua.%s@ %s  %s  %%X%%*", fn, hl, icon)
+  end
+  local left = cell("explorer", "\u{f07b}", "__sidebar_go_explorer") --
+  local right = cell("settings", "\u{f013}", "__sidebar_go_settings") --
+  vim.wo[s.win].winbar = "%=" .. left .. right .. "%="
+end
+
+-- Muestra una vista en la ventana del sidebar (intercambia el buffer, no la ventana)
+function M.show_view(view)
+  local s = cur()
+  if not (s and s.win and api.nvim_win_is_valid(s.win)) then
+    return
+  end
+  api.nvim_set_current_win(s.win)
+  if view == "settings" then
+    local sv = require("plugins.local.settings.view")
+    if not (s.settings_buf and api.nvim_buf_is_valid(s.settings_buf)) then
+      s.settings_buf = sv.create()
+    end
+    api.nvim_win_set_buf(s.win, s.settings_buf)
+    s.view = "settings"
+    sv.attach(s.win, s.settings_buf)
+  else
+    api.nvim_win_set_buf(s.win, s.buf)
+    s.view = "explorer"
+    apply_focus(true)
+  end
+  M.set_winbar(s)
+end
+
+-- <Tab>: alterna entre explorador y configuración
+function M.switch_view()
+  local s = cur()
+  if not s then
+    return
+  end
+  M.show_view(s.view == "explorer" and "settings" or "explorer")
+end
+
+-- Abre el sidebar (si hace falta) directamente en la vista de configuración
+function M.open_settings()
+  M.open()
+  M.show_view("settings")
+end
+
+function _G.__sidebar_go_explorer()
+  require("plugins.local.explorer").show_view("explorer")
+end
+function _G.__sidebar_go_settings()
+  require("plugins.local.explorer").show_view("settings")
 end
 
 function M.close()
@@ -329,8 +400,10 @@ function M.close()
   if s.win and api.nvim_win_is_valid(s.win) then
     api.nvim_win_close(s.win, true)
   end
-  if s.buf and api.nvim_buf_is_valid(s.buf) then
-    pcall(api.nvim_buf_delete, s.buf, { force = true }) -- bufhidden=hide no se borra solo
+  for _, b in ipairs({ s.buf, s.settings_buf }) do -- bufhidden=hide no se borran solos
+    if b and api.nvim_buf_is_valid(b) then
+      pcall(api.nvim_buf_delete, b, { force = true })
+    end
   end
   states[api.nvim_get_current_tabpage()] = nil
 end

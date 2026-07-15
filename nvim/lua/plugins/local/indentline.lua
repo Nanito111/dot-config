@@ -23,19 +23,17 @@ local CHARS = {
   { label = "(vacío — ocultar)", char = "" },
 }
 
--- Persistencia de la elección entre sesiones
-local prefs_file = vim.fn.stdpath("data") .. "/indentline.txt"
+-- Persistencia de la elección entre sesiones (vía config.settings; "" = ocultar)
+local DEFAULT_CHAR = char
 local function save_prefs()
-  pcall(vim.fn.writefile, { active and char or "" }, prefs_file)
+  require("config.settings").record("ui.indentline", active and char or "")
 end
 local function load_prefs()
-  local ok, lines = pcall(vim.fn.readfile, prefs_file)
-  if ok and lines and lines[1] ~= nil then
-    if lines[1] == "" then
-      active = false
-    else
-      char = lines[1]
-    end
+  local v = require("config.settings").value("ui.indentline", DEFAULT_CHAR)
+  if v == "" then
+    active = false
+  else
+    char = v
   end
 end
 
@@ -49,6 +47,7 @@ set_hl()
 local EXCLUDE_FT = {
   dashboard = true,
   explorer = true,
+  settings = true,
   help = true,
   man = true,
   gitcommit = true,
@@ -219,6 +218,7 @@ local function render_all()
 end
 
 -- Fija el carácter de la guía. "" = ocultar (active=false). Redibuja al instante.
+-- No persiste: es la vista previa del selector/panel.
 local function apply(c)
   if c == "" then
     active = false
@@ -227,6 +227,29 @@ local function apply(c)
     char = c
   end
   render_all()
+end
+M.apply = apply
+
+-- Adaptadores para el panel de configuración (config.settings)
+function M.choices() -- valores posibles (el carácter; "" = ocultar)
+  return vim.tbl_map(function(o)
+    return o.char
+  end, CHARS)
+end
+function M.label_of(c) -- etiqueta legible de un carácter
+  for _, o in ipairs(CHARS) do
+    if o.char == c then
+      return o.label
+    end
+  end
+  return c
+end
+function M.current() -- valor activo ("" si están ocultas)
+  return active and char or ""
+end
+function M.set(c) -- aplicar + persistir
+  apply(c)
+  save_prefs()
 end
 
 -- Selector de estilo de guía (con preview en vivo y opción "vacío" para ocultar)
