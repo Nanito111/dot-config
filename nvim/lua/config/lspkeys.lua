@@ -56,24 +56,8 @@ local function open_locations(o)
 end
 M.open_locations = open_locations
 
--- ── Diagnósticos (global; se reaplica en cada recarga) ─────────────
-vim.diagnostic.config({
-  -- Sin texto/líneas virtuales: el mensaje se lee en el flotante (D / <leader>dd).
-  virtual_lines = false,
-  virtual_text = false,
-  signs = {
-    text = {
-      [vim.diagnostic.severity.ERROR] = "\u{f057}",
-      [vim.diagnostic.severity.WARN] = "\u{f071}",
-      [vim.diagnostic.severity.INFO] = "\u{f05a}",
-      [vim.diagnostic.severity.HINT] = "\u{f0eb}",
-    },
-  },
-  underline = true,
-  update_in_insert = false,
-  severity_sort = true,
-  float = { source = true },
-})
+-- ── Diagnósticos (UI configurable desde el panel; se reaplica en cada recarga) ──
+require("config.diagnostics").apply()
 
 -- ── Keymaps al conectar (buffer-local) ─────────────────────────────
 -- Neovim 0.11+ ya trae por defecto grn (renombrar), gra (acción de código), grr

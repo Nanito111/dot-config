@@ -238,6 +238,29 @@ local function build()
     return spec
   end
 
+  -- Toggle booleano de la UI de diagnósticos (config.diagnostics)
+  local diag = require("config.diagnostics")
+  local function diagopt(key, label)
+    return {
+      id = "diag." .. key,
+      label = label,
+      type = "bool",
+      default = diag.DEFAULTS[key],
+      get = function()
+        return diag.get(key)
+      end,
+      apply = function(v)
+        diag.set(key, v)
+      end,
+      set = function(v)
+        diag.set(key, v)
+      end,
+      overridden = function()
+        return M.is_overridden("diag." .. key)
+      end,
+    }
+  end
+
   return {
     {
       title = "Apariencia",
@@ -324,6 +347,15 @@ local function build()
         vimopt({ opt = "scrolloff", label = "Margen de scroll", type = "number", scope = nil, min = 0, max = 30, step = 1 }),
         vimopt({ opt = "ignorecase", label = "Ignorar mayúsculas al buscar", type = "bool", scope = nil }),
         vimopt({ opt = "smartcase", label = "…salvo si escribes mayúsculas", type = "bool", scope = nil }),
+      },
+    },
+    {
+      title = "Diagnósticos",
+      items = {
+        diagopt("virtual_text", "Texto virtual (en línea)"),
+        diagopt("signs", "Signos en el gutter"),
+        diagopt("underline", "Subrayado"),
+        diagopt("inlay_hints", "Inlay hints (tipos/parámetros)"),
       },
     },
   }
