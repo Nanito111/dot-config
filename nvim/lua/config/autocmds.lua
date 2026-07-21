@@ -69,5 +69,6 @@ autocmd("VimEnter", {
   callback = function()
     require("plugins.local.explorer").open()
     vim.cmd("wincmd p") -- devolver el foco a la ventana de edición
+    require("plugins.local.sidebar").refresh() -- arrancar minimizado (el foco ya está fuera)
   end,
 })
