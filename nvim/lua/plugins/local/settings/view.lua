@@ -255,7 +255,7 @@ function M.create()
   map("h", function(b) adjust(b, -1) end)
   map("<Left>", function(b) adjust(b, -1) end)
   map("<CR>", activate)
-  map("<Space>", activate)
+  -- OJO: no mapear <Space> aquí — es el leader; hacerlo impediría <leader>e y demás atajos
   map("r", reset)
   map("<Tab>", function()
     require("plugins.local.explorer").switch_view()
