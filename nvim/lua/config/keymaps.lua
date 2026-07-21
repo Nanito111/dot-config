@@ -229,6 +229,7 @@ map("n", "<leader>ff", "<cmd>Files<CR>", { silent = true, desc = "Buscar archivo
 map("n", "<leader>fb", "<cmd>Buffers<CR>", { silent = true, desc = "Seleccionar buffer" })
 map("n", "<leader>fw", "<cmd>Grep<CR>", { silent = true, desc = "Buscar contenido en el cwd" })
 map("n", "<leader>ft", "<cmd>Terminals<CR>", { silent = true, desc = "Terminales del workspace" })
+map("n", "<leader>fT", "<cmd>Todos<CR>", { silent = true, desc = "Buscar TODOs del proyecto" })
 
 -- Terminales con nombre
 map("n", "<leader>tn", function()
