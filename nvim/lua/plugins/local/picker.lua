@@ -391,18 +391,14 @@ local function create_windows(title, preview, input, footer)
 
   local prompt_buf, prompt_win
   if input then
-    prompt_buf = api.nvim_create_buf(false, true)
-    vim.b[prompt_buf].completion = false -- sin autocompletado (blink) en el prompt
-    prompt_win = api.nvim_open_win(prompt_buf, true, {
+    local pr = require("plugins.local.ui").input.open({
+      prompt = title,
       relative = "editor",
       width = width,
-      height = 1,
       row = row,
       col = col,
-      style = "minimal",
-      title = " " .. title .. " ",
-      title_pos = "center",
     })
+    prompt_buf, prompt_win = pr.buf, pr.win
   end
 
   local res_w = preview and math.floor(width * 0.4) or width

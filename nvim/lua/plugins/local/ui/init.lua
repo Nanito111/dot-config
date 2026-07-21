@@ -1,6 +1,6 @@
 -- Librería de primitivas UI reutilizables (plugin-free). Agrega los submódulos:
 --   ui.geom.center · ui.close · ui.win.set_opts · ui.hl.span/line_marks · ui.text.fit/pad
---   ui.backdrop.open   (y, en fases siguientes, ui.float · ui.menu · ui.input)
+--   ui.backdrop.open · ui.float · ui.menu · ui.input
 return {
   geom = require("plugins.local.ui.geom"),
   close = require("plugins.local.ui.close"),
@@ -10,4 +10,5 @@ return {
   backdrop = require("plugins.local.ui.backdrop"),
   float = require("plugins.local.ui.float"),
   menu = require("plugins.local.ui.menu"),
+  input = require("plugins.local.ui.input"),
 }

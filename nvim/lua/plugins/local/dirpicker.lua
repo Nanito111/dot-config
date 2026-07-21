@@ -35,12 +35,10 @@ function M.pick(opts, on_choose)
   vim.wo[tree_win].cursorline = true
   vim.wo[tree_win].winhighlight = "CursorLine:ExplorerCursorLine"
 
-  local prompt_buf = api.nvim_create_buf(false, true)
-  vim.b[prompt_buf].completion = false -- sin blink en el input
-  local prompt_win = api.nvim_open_win(prompt_buf, true, {
-    relative = "editor", width = width, height = 1, col = col, row = row,
-    style = "minimal", title = " " .. prompt .. " ", title_pos = "left",
+  local pr = require("plugins.local.ui").input.open({
+    prompt = prompt, relative = "editor", width = width, row = row, col = col, title_pos = "left",
   })
+  local prompt_buf, prompt_win = pr.buf, pr.win
 
   s.buf, s.win = tree_buf, tree_win
 
