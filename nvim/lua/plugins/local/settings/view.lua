@@ -24,6 +24,10 @@ end
 theme.register(set_hl)
 set_hl()
 
+-- Iconos de switch (FontAwesome toggle-on/off) para los booleanos
+local SWITCH_ON = "\u{f205}" --
+local SWITCH_OFF = "\u{f204}" --
+
 -- ── Valor mostrado ─────────────────────────────────────────────────
 local function value_text(spec)
   if spec.type == "action" then
@@ -31,7 +35,7 @@ local function value_text(spec)
   end
   local v = spec.get()
   if spec.type == "bool" then
-    return v and "sí" or "no"
+    return v and SWITCH_ON or SWITCH_OFF
   elseif spec.type == "enum" then
     local s = spec.display and spec.display(v) or tostring(v)
     return s == "" and "(oculto)" or s
@@ -76,13 +80,19 @@ local function render(buf)
 
       local row = #lines - 1
       local val_col = #label + pad
-      marks[#marks + 1] = { row, 0, { end_col = #label, hl_group = "SettingsLabel" } }
-      if spec.overridden() then
-        marks[#marks + 1] = { row, val_col, { end_col = val_col + #marker, hl_group = "SettingsMarker" } }
-        marks[#marks + 1] = { row, val_col + #marker, { end_col = #line, hl_group = "SettingsChanged" } }
+      -- color del valor: los switches se colorean por su ESTADO (verde=on, tenue=off);
+      -- el resto, por si difieren del default. El `●` (cuando lo hay) marca "cambiado".
+      local val_hl
+      if spec.type == "bool" then
+        val_hl = spec.get() and "SettingsChanged" or "SettingsDefault"
       else
-        marks[#marks + 1] = { row, val_col, { end_col = #line, hl_group = "SettingsDefault" } }
+        val_hl = spec.overridden() and "SettingsChanged" or "SettingsDefault"
       end
+      marks[#marks + 1] = { row, 0, { end_col = #label, hl_group = "SettingsLabel" } }
+      if #marker > 0 then
+        marks[#marks + 1] = { row, val_col, { end_col = val_col + #marker, hl_group = "SettingsMarker" } }
+      end
+      marks[#marks + 1] = { row, val_col + #marker, { end_col = #line, hl_group = val_hl } }
     end
   end
 
