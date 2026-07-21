@@ -60,13 +60,16 @@ local function git_mark(code, is_dir)
   return "~", "GitSignStagedChange" -- M u otros (staged)
 end
 
--- Construye la lista de nodos visibles (recursivo según lo expandido)
+-- Construye la lista de nodos visibles (recursivo según lo expandido). Con s.dirs_only solo
+-- se incluyen carpetas (modo selector de carpetas).
 local function build(s, path, depth, out)
   for _, e in ipairs(read_dir(path)) do
-    local full = path .. "/" .. e.name
-    out[#out + 1] = { path = full, name = e.name, is_dir = e.is_dir, depth = depth }
-    if e.is_dir and s.expanded[full] then
-      build(s, full, depth + 1, out)
+    if e.is_dir or not s.dirs_only then
+      local full = path .. "/" .. e.name
+      out[#out + 1] = { path = full, name = e.name, is_dir = e.is_dir, depth = depth }
+      if e.is_dir and s.expanded[full] then
+        build(s, full, depth + 1, out)
+      end
     end
   end
 end
@@ -157,10 +160,13 @@ function M.render(s)
   end
 
   -- Ajustar los watchers a las carpetas ahora visibles (raíz + expandidas). require
-  -- perezoso: watch.lua depende de render, así que no se puede requerir arriba.
-  pcall(function()
-    require("plugins.local.explorer.watch").reconcile(s)
-  end)
+  -- perezoso: watch.lua depende de render, así que no se puede requerir arriba. Un selector
+  -- transitorio (dirs_only) no vigila el disco.
+  if not s.dirs_only then
+    pcall(function()
+      require("plugins.local.explorer.watch").reconcile(s)
+    end)
+  end
 end
 
 function M.node_at_cursor(s)

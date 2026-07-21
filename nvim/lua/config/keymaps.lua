@@ -247,12 +247,10 @@ end, { silent = true, desc = "Renombrar terminal actual" })
 
 -- Workspaces (tabs con cwd propio)
 map("n", "<leader>sn", function()
-  vim.ui.input({ prompt = "Directorio del workspace: ", default = vim.fn.getcwd(), completion = "dir", relative = "editor" }, function(dir)
-    if dir and dir ~= "" then
-      require("plugins.local.workspace").new(dir)
-    end
+  require("plugins.local.dirpicker").pick({ prompt = "Carpeta del workspace: " }, function(dir)
+    require("plugins.local.workspace").new(dir)
   end)
-end, { silent = true, desc = "Nuevo workspace" })
+end, { silent = true, desc = "Nuevo workspace (selector de carpetas)" })
 map("n", "<leader>sr", function()
   vim.ui.input({ prompt = "Nombre del workspace: ", relative = "editor" }, function(name)
     if name and name ~= "" then
