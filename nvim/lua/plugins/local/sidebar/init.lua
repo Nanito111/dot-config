@@ -353,8 +353,8 @@ function M.focus()
   end
 end
 
--- <Tab>: siguiente vista
-function M.next()
+-- Cambia de vista en `dir` (+1 siguiente / -1 anterior), ciclando.
+local function step(dir)
   local sb = cur()
   if not sb then
     return
@@ -365,7 +365,14 @@ function M.next()
       i = k
     end
   end
-  M.show(order[(i % #order) + 1])
+  M.show(order[((i - 1 + dir) % #order) + 1])
+end
+
+function M.next() -- <Tab>
+  step(1)
+end
+function M.prev() -- <S-Tab>
+  step(-1)
 end
 
 -- ── Autocomandos genéricos ─────────────────────────────────────────
