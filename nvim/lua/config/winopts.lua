@@ -24,11 +24,16 @@ local PROSE = {
   gitcommit = { spell = true, colorcolumn = "73" },
 }
 
--- El valor por defecto de una opción es su GLOBAL, leído en vivo (no cacheado): así el
--- panel de configuración puede cambiar un global (number, wrap…) y esta regla lo respeta
--- en vez de reponer un valor viejo. scope="global" no depende de la ventana actual, así
--- que sigue siendo robusto ante :ReloadConfig (el dashboard podría ser la ventana activa).
+-- Valor deseado de una opción, leído en vivo (no cacheado): así el panel de configuración
+-- puede cambiarla y esta regla la respeta en vez de reponer un valor viejo. Para las
+-- opciones del panel la fuente es settings (override o default de código): el "global" de
+-- una opción window-local queda contaminado por ventana al editarla con :set desde el
+-- sidebar, y reponerlo aquí revertiría el cambio al salir del panel. El resto usa el global.
 local function global_of(name)
+  local pref = require("config.settings").win_opt(name)
+  if pref ~= nil then
+    return pref
+  end
   return api.nvim_get_option_value(name, { scope = "global" })
 end
 -- Opciones de prosa que hay que reponer a su global en buffers que no son prosa

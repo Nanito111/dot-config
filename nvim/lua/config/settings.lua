@@ -148,6 +148,27 @@ local PANEL_VIM_OPTS = {
   "wrap", "number", "relativenumber", "cursorline", "scrolloff", "ignorecase", "smartcase",
 }
 
+-- Fuente FIABLE del valor deseado para una opción del panel: el override persistido o el
+-- default de código. nil si la opción no la gestiona el panel. La usa winopts en vez del
+-- "global": el global de una opción window-local queda contaminado por ventana al editarla
+-- con :set desde el sidebar (revierte con solo cambiar de ventana), así que no sirve para
+-- propagar el valor a las demás ventanas.
+local PANEL_OPT_SET = {}
+for _, n in ipairs(PANEL_VIM_OPTS) do
+  PANEL_OPT_SET[n] = true
+end
+function M.win_opt(name)
+  if not PANEL_OPT_SET[name] then
+    return nil
+  end
+  ensure_loaded()
+  local v = overrides["opt." .. name]
+  if v ~= nil then
+    return v
+  end
+  return vim_defaults[name] -- default de código (nil si aún no se fotografió: winopts cae al global)
+end
+
 -- Reaplica al arrancar los overrides de opciones de Vim (claves "opt.*"): a diferencia de
 -- los settings con proveedor, nadie más los reaplica. Se llama pronto (tras options.lua).
 function M.apply_vim_overrides()
@@ -174,7 +195,7 @@ function M.apply_vim_overrides()
     local name = id:match("^opt%.(.+)$")
     if name then
       pcall(function()
-        vim.o[name] = v
+        vim.go[name] = v -- setglobal: en :ReloadConfig hay varias ventanas y vim.o contaminaría
       end)
     end
   end
@@ -197,7 +218,10 @@ local function vimopt(spec)
     return api.nvim_get_option_value(name, { scope = "global" })
   end
   spec.apply = function(v)
-    vim.o[name] = v -- default global (nuevos buffers)
+    -- vim.go (setglobal), NO vim.o: para opciones window-local, vim.o (=:set) fija también
+    -- el local de la ventana ACTUAL y deja el "global" contaminado según la ventana (si el
+    -- panel se edita desde el sidebar, winopts leería el global viejo al salir y revertiría).
+    vim.go[name] = v -- default global limpio (nuevos buffers); winopts lo propaga a las abiertas
     if spec.scope == "win" then
       -- apariencia de ventana: delegar en winopts, que respeta los buffers especiales
       -- (explorador, dashboard, configuración, terminales, flotantes). Fijarla a ciegas
@@ -213,8 +237,10 @@ local function vimopt(spec)
     end
   end
   spec.set = function(v)
-    spec.apply(v)
+    -- registrar ANTES de aplicar: apply() propaga vía winopts, que lee el valor deseado de
+    -- settings (win_opt); si registrásemos después, la propagación usaría el override viejo.
     M.record("opt." .. name, v, spec.default)
+    spec.apply(v)
   end
   spec.id = "opt." .. name
   spec.overridden = function()
