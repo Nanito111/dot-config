@@ -7,6 +7,16 @@ local render = require("plugins.local.explorer.render")
 local normpath = util.normpath
 local M = {}
 
+-- cwd válido para vim.system: si el cwd del PROCESO quedó colgado (p. ej. tras renombrar
+-- el directorio que era el cwd), uv_spawn peta con ENOENT antes de ejecutar nada. git usa
+-- `-C root`, así que el cwd solo tiene que ser un directorio que exista.
+local function safe_cwd(root)
+  if root and vim.fn.isdirectory(root) == 1 then
+    return root
+  end
+  return uv.os_homedir() or vim.fn.stdpath("data")
+end
+
 -- Obtiene el estado de git de la raíz (async) y re-renderiza con las marcas.
 -- Guard de GENERACIÓN: cada llamada incrementa s.git_gen; los callbacks async solo
 -- aplican su resultado si siguen siendo la generación más reciente. Evita que un
@@ -18,7 +28,8 @@ function M.update_git(s)
   s.git_gen = (s.git_gen or 0) + 1
   local gen = s.git_gen
   local root = s.root
-  vim.system({ "git", "-C", root, "rev-parse", "--show-toplevel" }, { text = true }, function(r1)
+  local cwd = safe_cwd(root)
+  vim.system({ "git", "-C", root, "rev-parse", "--show-toplevel" }, { text = true, cwd = cwd }, function(r1)
     if r1.code ~= 0 then -- no es un repo
       vim.schedule(function()
         if s.git_gen ~= gen then
@@ -32,7 +43,7 @@ function M.update_git(s)
       return
     end
     local top = vim.trim(r1.stdout or "")
-    vim.system({ "git", "-C", root, "status", "--porcelain", "-uall" }, { text = true }, function(r2)
+    vim.system({ "git", "-C", root, "status", "--porcelain", "-uall" }, { text = true, cwd = cwd }, function(r2)
       local map = {}
       if r2.code == 0 then
         local ntop = normpath(top)

@@ -138,6 +138,25 @@ local function rename_buf(old, new)
   end
 end
 
+-- Tras renombrar/mover una CARPETA: reapuntar los buffers abiertos que colgaban de ella y,
+-- si el cwd caía dentro, seguirlo (si no, queda colgado y cualquier vim.system peta).
+local function rename_dir_buffers(old, new)
+  local oldp = vim.fn.fnamemodify(old, ":p"):gsub("/$", "")
+  local newp = vim.fn.fnamemodify(new, ":p"):gsub("/$", "")
+  for _, b in ipairs(api.nvim_list_bufs()) do
+    if api.nvim_buf_is_valid(b) then
+      local name = api.nvim_buf_get_name(b)
+      if name == oldp or name:sub(1, #oldp + 1) == oldp .. "/" then
+        pcall(api.nvim_buf_set_name, b, newp .. name:sub(#oldp + 1))
+      end
+    end
+  end
+  local cwd = vim.fn.fnamemodify(vim.fn.getcwd(), ":p"):gsub("/$", "")
+  if cwd == oldp or cwd:sub(1, #oldp + 1) == oldp .. "/" then
+    pcall(vim.cmd.cd, newp .. cwd:sub(#oldp + 1))
+  end
+end
+
 -- a: crear archivo (o carpeta si termina en /)
 function M.create()
   local s = cur()
@@ -205,8 +224,12 @@ function M.rename()
       return -- sin cambios
     end
     vim.fn.mkdir(vim.fn.fnamemodify(target, ":h"), "p")
-    if vim.fn.rename(n.path, target) == 0 and not n.is_dir then
-      rename_buf(n.path, target)
+    if vim.fn.rename(n.path, target) == 0 then
+      if n.is_dir then
+        rename_dir_buffers(n.path, target) -- reapuntar buffers/cwd que colgaban de la carpeta
+      else
+        rename_buf(n.path, target)
+      end
     end
     render.render(s)
   end)
