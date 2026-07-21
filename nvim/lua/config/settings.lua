@@ -281,9 +281,17 @@ local function build()
     {
       title = "Editor",
       items = {
-        vimopt({ opt = "expandtab", label = "Indentar con espacios", type = "bool", scope = "buf" }),
-        vimopt({ opt = "tabstop", label = "Ancho del tab", type = "number", scope = "buf", min = 1, max = 8, step = 1 }),
-        vimopt({ opt = "shiftwidth", label = "Ancho de indentación", type = "number", scope = "buf", min = 0, max = 8, step = 1 }),
+        {
+          id = "indent.per_ft",
+          label = "Indentación por tipo de archivo",
+          type = "action",
+          overridden = function()
+            return false
+          end,
+          run = function()
+            require("plugins.local.settings.indent_table").open()
+          end,
+        },
         vimopt({ opt = "wrap", label = "Ajuste de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "number", label = "Números de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "relativenumber", label = "Números relativos", type = "bool", scope = "win" }),

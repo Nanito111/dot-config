@@ -53,6 +53,7 @@ end
 
 -- ── Configuración propia ───────────────────────────────────────────
 require("config.winopts")
+require("config.indent") -- indentación por tipo de archivo (antes se hacía en ftplugin)
 require("config.theme") -- registro central de highlights que reaccionan a ColorScheme
 require("plugins.local.notify") -- toasts: sobrescribe vim.notify (antes del resto)
 require("plugins.local.input") -- inputs flotantes: sobrescribe vim.ui.input

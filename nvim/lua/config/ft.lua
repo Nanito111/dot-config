@@ -2,15 +2,17 @@
 -- LOCAL al buffer/ventana, así que no se filtra a otros archivos.
 local M = {}
 
--- Fija la indentación del buffer actual.
+-- Fija la indentación de un buffer.
 --   sw      -> ancho de indentación (shiftwidth/tabstop/softtabstop)
 --   expand  -> usar espacios (true, por defecto) o tabuladores reales (false)
-function M.indent(sw, expand)
+--   buf     -> buffer al que aplicar (por defecto el actual)
+function M.indent(sw, expand, buf)
   expand = expand ~= false
-  vim.bo.expandtab = expand
-  vim.bo.shiftwidth = sw
-  vim.bo.tabstop = sw
-  vim.bo.softtabstop = expand and sw or 0
+  local bo = buf and vim.bo[buf] or vim.bo
+  bo.expandtab = expand
+  bo.shiftwidth = sw
+  bo.tabstop = sw
+  bo.softtabstop = expand and sw or 0
 end
 
 return M

@@ -26,6 +26,9 @@ set_hl()
 
 -- ── Valor mostrado ─────────────────────────────────────────────────
 local function value_text(spec)
+  if spec.type == "action" then
+    return "→" -- abre otra ventana (p. ej. la tabla de indentación)
+  end
   local v = spec.get()
   if spec.type == "bool" then
     return v and "sí" or "no"
@@ -215,7 +218,9 @@ local function activate(buf)
   if not spec then
     return
   end
-  if spec.type == "enum" then
+  if spec.type == "action" then
+    spec.run()
+  elseif spec.type == "enum" then
     open_enum_picker(buf)
   else
     adjust(buf, 1)
@@ -224,7 +229,7 @@ end
 
 local function reset(buf)
   local spec = current_spec(buf)
-  if spec then
+  if spec and spec.set then -- las entradas "action" no tienen set/default
     spec.set(spec.default)
     render(buf)
   end
