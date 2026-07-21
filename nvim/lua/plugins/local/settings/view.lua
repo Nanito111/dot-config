@@ -6,12 +6,12 @@ local api = vim.api
 local settings = require("config.settings")
 local palette = require("config.palette")
 local theme = require("config.theme")
+local ui = require("plugins.local.ui")
 
 local M = {}
 local ns = api.nvim_create_namespace("settings_view")
-local mark_ns = api.nvim_create_namespace("settings_marker")
 
-local views = {} -- [buf] = { win, rows = { spec|nil }, last }
+local views = {} -- [buf] = { win, rows, menu } (menu = controlador de lista imantada)
 
 local function set_hl()
   api.nvim_set_hl(0, "SettingsSection", { fg = palette.blue, bold = true })
@@ -100,57 +100,22 @@ local function render(buf)
   api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
   api.nvim_buf_clear_namespace(buf, ns, 0, -1)
-  require("plugins.local.ui").hl.line_marks(buf, ns, marks)
+  ui.hl.line_marks(buf, ns, marks)
   v.rows = rows
+  v.menu.set_rows(rows)
 end
 
--- ── Imantar el cursor a una línea de opción ────────────────────────
--- Recorre desde `from` en la dirección `dir` hasta la primera línea que es un setting.
-local function scan(rows, from, dir)
-  local n = #rows
-  local a = from
-  while a >= 1 and a <= n do
-    if rows[a] then
-      return a
-    end
-    a = a + dir
-  end
-end
-
--- Marcador ▸ en la línea activa (se mueve con el cursor)
-local function draw_marker(buf, lnum)
-  api.nvim_buf_clear_namespace(buf, mark_ns, 0, -1)
-  pcall(api.nvim_buf_set_extmark, buf, mark_ns, lnum - 1, 0, {
-    virt_text = { { "▸", "SettingsMarker" } },
-    virt_text_pos = "overlay",
-  })
-end
-
--- Al mover el cursor: si cae en cabecera/blanco, saltar a la opción más cercana en el
--- sentido del movimiento (o el contrario si no hay). Deja el marcador en la opción activa.
+-- ── Imantar el cursor (delegado en ui.menu) ────────────────────────
 function M.on_cursor(buf)
   local v = views[buf]
-  if not (v and v.win and api.nvim_win_is_valid(v.win)) then
-    return
+  if v and v.menu then
+    v.menu.on_cursor()
   end
-  local lnum = api.nvim_win_get_cursor(v.win)[1]
-  if not v.rows[lnum] then
-    local dir = (v.last and lnum < v.last) and -1 or 1
-    local target = scan(v.rows, lnum, dir) or scan(v.rows, lnum, -dir)
-    if target and target ~= lnum then
-      api.nvim_win_set_cursor(v.win, { target, 0 })
-      return -- el propio set redispara CursorMoved: el marcador se pinta entonces
-    end
-    lnum = target or lnum
-  end
-  v.last = lnum
-  draw_marker(buf, lnum)
 end
 
 local function current_spec(buf)
   local v = views[buf]
-  local lnum = api.nvim_win_get_cursor(v.win)[1]
-  return v.rows[lnum]
+  return v and v.menu and v.menu.current()
 end
 
 -- ── Edición ────────────────────────────────────────────────────────
@@ -251,7 +216,14 @@ function M.create()
   vim.bo[buf].bufhidden = "hide"
   vim.bo[buf].swapfile = false
   vim.bo[buf].filetype = "settings"
-  views[buf] = { rows = {}, last = nil }
+  views[buf] = { rows = {} }
+  views[buf].menu = ui.menu.new({
+    buf = buf,
+    get_win = function()
+      return views[buf].win
+    end,
+    marker = { text = "▸", hl = "SettingsMarker" },
+  })
 
   local function map(lhs, fn)
     vim.keymap.set("n", lhs, function()
@@ -283,11 +255,20 @@ end
 
 -- Muestra la vista en la ventana del sidebar: aspecto propio + primer render + cursor.
 function M.attach(win, buf)
-  views[buf] = views[buf] or { rows = {}, last = nil }
+  if not (views[buf] and views[buf].menu) then -- defensivo (create() normalmente ya corrió)
+    views[buf] = { rows = {} }
+    views[buf].menu = ui.menu.new({
+      buf = buf,
+      get_win = function()
+        return views[buf].win
+      end,
+      marker = { text = "▸", hl = "SettingsMarker" },
+    })
+  end
   views[buf].win = win
   -- ui.win.set_opts usa scope="local": sin él, fijar estas window-local sobre la ventana
   -- actual también cambiaría el default global (apagaba números/cursorline en todo).
-  require("plugins.local.ui").win.set_opts(win, {
+  ui.win.set_opts(win, {
     winhighlight = "CursorLine:SettingsCursorLine",
     cursorline = true,
     number = false,

@@ -10,7 +10,6 @@ local ui = require("plugins.local.ui")
 
 local M = {}
 local ns = api.nvim_create_namespace("indent_table")
-local mark_ns = api.nvim_create_namespace("indent_table_marker")
 
 local state = nil -- { buf, win, rows = { rowdata|false }, focus = ft, last }
 
@@ -86,49 +85,20 @@ local function render()
   api.nvim_buf_clear_namespace(s.buf, ns, 0, -1)
   ui.hl.line_marks(s.buf, ns, marks)
   s.rows = meta
-end
-
--- ── Cursor imantado a las filas de datos ───────────────────────────
-local function scan(rows, from, dir)
-  local n = #rows
-  local a = from
-  while a >= 1 and a <= n do
-    if rows[a] then
-      return a
-    end
-    a = a + dir
+  if s.menu then
+    s.menu.set_rows(meta)
   end
 end
 
-local function draw_marker(lnum)
-  api.nvim_buf_clear_namespace(state.buf, mark_ns, 0, -1)
-  pcall(api.nvim_buf_set_extmark, state.buf, mark_ns, lnum - 1, 0, {
-    virt_text = { { "▸", "IndentTblMarker" } },
-    virt_text_pos = "overlay",
-  })
-end
-
+-- ── Cursor imantado (delegado en ui.menu) ──────────────────────────
 local function on_cursor()
-  local s = state
-  if not (s and s.win and api.nvim_win_is_valid(s.win)) then
-    return
+  if state and state.menu then
+    state.menu.on_cursor()
   end
-  local lnum = api.nvim_win_get_cursor(s.win)[1]
-  if not s.rows[lnum] then
-    local dir = (s.last and lnum < s.last) and -1 or 1
-    local target = scan(s.rows, lnum, dir) or scan(s.rows, lnum, -dir)
-    if target and target ~= lnum then
-      api.nvim_win_set_cursor(s.win, { target, 0 })
-      return
-    end
-    lnum = target or lnum
-  end
-  s.last = lnum
-  draw_marker(lnum)
 end
 
 local function current_row()
-  return state.rows[api.nvim_win_get_cursor(state.win)[1]]
+  return state and state.menu and state.menu.current()
 end
 
 -- Coloca el cursor en la fila de un filetype (tras re-render por añadir/quitar)
@@ -242,7 +212,8 @@ function M.open()
     wo = { cursorline = true, winhighlight = "CursorLine:IndentTblCursorLine", wrap = false },
   }).win
 
-  state = { buf = buf, win = win, rows = {}, last = nil }
+  state = { buf = buf, win = win, rows = {} }
+  state.menu = ui.menu.new({ buf = buf, win = win, marker = { text = "▸", hl = "IndentTblMarker" } })
   render()
   api.nvim_win_set_cursor(win, { 1, 0 })
   on_cursor()
