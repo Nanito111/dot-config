@@ -277,14 +277,19 @@ end
 function M.attach(win, buf)
   views[buf] = views[buf] or { rows = {}, last = nil }
   views[buf].win = win
-  local wo = vim.wo[win]
-  wo.winhighlight = "CursorLine:SettingsCursorLine"
-  wo.cursorline = true
-  wo.number = false
-  wo.relativenumber = false
-  wo.signcolumn = "no"
-  wo.list = false
-  wo.wrap = false
+  -- scope="local": win puede ser la ventana actual, y vim.wo[curwin] sobre una opción
+  -- window-local también fija el default global (como :set). Sin esto, mostrar la vista
+  -- de configuración apagaba números/cursorline en todo (y el panel leía ese global mal).
+  local function wset(name, val)
+    api.nvim_set_option_value(name, val, { win = win, scope = "local" })
+  end
+  wset("winhighlight", "CursorLine:SettingsCursorLine")
+  wset("cursorline", true)
+  wset("number", false)
+  wset("relativenumber", false)
+  wset("signcolumn", "no")
+  wset("list", false)
+  wset("wrap", false)
   render(buf)
   -- colocar el cursor en la primera opción
   api.nvim_win_set_cursor(win, { 1, 0 })

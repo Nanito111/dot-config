@@ -420,7 +420,9 @@ local function create_windows(title, preview, input, footer)
     footer_pos = footer and "center" or nil,
   })
   if not input then
-    vim.wo[res_win].cursorline = false -- el resaltado lo da el extmark de la selección
+    -- scope="local": res_win es la ventana actual; sin él fijaría el default global de
+    -- cursorline (y el panel de configuración leería ese global corrompido)
+    api.nvim_set_option_value("cursorline", false, { win = res_win, scope = "local" })
   end
 
   local preview_buf, preview_win

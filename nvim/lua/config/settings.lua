@@ -137,15 +137,40 @@ end
 -- Necesario para no confundir "valor guardado" con "default" al construir el registro.
 local vim_defaults = {}
 
+-- Opciones de Vim que expone el panel. Su default "de código" (el de options.lua) se
+-- fotografía al arrancar, ANTES de aplicar overrides y antes de que nada las cambie (los
+-- botones del statusline, un toggle previo…). Si no, `spec.default` se capturaría tarde,
+-- leyendo un global ya modificado, y el prune guardaría claves redundantes.
+-- Mantener en sync con las entradas `vimopt(...)` de build().
+local PANEL_VIM_OPTS = {
+  "wrap", "number", "relativenumber", "cursorline", "scrolloff", "ignorecase", "smartcase",
+}
+
 -- Reaplica al arrancar los overrides de opciones de Vim (claves "opt.*"): a diferencia de
 -- los settings con proveedor, nadie más los reaplica. Se llama pronto (tras options.lua).
--- Antes de sobrescribir, guarda el global actual como default real del código.
 function M.apply_vim_overrides()
   ensure_loaded()
+  -- 1) fotografiar el default de código de cada opción del panel
+  for _, name in ipairs(PANEL_VIM_OPTS) do
+    vim_defaults[name] = api.nvim_get_option_value(name, { scope = "global" })
+  end
+  -- 2) podar overrides opt.* que ya igualan ese default (redundantes: quedaron de una
+  --    versión anterior o de un default capturado mal)
+  local changed = false
+  for id in pairs(overrides) do
+    local name = id:match("^opt%.(.+)$")
+    if name and vim_defaults[name] ~= nil and vim.deep_equal(overrides[id], vim_defaults[name]) then
+      overrides[id] = nil
+      changed = true
+    end
+  end
+  if changed then
+    persist()
+  end
+  -- 3) aplicar los overrides que sí difieren del default
   for id, v in pairs(overrides) do
     local name = id:match("^opt%.(.+)$")
     if name then
-      vim_defaults[name] = api.nvim_get_option_value(name, { scope = "global" })
       pcall(function()
         vim.o[name] = v
       end)

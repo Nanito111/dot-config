@@ -214,7 +214,8 @@ function M.show_history()
     title = " Notificaciones ",
     title_pos = "center",
   })
-  vim.wo[win].cursorline = true
+  -- scope="local": win es la ventana actual; sin él fijaría el default global de cursorline
+  api.nvim_set_option_value("cursorline", true, { win = win, scope = "local" })
   for _, k in ipairs({ "q", "<Esc>" }) do
     vim.keymap.set("n", k, function()
       if api.nvim_win_is_valid(win) then

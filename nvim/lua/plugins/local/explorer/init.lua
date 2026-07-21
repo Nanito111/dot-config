@@ -274,16 +274,21 @@ function M.open()
   s.win = api.nvim_get_current_win()
   api.nvim_win_set_buf(s.win, s.buf)
   api.nvim_win_set_width(s.win, 35)
-  local wo = vim.wo[s.win]
-  wo.number = false
-  wo.relativenumber = false
-  wo.signcolumn = "no"
-  wo.cursorline = true
-  wo.winfixwidth = true
-  wo.list = false
+  -- scope="local": s.win es la ventana ACTUAL, y vim.wo[curwin] sobre una opción
+  -- window-local (number, cursorline…) también fija el DEFAULT GLOBAL, como :set. Eso
+  -- apagaba los números en todo (y el panel de configuración leía ese global corrompido).
+  local function wset(name, val)
+    api.nvim_set_option_value(name, val, { win = s.win, scope = "local" })
+  end
+  wset("number", false)
+  wset("relativenumber", false)
+  wset("signcolumn", "no")
+  wset("cursorline", true)
+  wset("winfixwidth", true)
+  wset("list", false)
   -- la línea marcada del explorador usa su propio grupo (prominente y estable,
   -- independiente del tinte por modo del cursor global)
-  wo.winhighlight = "CursorLine:ExplorerCursorLine"
+  wset("winhighlight", "CursorLine:ExplorerCursorLine")
 
   local function map(lhs, fn, desc)
     vim.keymap.set("n", lhs, fn, { buffer = s.buf, silent = true, nowait = true, desc = desc })

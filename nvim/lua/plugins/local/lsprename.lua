@@ -95,7 +95,9 @@ function M.confirm(files, title, encoding, on_confirm)
     footer = " j/k archivos · C-n/p cambios · ←→ · ⏎ ",
     footer_pos = "center",
   })
-  vim.wo[list_win].cursorline = true
+  -- scope="local": list_win es la ventana actual; vim.wo[curwin] también fijaría el
+  -- default global de cursorline (que el panel de configuración lee)
+  api.nvim_set_option_value("cursorline", true, { win = list_win, scope = "local" })
 
   local sel_file, sel_btn = 1, 1
   local function draw_btn()
