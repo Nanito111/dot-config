@@ -230,20 +230,17 @@ function M.open()
   end
   local width = 2 + w_ft + GAP + w_type + GAP + vim.fn.strdisplaywidth(HEAD.amount) + 4
 
-  local pos = ui.geom.center(width, height)
-  local win = api.nvim_open_win(buf, true, {
-    relative = "editor",
+  local win = ui.float.open({
+    buf = buf,
+    enter = true,
     width = width,
     height = height,
-    row = pos.row,
-    col = pos.col,
-    style = "minimal",
     title = " Indentación por tipo de archivo ",
     title_pos = "center",
     footer = " j/k · ␣ tipo · h/l cantidad · a añadir · x quitar · q cerrar ",
     footer_pos = "center",
-  })
-  ui.win.set_opts(win, { cursorline = true, winhighlight = "CursorLine:IndentTblCursorLine", wrap = false })
+    wo = { cursorline = true, winhighlight = "CursorLine:IndentTblCursorLine", wrap = false },
+  }).win
 
   state = { buf = buf, win = win, rows = {}, last = nil }
   render()

@@ -1,6 +1,7 @@
 -- Git blame de la línea actual en un popup flotante.
 local api = vim.api
 local signs = require("plugins.local.git.signs")
+local ui = require("plugins.local.ui")
 local M = {}
 
 local function reltime(ts)
@@ -45,27 +46,19 @@ local function open_popup(lines, line_hls)
   end
   vim.bo[pbuf].modifiable = false
 
-  local pwin = api.nvim_open_win(pbuf, true, {
+  ui.float.open({
+    buf = pbuf,
+    enter = true,
     relative = "cursor",
     row = 1,
     col = 0,
     width = width,
     height = #lines,
-    style = "minimal",
     title = "  git blame ",
     title_pos = "left",
+    close_keys = { "<Esc>", "q", "<C-c>" },
+    close_on_leave = true,
   })
-
-  local function close()
-    if api.nvim_win_is_valid(pwin) then
-      api.nvim_win_close(pwin, true)
-    end
-  end
-  for _, k in ipairs({ "<Esc>", "q", "<C-c>" }) do
-    vim.keymap.set("n", k, close, { buffer = pbuf, nowait = true, silent = true })
-  end
-  -- cerrar también si el foco sale del popup
-  api.nvim_create_autocmd("WinLeave", { buffer = pbuf, once = true, callback = close })
 end
 
 -- Muestra el blame de la línea actual en un popup

@@ -53,25 +53,25 @@ function M.confirm(msg, choices, default, opts)
     end
   end
 
-  -- backdrop opcional (por debajo del popup, que usa zindex 250)
-  local close_backdrop = (opts and opts.backdrop) and require("plugins.local.backdrop").open({ zindex = 240 }) or nil
-
   local buf = api.nvim_create_buf(false, true)
   api.nvim_buf_set_lines(buf, 0, -1, false, content)
   vim.bo[buf].modifiable = false
-  local win = api.nvim_open_win(buf, false, {
+  -- backdrop opcional (por debajo del popup, que usa zindex 250)
+  local fl = require("plugins.local.ui").float.open({
+    buf = buf,
     relative = "cursor",
     row = 1,
     col = 0,
     width = width,
     height = #content,
-    style = "minimal",
     title = " Confirmar ",
     title_pos = "center",
     focusable = false,
     noautocmd = true,
     zindex = 250,
+    backdrop = (opts and opts.backdrop) and { zindex = 240 } or nil,
   })
+  local win = fl.win
   local ns = api.nvim_create_namespace("confirm_btn")
   local function draw()
     api.nvim_buf_clear_namespace(buf, ns, 0, -1)
@@ -113,12 +113,7 @@ function M.confirm(msg, choices, default, opts)
     end
   end
 
-  if close_backdrop then
-    close_backdrop()
-  end
-  if api.nvim_win_is_valid(win) then
-    api.nvim_win_close(win, true)
-  end
+  fl.close()
   return result
 end
 

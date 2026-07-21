@@ -8,4 +8,5 @@ return {
   hl = require("plugins.local.ui.hl"),
   text = require("plugins.local.ui.text"),
   backdrop = require("plugins.local.ui.backdrop"),
+  float = require("plugins.local.ui.float"),
 }

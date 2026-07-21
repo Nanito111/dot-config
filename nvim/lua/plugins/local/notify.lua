@@ -204,25 +204,16 @@ function M.show_history()
   vim.bo[buf].modifiable = false
   vim.bo[buf].bufhidden = "wipe"
 
-  local win = api.nvim_open_win(buf, true, {
-    relative = "editor",
+  require("plugins.local.ui").float.open({
+    buf = buf,
+    enter = true,
     width = width,
     height = height,
-    row = math.floor((vim.o.lines - height) / 2),
-    col = math.floor((vim.o.columns - width) / 2),
-    style = "minimal",
     title = " Notificaciones ",
     title_pos = "center",
+    wo = { cursorline = true },
+    close_keys = { "q", "<Esc>" },
   })
-  -- scope="local": win es la ventana actual; sin él fijaría el default global de cursorline
-  api.nvim_set_option_value("cursorline", true, { win = win, scope = "local" })
-  for _, k in ipairs({ "q", "<Esc>" }) do
-    vim.keymap.set("n", k, function()
-      if api.nvim_win_is_valid(win) then
-        api.nvim_win_close(win, true)
-      end
-    end, { buffer = buf, nowait = true, silent = true })
-  end
 end
 
 -- Vacía el historial (no afecta los toasts en pantalla)
