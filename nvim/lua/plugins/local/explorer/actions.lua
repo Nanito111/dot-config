@@ -39,10 +39,11 @@ end
 
 -- ¿la tab actual tiene solo el explorador (sin ventana de edición)?
 function M.only_explorer()
+  local sidebar_ft = { explorer = true, settings = true }
   local exp, other = false, false
   for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
     if api.nvim_win_get_config(w).relative == "" then
-      if vim.bo[api.nvim_win_get_buf(w)].filetype == "explorer" then
+      if sidebar_ft[vim.bo[api.nvim_win_get_buf(w)].filetype] then
         exp = true
       else
         other = true

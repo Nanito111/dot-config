@@ -268,10 +268,10 @@ function M.create()
   -- OJO: no mapear <Space> aquí — es el leader; hacerlo impediría <leader>e y demás atajos
   map("r", reset)
   map("<Tab>", function()
-    require("plugins.local.explorer").switch_view()
+    require("plugins.local.sidebar").next()
   end)
   map("q", function()
-    require("plugins.local.explorer").close()
+    require("plugins.local.sidebar").close()
   end)
 
   api.nvim_create_autocmd("CursorMoved", {

@@ -135,8 +135,9 @@ autocmd("WinClosed", {
 autocmd("BufWinEnter", {
   group = group,
   callback = function(ev)
-    local s = cur()
-    if not (s and s.win and api.nvim_win_is_valid(s.win)) then
+    local sidebar = require("plugins.local.sidebar")
+    local sbwin = sidebar.win()
+    if not (sbwin and api.nvim_win_is_valid(sbwin)) then
       return
     end
     local win = api.nvim_get_current_win()
@@ -144,23 +145,26 @@ autocmd("BufWinEnter", {
     local name = api.nvim_buf_get_name(buf)
     local is_dir = name ~= "" and vim.fn.isdirectory(name) == 1
 
-    -- A) el explorador fue reemplazado en su propia ventana (por un :e accidental; NO por
-    --    el cambio de vista con <Tab> ni el auto-colapso, que son intencionales)
-    if win == s.win and buf ~= s.buf and buf ~= s.settings_buf and buf ~= s.collapsed_buf then
+    -- A) un buffer foráneo reemplazó la ventana del sidebar (por un :e accidental; NO por el
+    --    cambio de vista con <Tab> ni el auto-colapso, que son de sus propios buffers)
+    if win == sbwin and not sidebar.owns_buf(buf) then
       vim.schedule(function()
-        if not (api.nvim_win_is_valid(s.win) and s.buf and api.nvim_buf_is_valid(s.buf)) then
+        if not api.nvim_win_is_valid(sbwin) then
           return
         end
-        api.nvim_win_set_buf(s.win, s.buf) -- devolver el explorador
+        local vb = sidebar.active_buf() -- devolver la vista activa
+        if vb and api.nvim_buf_is_valid(vb) then
+          api.nvim_win_set_buf(sbwin, vb)
+        end
         if not is_dir and name ~= "" then
-          actions.open_file(s, name) -- el archivo va a la principal
+          actions.open_file({ win = sbwin }, name) -- el archivo va a la principal
         end
       end)
       return
     end
 
     -- B) :e <dir> en una ventana normal -> volver al archivo anterior
-    if is_dir and win ~= s.win then
+    if is_dir and win ~= sbwin then
       local alt = vim.fn.bufnr("#")
       local alt_ok = alt > 0
         and api.nvim_buf_is_valid(alt)
