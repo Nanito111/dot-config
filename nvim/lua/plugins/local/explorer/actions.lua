@@ -118,6 +118,20 @@ local function dir_of(s)
   return n.is_dir and n.path or vim.fn.fnamemodify(n.path, ":h")
 end
 
+-- Fija la carpeta bajo el cursor como cwd del workspace (tcd, por-tab). El explorador la
+-- sigue vía DirChanged -> follow(). Sobre un archivo, usa su carpeta padre.
+function M.set_cwd()
+  local s = cur()
+  if not s then
+    return
+  end
+  local dir = dir_of(s)
+  local ok = pcall(vim.cmd.tcd, vim.fn.fnameescape(dir))
+  if ok then
+    vim.notify("cwd: " .. vim.fn.fnamemodify(dir, ":~"), vim.log.levels.INFO, { title = "Explorador" })
+  end
+end
+
 -- Ruta relativa al cwd para mostrar en los prompts (más corta): "" si es el propio
 -- cwd, la parte relativa si está dentro, o la ruta absoluta si queda fuera del cwd.
 local function rel_cwd(path)
