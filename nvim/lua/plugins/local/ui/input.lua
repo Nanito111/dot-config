@@ -28,7 +28,7 @@ function M.open(opts)
   end
 
   local fl = float.open({
-    enter = true,
+    enter = opts.enter ~= false,
     relative = relative,
     width = width,
     height = 1,

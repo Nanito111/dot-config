@@ -210,19 +210,11 @@ end
 M.close = close
 
 local function field(title, row, width, col)
-  local buf = api.nvim_create_buf(false, true)
-  vim.b[buf].completion = false -- sin autocompletado (blink) en los campos
-  local win = api.nvim_open_win(buf, false, {
-    relative = "editor",
-    width = width,
-    height = 1,
-    row = row,
-    col = col,
-    style = "minimal",
-    title = " " .. title .. " ",
-    title_pos = "left",
+  local pr = require("plugins.local.ui").input.open({
+    prompt = title, relative = "editor", width = width, row = row, col = col,
+    title_pos = "left", enter = false,
   })
-  return buf, win
+  return pr.buf, pr.win
 end
 
 -- Abre el widget. `query` precarga el campo de búsqueda (palabra bajo el cursor o selección).

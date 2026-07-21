@@ -56,14 +56,15 @@ function M.confirm(files, title, encoding, on_confirm)
   -- Oscurecer el fondo (backdrop) para diferenciar el diálogo del buffer de código
   local close_backdrop = require("plugins.local.backdrop").open()
 
+  local ui = require("plugins.local.ui")
+
   -- ── Preview (derecha, sin foco): buffer scratch con el resultado ──
   local preview_buf = api.nvim_create_buf(false, true)
-  local preview_win = api.nvim_open_win(preview_buf, false, {
-    relative = "editor", row = row, col = col + list_w + 3, width = prev_w, height = H,
-    style = "minimal", title = " Preview ", title_pos = "center",
-  })
-  vim.wo[preview_win].cursorline = true
-  vim.wo[preview_win].number = true
+  local preview_win = ui.float.open({
+    buf = preview_buf, relative = "editor", row = row, col = col + list_w + 3, width = prev_w, height = H,
+    title = " Preview ", title_pos = "center",
+    wo = { cursorline = true, number = true },
+  }).win
 
   -- ── Lista + botones (izquierda, con foco) ──
   local list_buf = api.nvim_create_buf(false, true)
@@ -89,15 +90,13 @@ function M.confirm(files, title, encoding, on_confirm)
   vim.b[list_buf].completion = false
 
   local lh = math.min(total + 2, H)
-  local list_win = api.nvim_open_win(list_buf, true, {
-    relative = "editor", row = row, col = col, width = list_w, height = lh,
-    style = "minimal", title = " " .. title .. " ", title_pos = "left",
+  local list_win = ui.float.open({
+    buf = list_buf, enter = true, relative = "editor", row = row, col = col, width = list_w, height = lh,
+    title = " " .. title .. " ", title_pos = "left",
     footer = " j/k archivos · C-n/p cambios · ←→ · ⏎ ",
     footer_pos = "center",
-  })
-  -- scope="local": list_win es la ventana actual; vim.wo[curwin] también fijaría el
-  -- default global de cursorline (que el panel de configuración lee)
-  api.nvim_set_option_value("cursorline", true, { win = list_win, scope = "local" })
+    wo = { cursorline = true },
+  }).win
 
   local sel_file, sel_btn = 1, 1
   local function draw_btn()

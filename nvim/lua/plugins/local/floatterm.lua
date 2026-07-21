@@ -6,20 +6,17 @@ local state = {}
 
 -- Abre una ventana flotante centrada que muestra el buffer dado
 local function open_win(buf, title)
-  local cols = vim.o.columns
-  local rows = vim.o.lines
-  local width = math.floor(cols * 0.85)
-  local height = math.floor(rows * 0.9)
-  return api.nvim_open_win(buf, true, {
-    relative = "editor",
+  local width = math.floor(vim.o.columns * 0.85)
+  local height = math.floor(vim.o.lines * 0.9)
+  return require("plugins.local.ui").float.open({
+    buf = buf,
+    enter = true,
     width = width,
     height = height,
-    row = math.floor((rows - height - 2) / 2),
-    col = math.floor((cols - width) / 2),
-    style = "minimal",
+    row_off = 2,
     title = " " .. title .. " ",
     title_pos = "center",
-  })
+  }).win
 end
 
 -- Alterna un terminal flotante que ejecuta `cmd` (lista de argumentos).

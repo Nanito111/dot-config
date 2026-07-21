@@ -26,14 +26,13 @@ function M.pick(opts, on_choose)
 
   local tree_buf = api.nvim_create_buf(false, true)
   vim.bo[tree_buf].filetype = "dirpicker" -- NO "explorer" (evita peek/cursor-oculto del panel)
-  local tree_win = api.nvim_open_win(tree_buf, false, {
-    relative = "editor", width = width, height = tree_h, col = col, row = row + 3,
-    style = "minimal", title = " Carpetas ", title_pos = "center",
+  local tree_win = require("plugins.local.ui").float.open({
+    buf = tree_buf, relative = "editor", width = width, height = tree_h, col = col, row = row + 3,
+    title = " Carpetas ", title_pos = "center",
     footer = " ⏎ elegir · C-n/C-p mover · →/Tab abrir · C-o entrar · C-u subir · Esc ",
     footer_pos = "center",
-  })
-  vim.wo[tree_win].cursorline = true
-  vim.wo[tree_win].winhighlight = "CursorLine:ExplorerCursorLine"
+    wo = { cursorline = true, winhighlight = "CursorLine:ExplorerCursorLine" },
+  }).win
 
   local pr = require("plugins.local.ui").input.open({
     prompt = prompt, relative = "editor", width = width, row = row, col = col, title_pos = "left",

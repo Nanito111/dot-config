@@ -401,40 +401,37 @@ local function create_windows(title, preview, input, footer)
     prompt_buf, prompt_win = pr.buf, pr.win
   end
 
+  local ui = require("plugins.local.ui")
   local res_w = preview and math.floor(width * 0.4) or width
   local res_buf = api.nvim_create_buf(false, true)
-  local res_win = api.nvim_open_win(res_buf, not input, {
+  -- sin prompt, la lista tiene el foco y necesita cursorline apagado (scope local vía ui.win)
+  local res_win = ui.float.open({
+    buf = res_buf,
+    enter = not input,
     relative = "editor",
     width = res_w,
     height = height,
     row = res_row,
     col = col,
-    style = "minimal",
     title = (not input) and (" " .. title .. " ") or nil, -- el título va aquí si no hay prompt
     title_pos = (not input) and "center" or nil,
     footer = footer and (" " .. footer .. " ") or nil, -- pista de teclas opcional
     footer_pos = footer and "center" or nil,
-  })
-  if not input then
-    -- scope="local": res_win es la ventana actual; sin él fijaría el default global de
-    -- cursorline (y el panel de configuración leería ese global corrompido)
-    api.nvim_set_option_value("cursorline", false, { win = res_win, scope = "local" })
-  end
+    wo = (not input) and { cursorline = false } or nil,
+  }).win
 
   local preview_buf, preview_win
   if preview then
     preview_buf = api.nvim_create_buf(false, true)
-    preview_win = api.nvim_open_win(preview_buf, false, {
+    preview_win = ui.float.open({
+      buf = preview_buf,
       relative = "editor",
       width = width - res_w - 2, -- el resto, a la derecha (el -2 son los bordes)
       height = height,
       row = res_row,
       col = col + res_w + 2,
-      style = "minimal",
-    })
-    vim.wo[preview_win].number = true
-    vim.wo[preview_win].cursorline = false
-    vim.wo[preview_win].wrap = false
+      wo = { number = true, cursorline = false, wrap = false },
+    }).win
   end
 
   return prompt_buf, prompt_win, res_buf, res_win, preview_buf, preview_win
