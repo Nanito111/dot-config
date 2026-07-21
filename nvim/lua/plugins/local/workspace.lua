@@ -268,6 +268,34 @@ api.nvim_create_autocmd("TabClosed", {
   end,
 })
 
+-- Tab dueña de un terminal (que no tiene path): la que lo muestra en una ventana; si no
+-- está visible, la tab actual.
+local function term_owner(buf)
+  for _, tab in ipairs(api.nvim_list_tabpages()) do
+    for _, w in ipairs(api.nvim_tabpage_list_wins(tab)) do
+      if api.nvim_win_get_buf(w) == buf then
+        return tab
+      end
+    end
+  end
+  return api.nvim_get_current_tabpage()
+end
+
+-- Reconstruye el estado desde los buffers ya abiertos. Tras :ReloadConfig este módulo se
+-- recarga con las tablas vacías y los autocmds solo capturan buffers NUEVOS; sin esto los
+-- archivos y terminales ya abiertos desaparecen de los listados (siguen abiertos, invisibles).
+local function rebuild()
+  for _, buf in ipairs(api.nvim_list_bufs()) do
+    if is_file_buf(buf) then
+      local owner = owner_tab_by_path(api.nvim_buf_get_name(buf)) or api.nvim_get_current_tabpage()
+      record_exclusive(tab_buffers, buf, owner)
+    elseif is_tab_term(buf) then
+      record_exclusive(tab_terms, buf, term_owner(buf))
+    end
+  end
+end
+rebuild()
+
 -- Activar la tabline
 theme.register(set_hl)
 vim.o.showtabline = 2 -- mostrar siempre
