@@ -114,11 +114,13 @@ autocmd("WinClosed", {
       rebuilding = true
       pcall(function()
         api.nvim_set_current_win(s.win)
-        vim.cmd("noautocmd rightbelow vsplit") -- nueva ventana a la derecha del panel
+        -- la ventana del dashboard va al lado OPUESTO del panel (según su lado configurado)
+        local right = require("plugins.local.explorer").side() == "right"
+        vim.cmd(right and "noautocmd leftabove vsplit" or "noautocmd rightbelow vsplit")
         vim.cmd("noautocmd enew") -- buffer vacío (no el explorador) para el dashboard
         require("plugins.local.dashboard").open()
         if api.nvim_win_is_valid(s.win) then
-          api.nvim_win_set_width(s.win, 35) -- restaurar ancho del panel
+          api.nvim_win_set_width(s.win, require("plugins.local.explorer").width()) -- restaurar ancho
         end
         require("config.util").wipe_orphan_buffers()
       end)
@@ -143,8 +145,8 @@ autocmd("BufWinEnter", {
     local is_dir = name ~= "" and vim.fn.isdirectory(name) == 1
 
     -- A) el explorador fue reemplazado en su propia ventana (por un :e accidental; NO por
-    --    el cambio de vista a configuración con <Tab>, que es intencional)
-    if win == s.win and buf ~= s.buf and buf ~= s.settings_buf then
+    --    el cambio de vista con <Tab> ni el auto-colapso, que son intencionales)
+    if win == s.win and buf ~= s.buf and buf ~= s.settings_buf and buf ~= s.collapsed_buf then
       vim.schedule(function()
         if not (api.nvim_win_is_valid(s.win) and s.buf and api.nvim_buf_is_valid(s.buf)) then
           return

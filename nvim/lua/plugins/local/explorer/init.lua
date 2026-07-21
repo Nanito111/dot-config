@@ -35,6 +35,148 @@ end)
 -- oculto, atenuado sin foco y la winbar de pestañas.
 local SIDEBAR_FT = { explorer = true, settings = true }
 
+-- ── Ancho / lado / auto-colapso del panel lateral ──────────────────
+local DEFAULT_WIDTH = 35
+local COLLAPSED_WIDTH = 6 -- ancho al perder el foco (muestra el título en vertical)
+local VIEW_TITLE = { explorer = "EXPLORADOR", settings = "CONFIGURACIÓN" }
+local collapsed_ns = api.nvim_create_namespace("explorer_collapsed")
+
+function M.width()
+  return require("config.settings").value("ui.sidebar_width", DEFAULT_WIDTH)
+end
+function M.side()
+  return require("config.settings").value("ui.sidebar_side", "left")
+end
+
+-- Pinta el título de la vista en vertical (un carácter por línea, centrado)
+local function render_collapsed(s)
+  local buf = s.collapsed_buf
+  if not (buf and api.nvim_buf_is_valid(buf)) then
+    return
+  end
+  local title = VIEW_TITLE[s.view] or ""
+  local chars = vim.fn.split(title, "\\zs") -- por carácter (multibyte-safe)
+  local h = api.nvim_win_is_valid(s.win) and api.nvim_win_get_height(s.win) or #chars
+  local top = math.max(0, math.floor((h - #chars) / 2))
+  local col = math.max(0, math.floor((COLLAPSED_WIDTH - 1) / 2))
+  local lines = {}
+  for _ = 1, top do
+    lines[#lines + 1] = ""
+  end
+  for _, ch in ipairs(chars) do
+    lines[#lines + 1] = string.rep(" ", col) .. ch
+  end
+  vim.bo[buf].modifiable = true
+  api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.bo[buf].modifiable = false
+  api.nvim_buf_clear_namespace(buf, collapsed_ns, 0, -1)
+  for i = top, top + #chars - 1 do
+    pcall(api.nvim_buf_add_highlight, buf, collapsed_ns, "ExplorerRoot", i, 0, -1)
+  end
+end
+
+-- Encoge el panel y muestra el título en vertical (solo si no tiene el foco)
+local function collapse(s)
+  if not (s and s.win and api.nvim_win_is_valid(s.win)) or s.collapsed then
+    return
+  end
+  if api.nvim_get_current_win() == s.win then
+    return -- enfocado: no colapsar
+  end
+  if not (s.collapsed_buf and api.nvim_buf_is_valid(s.collapsed_buf)) then
+    s.collapsed_buf = api.nvim_create_buf(false, true)
+    vim.bo[s.collapsed_buf].bufhidden = "hide"
+    vim.bo[s.collapsed_buf].filetype = "explorer" -- hereda cursor oculto / sin breadcrumb
+  end
+  vim.wo[s.win].winbar = ""
+  api.nvim_win_set_buf(s.win, s.collapsed_buf)
+  -- limpiar la ventana explícitamente: el swap de buffer no dispara winopts sobre ESTA
+  -- ventana (corre sobre la actual, el editor), así que sin esto el panel colapsado
+  -- heredaba los números de línea del global. scope="local" para no tocar el default.
+  for name, val in pairs({ number = false, relativenumber = false, signcolumn = "no", list = false, cursorline = false }) do
+    pcall(api.nvim_set_option_value, name, val, { win = s.win, scope = "local" })
+  end
+  render_collapsed(s)
+  api.nvim_win_set_width(s.win, COLLAPSED_WIDTH)
+  s.collapsed = true
+end
+
+-- Restaura el panel a su ancho y contenido normal
+local function expand(s)
+  if not (s and s.win and api.nvim_win_is_valid(s.win)) or not s.collapsed then
+    return
+  end
+  s.collapsed = false
+  local view_buf = (s.view == "settings") and s.settings_buf or s.buf
+  if view_buf and api.nvim_buf_is_valid(view_buf) then
+    api.nvim_win_set_buf(s.win, view_buf)
+  end
+  api.nvim_win_set_width(s.win, M.width())
+  M.set_winbar(s)
+  if s.view == "settings" and s.settings_buf and api.nvim_buf_is_valid(s.settings_buf) then
+    require("plugins.local.settings.view").attach(s.win, s.settings_buf)
+  end
+end
+
+-- Reajusta el panel según el foco: expandir si es el activo, colapsar si no. Los flotantes
+-- (pickers) no cuentan como "salir" del panel.
+function M.refresh_sidebar()
+  local s = cur()
+  if not (s and s.win and api.nvim_win_is_valid(s.win)) then
+    return
+  end
+  local curwin = api.nvim_get_current_win()
+  if api.nvim_win_get_config(curwin).relative ~= "" then
+    return
+  end
+  if curwin == s.win then
+    expand(s)
+  else
+    collapse(s)
+  end
+end
+
+-- Fija (persiste + aplica) el ancho. No toca la ventana si está colapsada.
+function M.set_width(w)
+  require("config.settings").record("ui.sidebar_width", w, DEFAULT_WIDTH)
+  local s = cur()
+  if s and s.win and api.nvim_win_is_valid(s.win) and not s.collapsed then
+    api.nvim_win_set_width(s.win, w)
+  end
+end
+
+-- Cambia el lado (izquierda/derecha) del panel; lo mueve en vivo si está abierto.
+function M.set_side(side)
+  require("config.settings").record("ui.sidebar_side", side, "left")
+  local s = cur()
+  if s and s.win and api.nvim_win_is_valid(s.win) then
+    pcall(api.nvim_win_call, s.win, function()
+      vim.cmd("wincmd " .. (side == "right" and "L" or "H"))
+    end)
+    api.nvim_win_set_width(s.win, s.collapsed and COLLAPSED_WIDTH or M.width())
+  end
+end
+
+-- Ajusta el sidebar de un tab a los ajustes globales (lado + ancho). Lo llama TabEnter: el
+-- sidebar es POR TAB, y cambiar el lado/ancho desde el panel solo movía el del tab activo;
+-- los demás se reconcilian al entrar a su workspace (sin cerrar/reabrir).
+function M.reconcile_sidebar(s)
+  s = s or cur()
+  if not (s and s.win and api.nvim_win_is_valid(s.win)) then
+    return
+  end
+  local want = M.side()
+  local is_left = api.nvim_win_get_position(s.win)[2] == 0
+  if (want == "left") ~= is_left then
+    pcall(api.nvim_win_call, s.win, function()
+      vim.cmd("noautocmd wincmd " .. (want == "right" and "L" or "H"))
+    end)
+  end
+  -- reponer el ancho SIEMPRE: wincmd L/H puede re-ensanchar la ventana (también si está
+  -- colapsada, que debe conservar COLLAPSED_WIDTH)
+  api.nvim_win_set_width(s.win, s.collapsed and COLLAPSED_WIDTH or M.width())
+end
+
 -- ── Negrita en el item seleccionado (línea del cursor) ─────────────
 -- El bold de CursorLine no se propaga al texto (los highlights del nombre lo pisan),
 -- así que aplicamos un extmark de solo-negrita sobre la línea actual, combinándose
@@ -120,9 +262,19 @@ end
 
 api.nvim_create_autocmd({ "WinEnter", "BufEnter" }, {
   group = api.nvim_create_augroup("ExplorerFocus", { clear = true }),
-  desc = "Atenuar el explorador cuando no tiene el foco",
+  desc = "Atenuar y colapsar/expandir el panel según el foco",
   callback = function()
     apply_focus(SIDEBAR_FT[vim.bo[api.nvim_get_current_buf()].filetype] or false)
+    M.refresh_sidebar()
+  end,
+})
+
+-- Al cambiar de workspace: reconciliar el sidebar de ese tab al lado/ancho configurados
+-- (el ajuste desde el panel solo movió el del tab activo).
+api.nvim_create_autocmd("TabEnter", {
+  group = api.nvim_create_augroup("ExplorerReconcile", { clear = true }),
+  callback = function()
+    M.reconcile_sidebar()
   end,
 })
 
@@ -270,10 +422,10 @@ function M.open()
   vim.bo[s.buf].swapfile = false
   vim.bo[s.buf].filetype = "explorer"
 
-  vim.cmd("topleft vsplit")
+  vim.cmd(M.side() == "right" and "botright vsplit" or "topleft vsplit")
   s.win = api.nvim_get_current_win()
   api.nvim_win_set_buf(s.win, s.buf)
-  api.nvim_win_set_width(s.win, 35)
+  api.nvim_win_set_width(s.win, M.width())
   -- scope="local": s.win es la ventana ACTUAL, y vim.wo[curwin] sobre una opción
   -- window-local (number, cursorline…) también fija el DEFAULT GLOBAL, como :set. Eso
   -- apagaba los números en todo (y el panel de configuración leía ese global corrompido).
@@ -405,7 +557,7 @@ function M.close()
   if s.win and api.nvim_win_is_valid(s.win) then
     api.nvim_win_close(s.win, true)
   end
-  for _, b in ipairs({ s.buf, s.settings_buf }) do -- bufhidden=hide no se borran solos
+  for _, b in ipairs({ s.buf, s.settings_buf, s.collapsed_buf }) do -- bufhidden=hide no se borran solos
     if b and api.nvim_buf_is_valid(b) then
       pcall(api.nvim_buf_delete, b, { force = true })
     end

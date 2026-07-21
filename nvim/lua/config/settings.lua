@@ -25,6 +25,8 @@ local DEFAULTS = {
   ["ui.statusline_border"] = "round",
   ["ui.indentline"] = "\u{250a}",
   ["ui.picker_icons"] = true,
+  ["ui.sidebar_width"] = 35,
+  ["ui.sidebar_side"] = "left",
 }
 M.DEFAULTS = DEFAULTS
 
@@ -323,6 +325,45 @@ local function build()
           end,
           apply = picker.set_icons, -- set_icons ya persiste (bool: no hay preview/cancel)
           set = picker.set_icons,
+        }),
+        provider({
+          id = "ui.sidebar_width",
+          label = "Ancho del panel lateral",
+          type = "number",
+          default = DEFAULTS["ui.sidebar_width"],
+          min = 20,
+          max = 60,
+          step = 2,
+          get = function()
+            return require("plugins.local.explorer").width()
+          end,
+          apply = function(v)
+            require("plugins.local.explorer").set_width(v)
+          end,
+          set = function(v)
+            require("plugins.local.explorer").set_width(v)
+          end,
+        }),
+        provider({
+          id = "ui.sidebar_side",
+          label = "Lado del panel lateral",
+          type = "enum",
+          default = DEFAULTS["ui.sidebar_side"],
+          choices = function()
+            return { "left", "right" }
+          end,
+          display = function(v)
+            return v == "right" and "derecha" or "izquierda"
+          end,
+          get = function()
+            return require("plugins.local.explorer").side()
+          end,
+          apply = function(v)
+            require("plugins.local.explorer").set_side(v)
+          end,
+          set = function(v)
+            require("plugins.local.explorer").set_side(v)
+          end,
         }),
       },
     },
