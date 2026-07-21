@@ -86,7 +86,8 @@ local function draw()
   end
 
   local n = #s.matches
-  set_footer(s.find_win, n == 0 and "sin coincidencias" or string.format("%d/%d", s.idx, n))
+  local count = n == 0 and "sin coincidencias" or string.format("%d/%d", s.idx, n)
+  set_footer(s.find_win, "⏎ una · C-a todas · C-n/p navegar · " .. count)
 
   local cur = s.matches[s.idx]
   if cur and api.nvim_win_is_valid(s.origin) then
@@ -264,13 +265,14 @@ function M.open(query)
     local other = api.nvim_get_current_win() == find_win and repl_win or find_win
     api.nvim_set_current_win(other)
   end)
-  map("<CR>", function() move(1) end)
+  map("<CR>", replace_one) -- reemplaza la actual y avanza a la siguiente
   map("<C-n>", function() move(1) end)
   map("<Down>", function() move(1) end)
   map("<C-p>", function() move(-1) end)
   map("<Up>", function() move(-1) end)
-  map("<M-CR>", replace_one)
-  map("<M-a>", replace_all)
+  map("<C-a>", replace_all)
+  map("<M-CR>", replace_one) -- alias (por si el terminal sí entrega Alt+Enter)
+  map("<M-a>", replace_all) -- alias
   map("<M-e>", function() toggle("regex") end)
   map("<M-c>", function() toggle("case") end)
   map("<M-w>", function() toggle("word") end)
