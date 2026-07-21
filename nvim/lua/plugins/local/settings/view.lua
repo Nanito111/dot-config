@@ -100,9 +100,7 @@ local function render(buf)
   api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
   api.nvim_buf_clear_namespace(buf, ns, 0, -1)
-  for _, m in ipairs(marks) do
-    pcall(api.nvim_buf_set_extmark, buf, ns, m[1], m[2], m[3])
-  end
+  require("plugins.local.ui").hl.line_marks(buf, ns, marks)
   v.rows = rows
 end
 
@@ -287,19 +285,17 @@ end
 function M.attach(win, buf)
   views[buf] = views[buf] or { rows = {}, last = nil }
   views[buf].win = win
-  -- scope="local": win puede ser la ventana actual, y vim.wo[curwin] sobre una opción
-  -- window-local también fija el default global (como :set). Sin esto, mostrar la vista
-  -- de configuración apagaba números/cursorline en todo (y el panel leía ese global mal).
-  local function wset(name, val)
-    api.nvim_set_option_value(name, val, { win = win, scope = "local" })
-  end
-  wset("winhighlight", "CursorLine:SettingsCursorLine")
-  wset("cursorline", true)
-  wset("number", false)
-  wset("relativenumber", false)
-  wset("signcolumn", "no")
-  wset("list", false)
-  wset("wrap", false)
+  -- ui.win.set_opts usa scope="local": sin él, fijar estas window-local sobre la ventana
+  -- actual también cambiaría el default global (apagaba números/cursorline en todo).
+  require("plugins.local.ui").win.set_opts(win, {
+    winhighlight = "CursorLine:SettingsCursorLine",
+    cursorline = true,
+    number = false,
+    relativenumber = false,
+    signcolumn = "no",
+    list = false,
+    wrap = false,
+  })
   render(buf)
   -- colocar el cursor en la primera opción
   api.nvim_win_set_cursor(win, { 1, 0 })

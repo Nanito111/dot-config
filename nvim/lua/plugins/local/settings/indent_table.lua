@@ -6,6 +6,7 @@ local api = vim.api
 local indent = require("config.indent")
 local palette = require("config.palette")
 local theme = require("config.theme")
+local ui = require("plugins.local.ui")
 
 local M = {}
 local ns = api.nvim_create_namespace("indent_table")
@@ -83,9 +84,7 @@ local function render()
   api.nvim_buf_set_lines(s.buf, 0, -1, false, lines)
   vim.bo[s.buf].modifiable = false
   api.nvim_buf_clear_namespace(s.buf, ns, 0, -1)
-  for _, m in ipairs(marks) do
-    pcall(api.nvim_buf_set_extmark, s.buf, ns, m[1], m[2], m[3])
-  end
+  ui.hl.line_marks(s.buf, ns, marks)
   s.rows = meta
 end
 
@@ -208,8 +207,7 @@ function M.close()
     return
   end
   state = nil
-  pcall(api.nvim_win_close, s.win, true)
-  pcall(api.nvim_buf_delete, s.buf, { force = true })
+  ui.close(s.win, s.buf)
 end
 
 function M.open()
@@ -232,22 +230,20 @@ function M.open()
   end
   local width = 2 + w_ft + GAP + w_type + GAP + vim.fn.strdisplaywidth(HEAD.amount) + 4
 
+  local pos = ui.geom.center(width, height)
   local win = api.nvim_open_win(buf, true, {
     relative = "editor",
     width = width,
     height = height,
-    row = math.floor((vim.o.lines - height) / 2),
-    col = math.floor((vim.o.columns - width) / 2),
+    row = pos.row,
+    col = pos.col,
     style = "minimal",
     title = " Indentación por tipo de archivo ",
     title_pos = "center",
     footer = " j/k · ␣ tipo · h/l cantidad · a añadir · x quitar · q cerrar ",
     footer_pos = "center",
   })
-  -- scope="local": win es la ventana actual; sin esto también fijaría el default global
-  api.nvim_set_option_value("cursorline", true, { win = win, scope = "local" })
-  api.nvim_set_option_value("winhighlight", "CursorLine:IndentTblCursorLine", { win = win, scope = "local" })
-  api.nvim_set_option_value("wrap", false, { win = win, scope = "local" })
+  ui.win.set_opts(win, { cursorline = true, winhighlight = "CursorLine:IndentTblCursorLine", wrap = false })
 
   state = { buf = buf, win = win, rows = {}, last = nil }
   render()
