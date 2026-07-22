@@ -9,14 +9,13 @@ local theme = require("config.theme")
 local palette = require("config.palette")
 local M = {}
 
-local DEFAULT_WIDTH = 35
-local COLLAPSED_WIDTH = 6 -- ancho al perder el foco (muestra el título en vertical)
+local DEFAULT_WIDTH = 47
+local COLLAPSED_WIDTH = 4 -- ancho al perder el foco (muestra el título en vertical)
 local collapsed_ns = api.nvim_create_namespace("sidebar_collapsed")
 
 theme.register(function()
-  api.nvim_set_hl(0, "SidebarTabOn", { fg = palette.blue, bold = true }) -- pestaña activa
-  api.nvim_set_hl(0, "SidebarTabOff", { fg = palette.comment }) -- pestaña inactiva
-  api.nvim_set_hl(0, "SidebarCollapsedTitle", { fg = palette.yellow, bold = true }) -- título vertical
+  api.nvim_set_hl(0, "SidebarActivePanel", { fg = palette.blue, bold = true }) -- pestaña activa
+  api.nvim_set_hl(0, "SidebarInactivePanel", { fg = palette.comment }) -- pestaña inactiva
   -- cursor "oculto": mismo fg y bg (queda invisible sobre la línea marcada, en col 0 = espacio)
   api.nvim_set_hl(0, "SidebarHiddenCursor", { fg = palette.bg_highlight, bg = palette.bg_highlight })
 end)
@@ -24,6 +23,18 @@ end)
 -- ── Registro de vistas ─────────────────────────────────────────────
 local views = {} -- id -> view
 local order = {} -- ids ordenados por view.order
+
+---@class SidebarView
+---@field id string           Identificador único del panel
+---@field order? number       Posición en el sidebar (menor = antes, default 99)
+---@field icon string         Icono para la vista colapsada
+---@field filetype string     Filetype del buffer que crea este panel
+---@field create fun(win?: integer): integer Crea el contenido del panel en la ventana dada
+---@field attach? fun(win: integer, buf: integer) Llamado al re-adjuntar una ventana existente
+---@field on_focus? fun(win: integer, focused: boolean) Llamado al ganar/perder foco
+---@field destroy? fun()      Limpieza al cerrar el panel
+
+---@param view SidebarView
 function M.register(view)
   views[view.id] = view
   order = vim.tbl_keys(views)
@@ -97,7 +108,7 @@ function M.set_winbar(sb)
   end
   local cells = {}
   for i, id in ipairs(order) do
-    local hl = (sb.view == id) and "%#SidebarTabOn#" or "%#SidebarTabOff#"
+    local hl = (sb.view == id) and "%#SidebarActivePanel#" or "%#SidebarInactivePanel#"
     cells[#cells + 1] = string.format("%%%d@v:lua.__sidebar_go@ %s  %s  %%X%%*", i, hl, views[id].icon)
   end
   vim.wo[sb.win].winbar = "%=" .. table.concat(cells) .. "%="
@@ -115,24 +126,30 @@ local function render_collapsed(sb)
   if not (buf and api.nvim_buf_is_valid(buf)) then
     return
   end
-  local title = (views[sb.view] and views[sb.view].title) or ""
-  local chars = vim.fn.split(title, "\\zs") -- por carácter (multibyte-safe)
-  local h = api.nvim_win_is_valid(sb.win) and api.nvim_win_get_height(sb.win) or #chars
-  local top = math.max(0, math.floor((h - #chars) / 2))
+
+  local h = api.nvim_win_is_valid(sb.win) and api.nvim_win_get_height(sb.win) or #order
+  local top = math.max(0, math.floor((h - #order) / 2))
   local col = math.max(0, math.floor((COLLAPSED_WIDTH - 1) / 2))
   local lines = {}
   for _ = 1, top do
     lines[#lines + 1] = ""
   end
-  for _, ch in ipairs(chars) do
-    lines[#lines + 1] = string.rep(" ", col) .. ch
+  for _, id in ipairs(order) do
+    lines[#lines + 1] = string.rep(" ", col) .. views[id].icon
   end
   vim.bo[buf].modifiable = true
   api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
+
   api.nvim_buf_clear_namespace(buf, collapsed_ns, 0, -1)
-  for i = top, top + #chars - 1 do
-    pcall(api.nvim_buf_add_highlight, buf, collapsed_ns, "SidebarCollapsedTitle", i, 0, -1)
+
+  for i, id in ipairs(order) do
+    local line = top + i - 1  -- índice de línea 0-based
+    local hl = (sb.view == id) and "SidebarActivePanel" or "SidebarInactivePanel"
+      pcall(api.nvim_buf_set_extmark, buf, collapsed_ns, line, col, {
+          end_col = col + #views[id].icon,
+          hl_group = hl,
+      })
   end
 end
 

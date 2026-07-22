@@ -5,25 +5,37 @@ local api = vim.api
 local geom = require("plugins.local.ui.geom")
 local uiwin = require("plugins.local.ui.win")
 local close_all = require("plugins.local.ui.close")
-
 local M = {}
 
--- opts (todo opcional salvo width/height o que la ventana pueda medirse por contenido):
---   buf            buffer existente (si no, se crea un scratch y se borra al cerrar)
---   enter=false    entrar en la ventana al abrir
---   relative="editor" | "cursor" | "win" ; win / anchor / zindex   (passthrough)
---   width, height  tamaño
---   center=true    (solo relative="editor") centra si no se dan row/col ; row_off resta alto
---   row, col       posición explícita (desactiva el centrado)
---   style="minimal"
---   border         nil = hereda winborder global ; "none" = sin marco (marca w.borderless)
---   title, title_pos, footer, footer_pos
---   focusable, noautocmd
---   wo = { ... }   opciones window-local (se aplican con scope="local")
---   backdrop = true | { blend, zindex }   capa oscura, atada al close()
---   close_keys = { "<Esc>", "q", ... }    teclas (modo n) que cierran
---   close_on_leave = false                cerrar al salir del buffer (BufLeave once)
---   on_close(fn)   callback al cerrar
+---@class FloatOpts
+---@field buf? integer          Buffer existente (si no, se crea un scratch y se borra al cerrar)
+---@field enter? boolean        Entrar en la ventana al abrir (default: false)
+---@field relative? "editor"|"cursor"|"win"  Referencia de posición (default: "editor")
+---@field win? integer          Ventana de referencia (cuando relative="win")
+---@field anchor? "NW"|"NE"|"SW"|"SE"
+---@field zindex? integer
+---@field width integer         Ancho de la ventana
+---@field height integer        Alto de la ventana
+---@field center? boolean       Centrar en el editor (solo relative="editor", default: true)
+---@field row_off? integer      Offset vertical al centrar (resta al row calculado)
+---@field row? number           Posición vertical explícita (desactiva el centrado)
+---@field col? number           Posición horizontal explícita (desactiva el centrado)
+---@field style? "minimal"
+---@field border? string        nil = hereda winborder global; "none" = sin marco
+---@field title? string
+---@field title_pos? "left"|"center"|"right"
+---@field footer? string
+---@field footer_pos? "left"|"center"|"right"
+---@field focusable? boolean
+---@field noautocmd? boolean
+---@field wo? table             Opciones window-local (se aplican con scope="local")
+---@field backdrop? boolean|{ blend?: integer, zindex?: integer }  Capa oscura atada al close()
+---@field close_keys? string[]  Teclas (modo n) que llaman a close()
+---@field close_on_leave? boolean  Cerrar al salir del buffer via BufLeave (default: false)
+---@field on_close? fun()       Callback al cerrar
+
+---@param opts FloatOpts
+---@return { win: integer, buf: integer, close: fun() }
 function M.open(opts)
   opts = opts or {}
   local buf = opts.buf
@@ -32,7 +44,6 @@ function M.open(opts)
     buf = api.nvim_create_buf(false, true)
     owns_buf = true
   end
-
   local cfg = {
     relative = opts.relative or "editor",
     width = opts.width,
@@ -59,21 +70,18 @@ function M.open(opts)
   else
     cfg.row, cfg.col = opts.row, opts.col
   end
-
   local win = api.nvim_open_win(buf, opts.enter or false, cfg)
   if opts.border == "none" then
-    vim.w[win].borderless = true -- que el reborde de config.borders lo respete
+    vim.w[win].borderless = true
   end
   if opts.wo then
     uiwin.set_opts(win, opts.wo)
   end
-
   local backdrop_close
   if opts.backdrop then
     local bopts = type(opts.backdrop) == "table" and opts.backdrop or {}
     backdrop_close = require("plugins.local.ui.backdrop").open(bopts)
   end
-
   local closed = false
   local function close()
     if closed then
@@ -89,14 +97,12 @@ function M.open(opts)
       pcall(opts.on_close)
     end
   end
-
   for _, lhs in ipairs(opts.close_keys or {}) do
     vim.keymap.set("n", lhs, close, { buffer = buf, nowait = true, silent = true })
   end
   if opts.close_on_leave then
     api.nvim_create_autocmd("BufLeave", { buffer = buf, once = true, callback = close })
   end
-
   return { win = win, buf = buf, close = close }
 end
 

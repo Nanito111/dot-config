@@ -4,6 +4,8 @@ local signs = require("plugins.local.git.signs")
 local ui = require("plugins.local.ui")
 local M = {}
 
+local ns = api.nvim_create_namespace("git_blame")
+
 local function reltime(ts)
   if not ts then
     return "?"
@@ -41,7 +43,11 @@ local function open_popup(lines, line_hls)
   api.nvim_buf_set_lines(pbuf, 0, -1, false, lines)
   for i, hl in ipairs(line_hls) do
     if hl then
-      pcall(api.nvim_buf_add_highlight, pbuf, -1, hl, i - 1, 0, -1)
+      pcall(api.nvim_buf_set_extmark, pbuf, ns, i - 1, 0, {
+        end_row = i,
+        end_col = 0,
+        hl_group = hl,
+      })
     end
   end
   vim.bo[pbuf].modifiable = false

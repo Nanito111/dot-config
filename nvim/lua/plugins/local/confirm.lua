@@ -71,12 +71,14 @@ function M.confirm(msg, choices, default, opts)
     zindex = 250,
     backdrop = (opts and opts.backdrop) and { zindex = 240 } or nil,
   })
-  local win = fl.win
   local ns = api.nvim_create_namespace("confirm_btn")
   local function draw()
     api.nvim_buf_clear_namespace(buf, ns, 0, -1)
     local r = ranges[sel]
-    api.nvim_buf_add_highlight(buf, ns, "Visual", btn_row, r[1], r[2])
+    api.nvim_buf_set_extmark(buf, ns, btn_row, r[1], {
+      end_col = r[2],
+      hl_group = "Visual",
+    })
     vim.cmd("redraw")
   end
   draw()

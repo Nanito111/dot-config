@@ -266,8 +266,7 @@ end
 sidebar.register({
   id = "explorer",
   order = 1,
-  icon = "\u{f07b}", --
-  title = "EXPLORADOR",
+  icon = "\u{f07b}",
   filetype = "explorer",
   create = ex_create,
   attach = function(win)

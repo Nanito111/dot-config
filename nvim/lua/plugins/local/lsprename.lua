@@ -50,7 +50,7 @@ function M.confirm(files, title, encoding, on_confirm)
   local H = math.min(math.floor(vim.o.lines * 0.7), 26)
   local row = math.floor((vim.o.lines - H) / 2)
   local col = math.floor((vim.o.columns - W) / 2)
-  local list_w = math.max(24, math.min(38, math.floor(W * 0.32)))
+  local list_w = math.max(32, math.min(38, math.floor(W * 0.42)))
   local prev_w = W - list_w - 3
 
   -- Oscurecer el fondo (backdrop) para diferenciar el diálogo del buffer de código
@@ -101,7 +101,10 @@ function M.confirm(files, title, encoding, on_confirm)
   local sel_file, sel_btn = 1, 1
   local function draw_btn()
     api.nvim_buf_clear_namespace(list_buf, ns, 0, -1)
-    api.nvim_buf_add_highlight(list_buf, ns, "Visual", btn_row, ranges[sel_btn][1], ranges[sel_btn][2])
+    api.nvim_buf_set_extmark(list_buf, ns, btn_row, ranges[sel_btn][1], {
+      end_col = ranges[sel_btn][2],
+      hl_group = "Visual",
+    })
   end
   draw_btn()
 

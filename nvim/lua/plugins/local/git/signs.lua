@@ -85,7 +85,7 @@ local function refresh(buf)
   if vim.bo[buf].eol then
     cur = cur .. "\n" -- el archivo termina en newline (como lo guarda git)
   end
-  local unstaged = vim.diff(index, cur, { result_type = "indices", algorithm = "histogram" }) or {}
+  local unstaged = vim.text.diff(index, cur, { result_type = "indices", algorithm = "histogram" }) or {}
 
   -- ── cambios sin stagear (buffer vs índice) ──
   local added, changed, removed = 0, 0, 0
@@ -123,7 +123,7 @@ local function refresh(buf)
   if not committed then
     return -- sin versión en HEAD (p. ej. archivo recién añadido): no marcamos staged
   end
-  local staged = vim.diff(committed, index, { result_type = "indices", algorithm = "histogram" }) or {}
+  local staged = vim.text.diff(committed, index, { result_type = "indices", algorithm = "histogram" }) or {}
   for _, h in ipairs(staged) do
     local _, ch, si, ci = h[1], h[2], h[3], h[4]
     if ci == 0 then -- borrado staged: marcar junto a la línea del índice

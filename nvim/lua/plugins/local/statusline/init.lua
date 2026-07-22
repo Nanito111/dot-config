@@ -32,21 +32,22 @@ end
 -- ── Colores ────────────────────────────────────────────────────────
 -- Cada preset puede traer su propio `colors(pair, palette)`; si no, se usan estos.
 -- pair(grupo, fg, bg, opts?) define el grupo y su "<grupo>Sep" (medialunas).
-local function default_colors(pair)
-  pair("StNormal", palette.bg, palette.blue, { bold = true })
-  pair("StInsert", palette.bg, palette.green, { bold = true })
-  pair("StVisual", palette.bg, palette.purple, { bold = true })
-  pair("StReplace", palette.bg, palette.red, { bold = true })
-  pair("StCommand", palette.bg, palette.yellow, { bold = true })
-  pair("StTerminal", palette.bg, palette.cyan, { bold = true })
-  pair("StGit", palette.blue, palette.bg_highlight)
-  pair("StFile", palette.fg, palette.bg_highlight)
-  pair("StInfo", palette.fg, palette.bg_highlight)
+local function default_colors(pair, p)
+  p = p or palette
+  pair("StNormal", p.bg, p.blue, { bold = true })
+  pair("StInsert", p.bg, p.green, { bold = true })
+  pair("StVisual", p.bg, p.purple, { bold = true })
+  pair("StReplace", p.bg, p.red, { bold = true })
+  pair("StCommand", p.bg, p.yellow, { bold = true })
+  pair("StTerminal", p.bg, p.cyan, { bold = true })
+  pair("StGit", p.blue, p.bg_highlight)
+  pair("StFile", p.fg, p.bg_highlight)
+  pair("StInfo", p.fg, p.bg_highlight)
   -- diagnósticos: color de severidad sobre el fondo de píldora "info"
-  pair("StDiagError", palette.red, palette.bg_highlight)
-  pair("StDiagWarn", palette.yellow, palette.bg_highlight)
-  pair("StDiagInfo", palette.blue, palette.bg_highlight)
-  pair("StDiagHint", palette.cyan, palette.bg_highlight)
+  pair("StDiagError", p.red, p.bg_highlight)
+  pair("StDiagWarn", p.yellow, p.bg_highlight)
+  pair("StDiagInfo", p.blue, p.bg_highlight)
+  pair("StDiagHint", p.cyan, p.bg_highlight)
 end
 
 local active_colors = default_colors -- función de colores del preset activo

@@ -144,14 +144,30 @@ function M.render(s)
   vim.bo[s.buf].modifiable = false
 
   api.nvim_buf_clear_namespace(s.buf, ns, 0, -1)
-  api.nvim_buf_add_highlight(s.buf, ns, "ExplorerRoot", 0, 0, -1)
+  api.nvim_buf_set_extmark(s.buf, ns, 0, 0, {
+    end_row = 1,
+    end_col = 0,
+    hl_group = "ExplorerRoot",
+  })
   for i, h in ipairs(hls) do
-    -- línea de buffer = i (la 0 es la raíz)
-    api.nvim_buf_add_highlight(s.buf, ns, h.icon_hl, i, 0, h.icon_end) -- icono
+    -- icono
+    api.nvim_buf_set_extmark(s.buf, ns, i, 0, {
+      end_col = h.icon_end,
+      hl_group = h.icon_hl,
+    })
+    -- marca git
     if h.git_hl then
-      api.nvim_buf_add_highlight(s.buf, ns, h.git_hl, i, h.git_start, h.git_end) -- marca git (antes del nombre)
+      api.nvim_buf_set_extmark(s.buf, ns, i, h.git_start, {
+        end_col = h.git_end,
+        hl_group = h.git_hl,
+      })
     end
-    api.nvim_buf_add_highlight(s.buf, ns, h.type_hl, i, h.name_start, -1) -- nombre
+    -- nombre (hasta fin de línea)
+    api.nvim_buf_set_extmark(s.buf, ns, i, h.name_start, {
+      end_row = i + 1,
+      end_col = 0,
+      hl_group = h.type_hl,
+    })
   end
 
   if cursor then

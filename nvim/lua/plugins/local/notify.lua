@@ -108,9 +108,12 @@ local function show(msg, level, opts)
   local L = LEVELS[level] or LEVELS[levels.INFO]
 
   -- historial
-  history[#history + 1] = { msg = msg, level = level, time = os.date("%H:%M:%S"), hl = L.hl, icon = L.icon }
-  if #history > 100 then
-    table.remove(history, 1)
+  -- ephemeral = do not save in history
+  if not opts.ephemeral then
+    history[#history + 1] = { msg = msg, level = level, time = os.date("%H:%M:%S"), hl = L.hl, icon = L.icon }
+    if #history > 100 then
+      table.remove(history, 1)
+    end
   end
 
   local lines = to_lines(msg, MAX_W)
@@ -157,7 +160,7 @@ end
 
 -- ── Override de vim.notify ─────────────────────────────────────────
 -- Se ejecuta en vim.schedule para ser seguro desde contextos async/fast.
-vim.notify = function(msg, level, opts)
+vim.notify = function(msg, level, opts) ---@diagnostic disable-line
   if type(msg) == "table" then
     msg = table.concat(msg, "\n")
   end
@@ -170,7 +173,7 @@ end
 -- ── Historial (:Notifications) ─────────────────────────────────────
 function M.show_history()
   if #history == 0 then
-    vim.notify("Sin notificaciones todavía")
+    vim.notify("Sin notificaciones todavía", nil, { ephemeral = true})
     return
   end
   local lines, hls = {}, {}
@@ -199,7 +202,11 @@ function M.show_history()
   api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   local ns = api.nvim_create_namespace("notify_history")
   for i, hl in ipairs(hls) do
-    api.nvim_buf_add_highlight(buf, ns, hl, i - 1, 0, -1)
+    api.nvim_buf_set_extmark(buf, ns, i - 1, 0, {
+      end_row = i,
+      end_col = 0,
+      hl_group = hl,
+    })
   end
   vim.bo[buf].modifiable = false
   vim.bo[buf].bufhidden = "wipe"

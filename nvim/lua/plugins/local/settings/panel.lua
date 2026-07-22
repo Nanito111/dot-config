@@ -8,7 +8,6 @@ sidebar.register({
   id = "settings",
   order = 2,
   icon = "\u{f013}", --
-  title = "CONFIGURACIÓN",
   filetype = "settings",
   create = function()
     return require("plugins.local.settings.view").create()
