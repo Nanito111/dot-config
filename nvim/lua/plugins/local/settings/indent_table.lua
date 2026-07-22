@@ -233,9 +233,6 @@ function M.open()
   map("x", remove_ft)
   map("q", M.close)
   map("<Esc>", M.close)
-  -- neutralizar el ciclado de buffers global: es un flotante modal, Tab no debe cambiar de buffer
-  map("<Tab>", function() end)
-  map("<S-Tab>", function() end)
 
   api.nvim_create_autocmd("CursorMoved", { buffer = buf, callback = on_cursor })
 end
