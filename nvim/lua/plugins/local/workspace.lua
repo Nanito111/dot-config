@@ -70,9 +70,10 @@ function M.new(dir)
   vim.cmd("tcd " .. vim.fn.fnameescape(dir))
   api.nvim_tabpage_set_var(0, "name", vim.fn.fnamemodify(dir:gsub("[\\/]$", ""), ":t"))
 
-  -- mismo layout que al iniciar: panel explorador + dashboard
-  require("plugins.local.explorer").open()
+  -- mismo layout que al iniciar: panel lateral + dashboard
+  require("plugins.local.sidebar").open()
   vim.cmd("wincmd p")
+  require("plugins.local.sidebar").refresh()
   require("plugins.local.dashboard").open()
   vim.cmd("redrawtabline")
 end

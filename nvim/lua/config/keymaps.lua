@@ -303,6 +303,6 @@ end, { silent = true, desc = "Panel de configuración" })
 
 -- Explorador: alternar el foco entre el panel y el editor (lo abre si no está)
 map("n", "<leader>e", function()
-  require("plugins.local.explorer").focus()
-end, { silent = true, desc = "Alternar foco explorador/editor" })
+  require("plugins.local.sidebar").focus()
+end, { silent = true, desc = "Alternar foco sidebar/editor" })
 

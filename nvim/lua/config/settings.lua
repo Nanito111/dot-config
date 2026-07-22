@@ -361,13 +361,13 @@ local function build()
           max = 60,
           step = 2,
           get = function()
-            return require("plugins.local.explorer").width()
+            return require("plugins.local.sidebar").width()
           end,
           apply = function(v)
-            require("plugins.local.explorer").set_width(v)
+            require("plugins.local.sidebar").set_width(v)
           end,
           set = function(v)
-            require("plugins.local.explorer").set_width(v)
+            require("plugins.local.sidebar").set_width(v)
           end,
         }),
         provider({
@@ -382,13 +382,13 @@ local function build()
             return v == "right" and "derecha" or "izquierda"
           end,
           get = function()
-            return require("plugins.local.explorer").side()
+            return require("plugins.local.sidebar").side()
           end,
           apply = function(v)
-            require("plugins.local.explorer").set_side(v)
+            require("plugins.local.sidebar").set_side(v)
           end,
           set = function(v)
-            require("plugins.local.explorer").set_side(v)
+            require("plugins.local.sidebar").set_side(v)
           end,
         }),
       },

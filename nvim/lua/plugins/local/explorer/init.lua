@@ -55,7 +55,7 @@ local function explorer_help()
   end)
   local ch = require("plugins.local.whichkey.popup").read_key("Explorador", entries, true)
   if ch and ch ~= "" and ch ~= "\27" then
-    api.nvim_feedkeys(ch, "m", false)
+    api.nvim_feedkeys(string(ch), "m", false)
   end
 end
 
@@ -279,38 +279,6 @@ sidebar.register({
     ex_destroy()
   end,
 })
-
--- ── Fachada de compatibilidad (delegan en el sidebar) ──────────────
-function M.open()
-  sidebar.open("explorer")
-end
-function M.open_settings()
-  sidebar.open("settings")
-end
-function M.toggle()
-  sidebar.toggle()
-end
-function M.close()
-  sidebar.close()
-end
-function M.focus()
-  sidebar.focus()
-end
-function M.switch_view()
-  sidebar.next()
-end
-function M.width()
-  return sidebar.width()
-end
-function M.side()
-  return sidebar.side()
-end
-function M.set_width(w)
-  sidebar.set_width(w)
-end
-function M.set_side(side)
-  sidebar.set_side(side)
-end
 
 -- Re-enraíza el explorador de la tab actual al cwd (para tcd/cambio de tab)
 function M.follow()

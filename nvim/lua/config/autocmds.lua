@@ -60,14 +60,13 @@ autocmd({ "BufWritePost", "BufReadPost" }, {
   end,
 })
 
--- Abrir el explorador como panel lateral al iniciar (el dashboard se abre en la
--- ventana principal vía su propio VimEnter). El explorador y su layout/refresco
--- se autogestionan en plugins.local.explorer.
+-- Abrir el sidebar al iniciar (el dashboard se abre en la
+-- ventana principal vía su propio VimEnter)
 autocmd("VimEnter", {
   group = group,
-  desc = "Abrir el explorador al iniciar",
+  desc = "Arrancar el sidebar al iniciar",
   callback = function()
-    require("plugins.local.explorer").open()
+    require("plugins.local.sidebar").open()
     vim.cmd("wincmd p") -- devolver el foco a la ventana de edición
     require("plugins.local.sidebar").refresh() -- arrancar minimizado (el foco ya está fuera)
   end,
