@@ -87,7 +87,7 @@ usr_cmd("ReloadConfig", function(o)
   local ms = math.floor((uv.hrtime() - t0) / 1e6)
   local msg = o.bang and string.format("Config recargada (solo config) · %d ms", ms)
     or string.format("Config recargada · %d plugins · %d ms", reloaded, ms)
-  vim.notify(msg, vim.log.levels.INFO, { title = "ReloadConfig" })
+  vim.notify(msg, vim.log.levels.INFO, { title = "ReloadConfig", ephemeral = true })
 end, {
   bang = true,
   desc = "Recargar la config (con ! solo config, sin recargar plugins)",

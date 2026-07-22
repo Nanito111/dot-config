@@ -25,8 +25,9 @@ function M.toggle(name, cmd)
   -- Verificar que el binario exista antes de intentar arrancarlo
   if vim.fn.executable(cmd[1]) == 0 then
     vim.notify(
-      string.format("'%s' no está en el PATH; instálalo para usar esta función", cmd[1]),
-      vim.log.levels.ERROR
+      string.format("No está instalado o\nfalta '%s' agregarlo al PATH", cmd[1]),
+      vim.log.levels.INFO,
+      { title = name, ephemeral = true }
     )
     return
   end
