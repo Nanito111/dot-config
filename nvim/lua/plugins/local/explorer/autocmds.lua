@@ -112,19 +112,22 @@ autocmd("WinClosed", {
         return
       end
       rebuilding = true
-      pcall(function()
+      local sidebar = require("plugins.local.sidebar")
+      local ok, err = pcall(function()
         api.nvim_set_current_win(s.win)
         -- la ventana del dashboard va al lado OPUESTO del panel (según su lado configurado)
-        local right = require("plugins.local.explorer").side() == "right"
+        local right = sidebar.side() == "right"
         vim.cmd(right and "noautocmd leftabove vsplit" or "noautocmd rightbelow vsplit")
         vim.cmd("noautocmd enew") -- buffer vacío (no el explorador) para el dashboard
         require("plugins.local.dashboard").open()
-        if api.nvim_win_is_valid(s.win) then
-          api.nvim_win_set_width(s.win, require("plugins.local.explorer").width()) -- restaurar ancho
-        end
+        sidebar.refresh() -- el dashboard tiene el foco: el panel repone su ancho (colapsado)
         require("config.util").wipe_orphan_buffers()
       end)
       rebuilding = false
+      -- avisar en vez de callar: un fallo aquí deja el panel como única ventana
+      if not ok then
+        vim.notify("No se pudo restaurar el dashboard: " .. tostring(err), vim.log.levels.WARN)
+      end
     end)
   end,
 })
