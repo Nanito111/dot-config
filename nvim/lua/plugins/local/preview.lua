@@ -55,11 +55,7 @@ function M.load(buf, lines, opts)
   end)
 
   if opts.win and api.nvim_win_is_valid(opts.win) then
-    for opt, val in pairs(WIN_OPTS) do
-      pcall(function()
-        vim.wo[opts.win][opt] = val
-      end)
-    end
+    require("plugins.local.ui.win").set_opts(opts.win, WIN_OPTS)
   end
 end
 

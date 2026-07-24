@@ -146,8 +146,10 @@ local function show(msg, level, opts)
     noautocmd = true,
     zindex = 200,
   })
-  vim.wo[win].winhighlight = "NormalFloat:NormalFloat,FloatBorder:" .. L.hl .. ",FloatTitle:" .. L.hl
-  vim.wo[win].wrap = false
+  require("plugins.local.ui.win").set_opts(win, {
+    winhighlight = "NormalFloat:NormalFloat,FloatBorder:" .. L.hl .. ",FloatTitle:" .. L.hl,
+    wrap = false,
+  })
 
   local toast = { win = win, height = #body, width = width }
   active[#active + 1] = toast

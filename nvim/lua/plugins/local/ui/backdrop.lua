@@ -35,8 +35,10 @@ function M.open(opts)
     return function() end
   end
   vim.w[win].borderless = true -- capa a pantalla completa: nunca lleva marco (ver config.borders)
-  vim.wo[win].winblend = opts.blend or default_blend()
-  vim.wo[win].winhighlight = "Normal:Backdrop,NormalNC:Backdrop,EndOfBuffer:Backdrop"
+  require("plugins.local.ui.win").set_opts(win, {
+    winblend = opts.blend or default_blend(),
+    winhighlight = "Normal:Backdrop,NormalNC:Backdrop,EndOfBuffer:Backdrop",
+  })
 
   return function()
     pcall(api.nvim_win_close, win, true)

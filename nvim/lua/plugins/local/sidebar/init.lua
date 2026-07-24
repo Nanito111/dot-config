@@ -7,6 +7,7 @@
 local api = vim.api
 local theme = require("config.theme")
 local palette = require("config.palette")
+local uiwin = require("plugins.local.ui.win") -- set_opts: window-local sin tocar el default global
 local M = {}
 
 local DEFAULT_WIDTH = 47
@@ -111,7 +112,7 @@ function M.set_winbar(sb)
     local hl = (sb.view == id) and "%#SidebarActivePanel#" or "%#SidebarInactivePanel#"
     cells[#cells + 1] = string.format("%%%d@v:lua.__sidebar_go@ %s  %s  %%X%%*", i, hl, views[id].icon)
   end
-  vim.wo[sb.win].winbar = "%=" .. table.concat(cells) .. "%="
+  uiwin.set_opts(sb.win, { winbar = "%=" .. table.concat(cells) .. "%=" })
 end
 function _G.__sidebar_go(minwid)
   local id = order[minwid]
@@ -166,7 +167,7 @@ local function collapse(sb)
   end
   vim.bo[sb.collapsed_buf].filetype = (views[sb.view] and views[sb.view].filetype) or "sidebar"
   sb.saved_cursor = api.nvim_win_get_cursor(sb.win) -- restaurar al expandir
-  vim.wo[sb.win].winbar = ""
+  uiwin.set_opts(sb.win, { winbar = "" })
   api.nvim_win_set_buf(sb.win, sb.collapsed_buf)
   -- limpiar la ventana: el swap de buffer no dispara winopts sobre ESTA ventana (corre sobre
   -- la actual, el editor), así que sin esto el panel colapsado heredaría los números del global.

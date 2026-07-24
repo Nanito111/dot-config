@@ -22,7 +22,7 @@ autocmd("FileType", {
   callback = function(args)
     for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
       if vim.api.nvim_win_get_config(win).relative ~= "" then -- es flotante
-        vim.wo[win].concealcursor = "nvic"
+        require("plugins.local.ui.win").set_opts(win, { concealcursor = "nvic" })
       end
     end
   end,

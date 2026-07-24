@@ -160,7 +160,7 @@ local function peek_update()
   else
     peek_win = api.nvim_open_win(peek_buf, false, cfg)
     vim.w[peek_win].borderless = true
-    vim.wo[peek_win].winhighlight = "NormalFloat:ExplorerPeek"
+    require("plugins.local.ui.win").set_opts(peek_win, { winhighlight = "NormalFloat:ExplorerPeek" })
   end
 end
 
