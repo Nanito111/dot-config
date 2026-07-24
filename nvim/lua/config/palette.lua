@@ -75,6 +75,79 @@ local function luminance(hex)
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255
 end
 
+-- ── Tono: que un color con nombre sea de verdad de ese color ───────
+-- Los temas no garantizan que el grupo del que derivamos tenga el tono que promete el
+-- nombre: en carbonfox `Special` es azul (no cyan) y `Type` es teal (no amarillo), así que
+-- cyan salía idéntico a blue y los avisos no eran amarillos. Se valida el tono y, si ningún
+-- candidato encaja, se sintetiza uno.
+local function to_hsl(hex)
+  local r, g, b = rgb(hex)
+  r, g, b = r / 255, g / 255, b / 255
+  local mx, mn = math.max(r, g, b), math.min(r, g, b)
+  local l, d = (mx + mn) / 2, mx - mn
+  if d < 1e-6 then
+    return 0, 0, l -- gris: el tono no significa nada
+  end
+  local h
+  if mx == r then
+    h = ((g - b) / d) % 6
+  elseif mx == g then
+    h = (b - r) / d + 2
+  else
+    h = (r - g) / d + 4
+  end
+  local s = d / (1 - math.abs(2 * l - 1))
+  return h * 60 % 360, s, l
+end
+
+local function from_hsl(h, s, l)
+  local c = (1 - math.abs(2 * l - 1)) * s
+  local x = c * (1 - math.abs((h / 60) % 2 - 1))
+  local m = l - c / 2
+  local r, g, b
+  if h < 60 then r, g, b = c, x, 0
+  elseif h < 120 then r, g, b = x, c, 0
+  elseif h < 180 then r, g, b = 0, c, x
+  elseif h < 240 then r, g, b = 0, x, c
+  elseif h < 300 then r, g, b = x, 0, c
+  else r, g, b = c, 0, x end
+  return string.format("#%02x%02x%02x", clamp((r + m) * 255), clamp((g + m) * 255), clamp((b + m) * 255))
+end
+
+-- Banda de tono de cada nombre (grados). `red` cruza el 0, de ahí el caso envolvente.
+-- Son anchas a propósito: solo deben rechazar mentiras gordas (un teal llamado "amarillo"),
+-- no los tonos legítimos de cada tema — hay rojos rosados (#ee5396, 334°) y amarillos ámbar
+-- (#e0af68, 36°) que son el rojo/amarillo de su tema y hay que respetar.
+local BANDS = {
+  red = { 330, 15 },
+  orange = { 15, 35 },
+  yellow = { 35, 70 },
+  green = { 70, 165 },
+  cyan = { 165, 200 },
+  blue = { 200, 255 },
+  purple = { 255, 330 },
+}
+
+local function in_band(hex, band)
+  local h, s = to_hsl(hex)
+  if s < 0.12 then
+    return false -- casi gris: no sirve como color con nombre
+  end
+  local lo, hi = band[1], band[2]
+  if lo > hi then -- banda que cruza el 0 (rojo)
+    return h >= lo or h < hi
+  end
+  return h >= lo and h < hi
+end
+
+local function band_center(band)
+  local lo, hi = band[1], band[2]
+  if lo > hi then
+    return ((lo + hi + 360) / 2) % 360
+  end
+  return (lo + hi) / 2
+end
+
 -- ── Recalcular la paleta desde el tema activo ──────────────────────
 function M.refresh()
   local base_bg = bg("Normal") or M.bg
@@ -85,13 +158,44 @@ function M.refresh()
   M.fg = base_fg
   M.comment = fg("Comment") or blend(base_fg, base_bg, 0.55)
 
-  M.blue = fg("Function", "@function", "Identifier", "DiagnosticInfo") or M.blue
-  M.cyan = fg("Special", "@string.special", "DiagnosticHint", "SpecialChar") or M.cyan
-  M.green = fg("String", "@string", "DiagnosticOk", "diffAdded") or M.green
-  M.purple = fg("Keyword", "@keyword", "Statement", "@constant.macro") or M.purple
-  M.yellow = fg("Type", "@type", "DiagnosticWarn", "WarningMsg") or M.yellow
-  M.red = fg("DiagnosticError", "Error", "@keyword.return", "ErrorMsg") or M.red
-  M.orange = fg("@number", "Number", "Constant", "@constant") or blend(M.red, M.yellow, 0.5)
+  -- Colores con NOMBRE DE TONO: se toma el primer grupo del tema cuyo color caiga de verdad
+  -- en la banda del nombre. Sin ese filtro los temas mienten (en carbonfox `Special` es azul
+  -- y `Type` teal), y dos nombres acababan con el mismo color.
+  local CANDIDATES = {
+    blue = { "Function", "@function", "Identifier", "DiagnosticInfo" },
+    cyan = { "Special", "@string.special", "DiagnosticHint", "SpecialChar" },
+    green = { "String", "@string", "DiagnosticOk", "diffAdded" },
+    purple = { "Keyword", "@keyword", "Statement", "@constant.macro" },
+    yellow = { "Type", "@type", "DiagnosticWarn", "WarningMsg" },
+    red = { "DiagnosticError", "Error", "@keyword.return", "ErrorMsg" },
+    orange = { "@number", "Number", "Constant", "@constant" },
+  }
+  local derived = {}
+  for name, groups in pairs(CANDIDATES) do
+    for _, g in ipairs(groups) do
+      local c = fg(g)
+      if c and in_band(c, BANDS[name]) then
+        derived[name] = c
+        break
+      end
+    end
+  end
+
+  -- Saturación/luminosidad medias de lo que SÍ se derivó: los tonos que haya que inventar
+  -- (carbonfox no tiene ni un amarillo) salen con el carácter del tema, no con un color
+  -- ajeno fijo. Sirve igual en temas claros, donde esa media es más oscura.
+  local ssum, lsum, n = 0, 0, 0
+  for _, c in pairs(derived) do
+    local _, s, l = to_hsl(c)
+    ssum, lsum, n = ssum + s, lsum + l, n + 1
+  end
+  local avg_s = n > 0 and ssum / n or 0.60
+  local avg_l = n > 0 and lsum / n or (light and 0.40 or 0.65)
+
+  -- Cada nombre queda confinado a su banda, así que ya no pueden colisionar entre sí.
+  for name, band in pairs(BANDS) do
+    M[name] = derived[name] or from_hsl(band_center(band), avg_s, avg_l)
+  end
   M.cyan_bright = blend(M.cyan, "#ffffff", 0.15)
 
   -- Fondos derivados: preferir grupos del tema; si no, oscurecer/aclarar la base
