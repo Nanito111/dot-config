@@ -28,6 +28,11 @@ set_hl()
 local SWITCH_ON = "\u{f205}" --
 local SWITCH_OFF = "\u{f204}" --
 
+-- Columnas libres entre el valor y el borde derecho de la ventana (las etiquetas llevan 2
+-- de sangrado a la izquierda; a la derecha va algo más porque el separador de ventana
+-- "come" espacio visualmente y los valores quedaban pegados).
+local RIGHT_PAD = 3
+
 -- ── Valor mostrado ─────────────────────────────────────────────────
 local function value_text(spec)
   if spec.type == "action" then
@@ -71,7 +76,7 @@ local function render(buf)
       local label = "  " .. spec.label
       local marker = spec.overridden() and "● " or ""
       local val = marker .. value_text(spec)
-      local pad = width - 1 - vim.fn.strdisplaywidth(label) - vim.fn.strdisplaywidth(val)
+      local pad = width - RIGHT_PAD - vim.fn.strdisplaywidth(label) - vim.fn.strdisplaywidth(val)
       if pad < 1 then
         pad = 1
       end
