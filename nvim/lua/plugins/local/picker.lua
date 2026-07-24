@@ -456,7 +456,8 @@ end
 --   fuzzy = true?,          -- true = coincidencia fuzzy; false = exacta (substring)
 --   footer?,                -- texto de pie (pista de teclas) en la ventana de la lista
 --   keymaps = { [lhs] = fn(ctx) }?, -- teclas extra; ctx = { item(), index(), count(),
---                           --   list_win/buf, preview_win/buf, move(d), confirm(), close() }
+--                           --   list_win/buf, preview_win/buf, move(d), confirm(), close(),
+--                           --   set_items(list) (rehace la lista in situ, p. ej. al borrar) }
 --   backdrop = false?,      -- true = oscurece el editor detrás (modal). No usar en pickers
 --                           --   que previsualizan el aspecto del editor (tema/statusline).
 -- }
@@ -569,6 +570,21 @@ function M.pick(opts)
       move = function(d) if state then move(d) end end,
       confirm = function() if state then confirm() end end,
       close = close,
+      -- Rehace la lista sin cerrar el picker (borrar un item y seguir). refilter() deja el
+      -- cursor en la 1.ª fila, así que se repone donde estaba (acotado al nuevo total).
+      set_items = function(list)
+        local s = state
+        if not s then
+          return
+        end
+        local keep = s.idx
+        s.items = list
+        refilter()
+        if s.count > 0 then
+          s.idx = math.max(1, math.min(keep, s.count))
+          highlight()
+        end
+      end,
     }
     local target = input and prompt_buf or res_buf
     local modes = input and { "i", "n" } or { "n" }
@@ -626,14 +642,21 @@ end
 
 -- ── Selector de buffers ────────────────────────────────────────────
 function M.buffers()
-  local items, map = {}, {}
-  -- solo los buffers del workspace (tab) actual
-  for _, b in ipairs(require("plugins.local.workspace").tab_buffers()) do
-    local name = api.nvim_buf_get_name(b)
-    local disp = (name ~= "") and vim.fn.fnamemodify(name, ":.") or ("[No Name] " .. b)
-    items[#items + 1] = disp
-    map[disp] = b
+  local map = {}
+  -- solo los buffers del workspace (tab) actual. Se rehace tras cerrar uno con <C-d>.
+  local function build()
+    local items = {}
+    map = {}
+    for _, b in ipairs(require("plugins.local.workspace").tab_buffers()) do
+      local name = api.nvim_buf_get_name(b)
+      local disp = (name ~= "") and vim.fn.fnamemodify(name, ":.") or ("[No Name] " .. b)
+      items[#items + 1] = disp
+      map[disp] = b
+    end
+    return items
   end
+
+  local items = build()
   if #items == 0 then
     vim.notify("No hay buffers en este workspace", vim.log.levels.INFO)
     return
@@ -642,11 +665,35 @@ function M.buffers()
     title = "Buffers",
     items = items,
     backdrop = true,
+    footer = "⏎ abrir · C-d cerrar",
     icon_path = function(item)
       local b = map[item]
       local name = b and api.nvim_buf_get_name(b)
       return (name and name ~= "") and name or nil
     end,
+    keymaps = {
+      -- cerrar el buffer resaltado sin salir del listado
+      ["<C-d>"] = function(ctx)
+        local item = ctx.item()
+        local b = item and map[item]
+        if not (b and api.nvim_buf_is_valid(b)) then
+          return
+        end
+        -- con cambios sin guardar no se descarta nada a ciegas: aquí no cabe un diálogo
+        -- (estamos dentro del picker), así que se avisa y se deja al usuario decidir.
+        if vim.bo[b].modified then
+          vim.notify("«" .. item .. "» tiene cambios sin guardar", vim.log.levels.WARN, { title = "Buffers" })
+          return
+        end
+        require("config.bufclose").close_buf(b)
+        local rest = build()
+        if #rest == 0 then
+          ctx.close()
+          return
+        end
+        ctx.set_items(rest)
+      end,
+    },
     on_select = function(item, origin)
       local b = map[item]
       if b and api.nvim_buf_is_valid(b) then
