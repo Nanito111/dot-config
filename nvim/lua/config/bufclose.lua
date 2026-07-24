@@ -6,13 +6,28 @@ local M = {}
 
 -- Cierra un buffer CONCRETO (no tiene por qué ser el actual; lo usa el listado de buffers).
 -- Las ventanas que lo muestren pasan a un vecino del MISMO workspace, o al dashboard si no
--- queda ninguno. No pregunta nada: quien llama decide qué hacer con los cambios sin guardar.
+-- queda ninguno. Si tiene cambios sin guardar, pide confirmación. Devuelve true si se cerró.
 function M.close_buf(buf, opts)
   opts = opts or {}
   if not api.nvim_buf_is_valid(buf) then
-    return
+    return false
   end
   local force = opts.force or vim.bo[buf].buftype == "terminal"
+
+  -- Buffer modificado: confirmar antes de descartar los cambios
+  if not force and vim.bo[buf].modified then
+    local name = api.nvim_buf_get_name(buf)
+    local label = name ~= "" and ("«" .. vim.fn.fnamemodify(name, ":t") .. "»") or "El buffer"
+    local ans = require("plugins.local.confirm").confirm(
+      label .. " tiene cambios sin guardar.\n¿Cerrar de todos modos?",
+      "&Si\n&No",
+      2
+    )
+    if ans ~= 1 then
+      return false
+    end
+    force = true
+  end
 
   -- Elegir el siguiente buffer del MISMO workspace (no saltar a otro): tomamos la
   -- lista de la tab y saltamos al vecino del que se cierra.
@@ -47,29 +62,13 @@ function M.close_buf(buf, opts)
   end
 
   pcall(api.nvim_buf_delete, buf, { force = force })
+  return true
 end
 
 -- Cierra el buffer actual. opts.force = saltar la confirmación de cambios sin guardar
 -- (equivale al ! de :bd). Los terminales se fuerzan siempre (su job bloquea el borrado).
 function M.close(opts)
-  opts = opts or {}
-  local cur = api.nvim_get_current_buf()
-  local force = opts.force or vim.bo[cur].buftype == "terminal"
-
-  -- Buffer modificado: confirmar antes de descartar los cambios
-  if not force and vim.bo[cur].modified then
-    local ans = require("plugins.local.confirm").confirm(
-      "El buffer tiene cambios sin guardar. ¿Cerrar de todos modos?",
-      "&Si\n&No",
-      2
-    )
-    if ans ~= 1 then
-      return
-    end
-    force = true
-  end
-
-  M.close_buf(cur, { force = force })
+  return M.close_buf(api.nvim_get_current_buf(), opts)
 end
 
 return M

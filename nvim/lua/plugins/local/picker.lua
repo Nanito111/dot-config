@@ -679,13 +679,11 @@ function M.buffers()
         if not (b and api.nvim_buf_is_valid(b)) then
           return
         end
-        -- con cambios sin guardar no se descarta nada a ciegas: aquí no cabe un diálogo
-        -- (estamos dentro del picker), así que se avisa y se deja al usuario decidir.
-        if vim.bo[b].modified then
-          vim.notify("«" .. item .. "» tiene cambios sin guardar", vim.log.levels.WARN, { title = "Buffers" })
+        -- si tiene cambios sin guardar, close_buf abre el popup de confirmación (su flotante
+        -- no roba el foco, así que el picker sigue abierto detrás) y devuelve false si se cancela
+        if not require("config.bufclose").close_buf(b) then
           return
         end
-        require("config.bufclose").close_buf(b)
         local rest = build()
         if #rest == 0 then
           ctx.close()
