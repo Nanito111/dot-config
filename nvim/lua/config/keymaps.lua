@@ -8,11 +8,15 @@ map("n", "<leader>", function()
   require("plugins.local.whichkey").show()
 end, { silent = true, nowait = true, desc = "which-key" })
 
--- which-key también para prefijos integrados (g, z, <C-w>)
+-- which-key también para prefijos integrados (g, z, <C-w>). SIN nowait, al revés que el
+-- líder: estos prefijos tienen secuencias nativas (gcc, gg, zz, <C-w>v...) y nowait haría
+-- que Vim disparase este mapeo al instante, sin poder desambiguar gc de gcc — gc devuelve
+-- "g@" y quedaba un operador colgado. Esperando timeoutlen, teclear rápido resuelve nativo
+-- y la pausa abre el popup (que es lo que popup.read_key ya asume en el primer nivel).
 for _, p in ipairs({ "g", "z", "<C-w>" }) do
   map("n", p, function()
     require("plugins.local.whichkey").show(p)
-  end, { silent = true, nowait = true, desc = "which-key (" .. p .. ")" })
+  end, { silent = true, desc = "which-key (" .. p .. ")" })
 end
 
 -- Moverse entre ventanas sin Ctrl-W
