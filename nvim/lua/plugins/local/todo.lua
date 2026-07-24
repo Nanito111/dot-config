@@ -7,8 +7,8 @@ local M = {}
 
 local ns = api.nvim_create_namespace("todo")
 
--- Palabra clave -> grupo de highlight. Mayúsculas y palabra completa (evita "todo" en prosa
--- o "TODO" dentro de "TODOS"). WARN no pisa a WARNING gracias a la frontera de palabra.
+-- Palabra clave -> grupo de highlight. En MAYÚSCULAS y seguida de ':' (así "TODO" suelto en
+-- prosa, o dentro de "TODOS", no cuenta). Los dos puntos entran en el resaltado.
 local KEYWORDS = {
   TODO = "TodoTODO",
   FIXME = "TodoFIX",
@@ -22,12 +22,20 @@ local KEYWORDS = {
   OPTIM = "TodoPERF",
 }
 
+-- Estilo "badge": fondo de color + texto oscuro. Se define fg Y bg (no solo fg) porque el
+-- resaltado nativo/treesitter ya pinta estas palabras con fondo (Todo, @comment.todo…); con
+-- solo fg, ese fondo se colaba por debajo y quedaba texto de color sobre color.
+-- Los tonos salen de diag_* (derivados por propósito): con algunos temas palette.yellow y
+-- .cyan colapsan sobre .blue y TODO/NOTE acababan del mismo color.
 local function set_hl()
-  api.nvim_set_hl(0, "TodoTODO", { fg = palette.blue, bold = true })
-  api.nvim_set_hl(0, "TodoFIX", { fg = palette.red, bold = true })
-  api.nvim_set_hl(0, "TodoHACK", { fg = palette.yellow, bold = true })
-  api.nvim_set_hl(0, "TodoNOTE", { fg = palette.cyan, bold = true })
-  api.nvim_set_hl(0, "TodoPERF", { fg = palette.purple, bold = true })
+  local function badge(name, color)
+    api.nvim_set_hl(0, name, { fg = palette.bg, bg = color, bold = true })
+  end
+  badge("TodoTODO", palette.diag_info)
+  badge("TodoFIX", palette.diag_error)
+  badge("TodoHACK", palette.diag_warn)
+  badge("TodoNOTE", palette.diag_hint)
+  badge("TodoPERF", palette.green)
 end
 theme.register(set_hl)
 set_hl()
@@ -51,7 +59,7 @@ local function render(buf)
     for kw, group in pairs(KEYWORDS) do
       local from = 1
       while true do
-        local s, e = line:find("%f[%w]" .. kw .. "%f[%W]", from)
+        local s, e = line:find("%f[%w]" .. kw .. ":", from)
         if not s then
           break
         end
@@ -98,7 +106,7 @@ local function rg_pattern()
   for kw in pairs(KEYWORDS) do
     kws[#kws + 1] = kw
   end
-  return "\\b(" .. table.concat(kws, "|") .. ")\\b"
+  return "\\b(" .. table.concat(kws, "|") .. "):"
 end
 
 function M.pick()
