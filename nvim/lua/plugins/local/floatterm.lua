@@ -4,7 +4,9 @@ local M = {}
 -- Estado por nombre+tab: una instancia por workspace. { buf = <bufnr>, win = <winid> }
 local state = {}
 
--- Abre una ventana flotante centrada que muestra el buffer dado
+-- Abre una ventana flotante centrada que muestra el buffer dado. Devuelve el handle de
+-- ui.float ({ win, close }); close() cierra la ventana Y el backdrop, sin borrar el buffer
+-- (lo pasamos nosotros, así el proceso sobrevive al ocultar).
 local function open_win(buf, title)
   local width = math.floor(vim.o.columns * 0.85)
   local height = math.floor(vim.o.lines * 0.9)
@@ -16,7 +18,8 @@ local function open_win(buf, title)
     row_off = 2,
     title = " " .. title .. " ",
     title_pos = "center",
-  }).win
+    backdrop = true, -- capa oscura detrás, como el resto de modales
+  })
 end
 
 -- Alterna un terminal flotante que ejecuta `cmd` (lista de argumentos).
@@ -37,16 +40,19 @@ function M.toggle(name, cmd)
   local st = state[key] or {}
   state[key] = st
 
-  -- Si ya está visible, ocultarlo (el proceso sigue corriendo)
+  -- Si ya está visible, ocultarlo (el proceso sigue corriendo). close() cierra ventana + backdrop.
   if st.win and api.nvim_win_is_valid(st.win) then
-    api.nvim_win_close(st.win, true)
-    st.win = nil
+    if st.close then
+      st.close()
+    end
+    st.win, st.close = nil, nil
     return
   end
 
   -- Reutilizar el buffer/proceso existente si sigue vivo
   if st.buf and api.nvim_buf_is_valid(st.buf) then
-    st.win = open_win(st.buf, name)
+    local fl = open_win(st.buf, name)
+    st.win, st.close = fl.win, fl.close
     vim.cmd("startinsert")
     return
   end
@@ -56,13 +62,14 @@ function M.toggle(name, cmd)
   st.tab = api.nvim_get_current_tabpage() -- tab dueña, para limpiar al cerrarla
   vim.bo[st.buf].bufhidden = "hide"
   vim.b[st.buf].term_label = name -- etiqueta para mostrar en la statusline
-  st.win = open_win(st.buf, name)
+  local fl = open_win(st.buf, name)
+  st.win, st.close = fl.win, fl.close
   vim.fn.jobstart(cmd, {
     term = true,
     cwd = vim.fn.getcwd(), -- cwd efectivo de la tab (respeta tcd)
     on_exit = function()
-      if st.win and api.nvim_win_is_valid(st.win) then
-        api.nvim_win_close(st.win, true)
+      if st.close then
+        st.close() -- ventana + backdrop (si sigue visible)
       end
       if st.buf and api.nvim_buf_is_valid(st.buf) then
         api.nvim_buf_delete(st.buf, { force = true })
