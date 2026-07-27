@@ -235,6 +235,7 @@ function M.set_side(side)
     end)
     api.nvim_win_set_width(sb.win, sb.collapsed and COLLAPSED_WIDTH or M.width())
   end
+  vim.cmd("redrawtabline") -- las píldoras de workspace se alinean al lado del sidebar
 end
 -- Reconcilia el sidebar de un tab con los ajustes globales (lo llama TabEnter: el sidebar es
 -- por-tab, y cambiar lado/ancho desde el panel solo movió el del tab activo).

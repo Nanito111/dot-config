@@ -48,7 +48,10 @@ end
 function _G.tabline()
   local cur = api.nvim_get_current_tabpage()
   local CAP_L, CAP_R = caps() -- mismos extremos que el statusline
-  local parts = { "%#WsFill# " }
+  -- las píldoras se alinean al mismo lado que el sidebar: con el panel a la derecha, `%=`
+  -- empuja todo lo que sigue al borde derecho (la izquierda es el default).
+  local right = require("config.settings").value("ui.sidebar_side", "left") == "right"
+  local parts = { right and "%#WsFill#%=" or "%#WsFill# " }
   for i, tab in ipairs(api.nvim_list_tabpages()) do
     local hl = (tab == cur) and "WsActive" or "WsInactive"
     parts[#parts + 1] = "%" .. i .. "T" -- región clickeable con el mouse
