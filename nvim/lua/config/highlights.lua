@@ -18,7 +18,13 @@ local function set_hl()
   -- Gutter (números de línea, signos de git, plegado): algunos temas lo pintan como
   -- una banda distinta del buffer (kanagawa el número, gruvbox la columna de signos).
   -- Conservamos el color de texto de cada grupo y solo igualamos el fondo.
-  for _, name in ipairs({ "LineNr", "LineNrAbove", "LineNrBelow", "SignColumn", "FoldColumn" }) do
+  -- Los signos de diagnóstico (iconos junto a los números) van en el mismo gutter: algunos
+  -- temas (gruvbox) les ponen un fondo más claro que la columna, y se ven como una banda.
+  -- Se conserva el color del icono (fg) y solo se iguala el fondo.
+  for _, name in ipairs({
+    "LineNr", "LineNrAbove", "LineNrBelow", "SignColumn", "FoldColumn",
+    "DiagnosticSignError", "DiagnosticSignWarn", "DiagnosticSignInfo", "DiagnosticSignHint", "DiagnosticSignOk",
+  }) do
     local h = api.nvim_get_hl(0, { name = name, link = false })
     h.bg = bg
     api.nvim_set_hl(0, name, h)
