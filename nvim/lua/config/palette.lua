@@ -189,12 +189,22 @@ function M.refresh()
     local _, s, l = to_hsl(c)
     ssum, lsum, n = ssum + s, lsum + l, n + 1
   end
-  local avg_s = n > 0 and ssum / n or 0.60
   local avg_l = n > 0 and lsum / n or (light and 0.40 or 0.65)
+  -- Saturación de síntesis: capada y mezclada luego hacia `comment`. La media cruda sesga
+  -- alto cuando solo derivan los colores más vivos del tema (en gruvbox derivan rojo s1.0 y
+  -- amarillo s0.8 -> 0.9), y un tono de BANDA PURO a esa saturación es un primario espectral
+  -- que ese tema jamás usa: se veía durísimo, sobre todo en las variantes claras.
+  local syn_s = math.min(n > 0 and ssum / n or 0.60, 0.55)
 
-  -- Cada nombre queda confinado a su banda, así que ya no pueden colisionar entre sí.
+  -- Cada nombre queda confinado a su banda, así que ya no pueden colisionar entre sí. Los
+  -- sintetizados se acercan a `comment` para perder el brillo de primario y coger el matiz
+  -- del tema; los derivados son colores reales del tema y se dejan intactos.
   for name, band in pairs(BANDS) do
-    M[name] = derived[name] or from_hsl(band_center(band), avg_s, avg_l)
+    if derived[name] then
+      M[name] = derived[name]
+    else
+      M[name] = blend(from_hsl(band_center(band), syn_s, avg_l), M.comment, 0.3)
+    end
   end
   M.cyan_bright = blend(M.cyan, "#ffffff", 0.15)
 
