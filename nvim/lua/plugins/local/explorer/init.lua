@@ -170,6 +170,10 @@ api.nvim_create_autocmd({ "CursorMoved", "WinScrolled" }, {
   desc = "Tooltip con el nombre completo de la línea del explorador",
   callback = function(ev)
     if vim.bo[ev.buf].filetype == "explorer" then
+      local pos = api.nvim_win_get_cursor(0)
+      if pos[2] ~= 0 then
+        pcall(api.nvim_win_set_cursor, 0, { pos[1], 0 }) -- fijar a la 1.ª columna (cursor oculto limpio)
+      end
       bold_current()
       peek_update()
     end

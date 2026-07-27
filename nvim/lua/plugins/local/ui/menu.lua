@@ -58,17 +58,18 @@ function M.new(opts)
     if not (w and api.nvim_win_is_valid(w)) then
       return
     end
-    local lnum = api.nvim_win_get_cursor(w)[1]
+    local pos = api.nvim_win_get_cursor(w)
+    local lnum = pos[1]
     if not rows[lnum] then
       local dir = (last and lnum < last) and -1 or 1
       local target = scan(lnum, dir) or scan(lnum, -dir)
       if not target then
         return -- no hay ninguna fila seleccionable
       end
-      if target ~= lnum then
-        api.nvim_win_set_cursor(w, { target, 0 })
-      end
+      api.nvim_win_set_cursor(w, { target, 0 })
       lnum = target
+    elseif pos[2] ~= 0 then
+      api.nvim_win_set_cursor(w, { lnum, 0 }) -- fijar a la 1.ª columna (cursor oculto limpio)
     end
     last = lnum
     draw_marker(lnum)
