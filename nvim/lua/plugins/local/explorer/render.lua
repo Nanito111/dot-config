@@ -18,7 +18,8 @@ local function set_hl()
   hl(0, "ExplorerDir", { fg = palette.blue, bold = true })
   hl(0, "ExplorerFile", { fg = palette.fg })
   hl(0, "ExplorerRoot", { fg = palette.yellow, bold = true })
-  hl(0, "ExplorerCurrent", { fg = palette.cyan_bright, bold = true }) -- archivo actual
+  -- archivo actual: fondo de línea sutil (acento mezclado hacia el fondo), sin tocar el texto
+  hl(0, "ExplorerCurrentLine", { bg = palette.blue, fg = palette.bg})
   hl(0, "ExplorerGitNew", { fg = palette.cyan }) -- sin trackear (distinto del verde de añadido)
 end
 
@@ -100,9 +101,7 @@ function M.render(s)
     local name = n.name .. (n.is_dir and "/" or "")
 
     local type_hl = n.is_dir and "ExplorerDir" or "ExplorerFile"
-    if not n.is_dir and current and normpath(n.path) == current then
-      type_hl = "ExplorerCurrent" -- el archivo abierto en la ventana principal
-    end
+    local is_current = not n.is_dir and current and normpath(n.path) == current
     local icon_hl = type_hl
     if colored and not n.is_dir then
       local col = icons.color(n.name)
@@ -130,6 +129,7 @@ function M.render(s)
       icon_hl = icon_hl,
       type_hl = type_hl,
       git_hl = git_hl,
+      is_current = is_current,
     }
   end
 
@@ -150,6 +150,10 @@ function M.render(s)
     hl_group = "ExplorerRoot",
   })
   for i, h in ipairs(hls) do
+    -- archivo actual: fondo de toda la línea (el texto conserva su color)
+    if h.is_current then
+      api.nvim_buf_set_extmark(s.buf, ns, i, 0, { line_hl_group = "ExplorerCurrentLine" })
+    end
     -- icono
     api.nvim_buf_set_extmark(s.buf, ns, i, 0, {
       end_col = h.icon_end,

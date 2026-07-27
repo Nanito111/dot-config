@@ -69,6 +69,7 @@ local function blend(a, b, t)
   local br, bgc, bb = rgb(b)
   return string.format("#%02x%02x%02x", clamp(ar + (br - ar) * t), clamp(ag + (bgc - ag) * t), clamp(ab + (bb - ab) * t))
 end
+M.blend = blend -- expuesto: mezclar un acento hacia el fondo para tintes sutiles
 
 local function luminance(hex)
   local r, g, b = rgb(hex)

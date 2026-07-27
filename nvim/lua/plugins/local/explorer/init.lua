@@ -64,7 +64,7 @@ local FOCUSED_WINHL = "CursorLine:ExplorerCursorLine"
 local DIMMED_WINHL
 do
   local groups = {
-    "ExplorerDir", "ExplorerFile", "ExplorerCurrent", "ExplorerRoot", "ExplorerGitNew",
+    "ExplorerDir", "ExplorerFile", "ExplorerRoot", "ExplorerGitNew",
     "GitSignAdd", "GitSignChange", "GitSignDelete", "GitSignChangedelete",
     "GitSignStagedAdd", "GitSignStagedChange", "GitSignStagedDelete",
   }
