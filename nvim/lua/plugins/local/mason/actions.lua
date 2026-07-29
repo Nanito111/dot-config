@@ -99,18 +99,30 @@ end
 
 -- ── Acciones (con progreso en vivo) ────────────────────────────────
 local function track(pkg, action, handle)
-  local st = { pkg = pkg, action = action, state = "QUEUED", line = "" }
+  local st = { pkg = pkg, action = action, state = "QUEUED", line = "", spawn = "" }
   M.in_progress[pkg.name] = st
   ensure_spinner()
   pcall(function()
     handle:on("state:change", function(new)
       st.state = new
     end)
-    local function out(line)
-      st.line = (line or ""):gsub("%s+$", "")
+    -- última línea de salida NO vacía (como la UI oficial: short_tailed_output)
+    local function out(chunk)
+      for _, line in ipairs(vim.split(chunk or "", "\n")) do
+        if not line:match("^%s*$") then
+          st.line = line:gsub("^%s+", ""):gsub("%s+$", "")
+        end
+      end
     end
     handle:on("stdout", out)
     handle:on("stderr", out)
+    -- comando en curso (npm/pip/cargo…), como latest_spawn de mason
+    handle:on("spawn_handles:change", function()
+      local ok, sp = pcall(function()
+        return handle:peek_spawn_handle():map(tostring):or_else(nil)
+      end)
+      st.spawn = (ok and sp) and tostring(sp):gsub("\n", " ") or st.spawn
+    end)
   end)
   on_change()
 end

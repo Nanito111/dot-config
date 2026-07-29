@@ -19,6 +19,7 @@ local function set_hl()
   api.nvim_set_hl(0, "MasonVersion", { fg = palette.comment })
   api.nvim_set_hl(0, "MasonOutdated", { fg = palette.yellow, bold = true }) -- ↑
   api.nvim_set_hl(0, "MasonProgress", { fg = palette.blue, bold = true }) -- spinner
+  api.nvim_set_hl(0, "MasonInfo", { fg = palette.comment }) -- línea de salida del instalador
   api.nvim_set_hl(0, "MasonMarker", { fg = palette.blue, bold = true }) -- ▸
   api.nvim_set_hl(0, "MasonAdd", { fg = palette.green, bold = true }) -- fila "instalar"
   api.nvim_set_hl(0, "MasonCursorLine", { bg = palette.bg_highlight, bold = true })
@@ -33,6 +34,7 @@ local function render(buf)
     return
   end
   set_hl()
+  local width = (v.win and api.nvim_win_is_valid(v.win)) and api.nvim_win_get_width(v.win) or 30
 
   local lines, rows, marks = {}, {}, {}
   local function push(text, value)
@@ -90,6 +92,13 @@ local function render(buf)
         marks[#marks + 1] = { row, 2, { end_col = 2 + #("⟳"), hl_group = "MasonProgress" } }
         marks[#marks + 1] = { row, name_hl_end - #e.name, { end_col = name_hl_end, hl_group = "MasonName" } }
         marks[#marks + 1] = { row, name_hl_end, { end_col = #line, hl_group = "MasonProgress" } }
+        -- 2.ª línea (no seleccionable): comando/última salida del instalador, como en mason
+        local info = (prog.line ~= "" and prog.line) or (prog.spawn ~= "" and prog.spawn) or nil
+        if info then
+          local text = "      " .. ui.text.fit(info, math.max(1, width - 7))
+          push(text, nil)
+          marks[#marks + 1] = { #lines - 1, 0, { end_col = #text, hl_group = "MasonInfo" } }
+        end
       else
         local marker = "● "
         local ver = e.version and ("  " .. e.version) or ""
