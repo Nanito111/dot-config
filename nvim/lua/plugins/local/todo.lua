@@ -36,6 +36,17 @@ local function set_hl()
   badge("TodoHACK", palette.diag_warn)
   badge("TodoNOTE", palette.diag_hint)
   badge("TodoPERF", palette.green)
+
+  -- Quitar el resaltado por defecto de treesitter/sintaxis para estos tags (el "badge" de
+  -- @comment.todo y cía.): así un TODO que este plugin NO marca (p. ej. sin ':') se ve como
+  -- comentario normal, no como una insignia suelta. Nuestras marcas (extmark, prioridad alta)
+  -- siguen mandando sobre los tags que sí reconocemos.
+  for _, g in ipairs({
+    "@comment.todo", "@comment.note", "@comment.warning", "@comment.error", "@comment.hint",
+    "@text.todo", "@text.note", "@text.warning", "@text.danger", "Todo",
+  }) do
+    api.nvim_set_hl(0, g, { link = "Comment" })
+  end
 end
 theme.register(set_hl)
 set_hl()
@@ -59,12 +70,20 @@ local function render(buf)
     for kw, group in pairs(KEYWORDS) do
       local from = 1
       while true do
-        local s, e = line:find("%f[%w]" .. kw .. ":", from)
+        local s, e = line:find("%f[%w]" .. kw, from)
         if not s then
           break
         end
-        pcall(api.nvim_buf_set_extmark, buf, ns, i - 1, s - 1, { end_col = e, hl_group = group })
-        from = e + 1
+        -- sufijo: (autor) opcional + dos puntos -> TODO:  o  TODO(fgaldames):
+        -- (Lua no tiene grupos opcionales; %b() casa los paréntesis balanceados si los hay)
+        local rest = line:sub(e + 1)
+        local tail = #(rest:match("^%b()") or "")
+        if rest:sub(tail + 1, tail + 1) == ":" then
+          pcall(api.nvim_buf_set_extmark, buf, ns, i - 1, s - 1, { end_col = e + tail + 1, hl_group = group })
+          from = e + tail + 2
+        else
+          from = e + 1
+        end
       end
     end
   end
@@ -106,7 +125,7 @@ local function rg_pattern()
   for kw in pairs(KEYWORDS) do
     kws[#kws + 1] = kw
   end
-  return "\\b(" .. table.concat(kws, "|") .. "):"
+  return "\\b(" .. table.concat(kws, "|") .. ")(\\([^)]*\\))?:"
 end
 
 function M.pick()
