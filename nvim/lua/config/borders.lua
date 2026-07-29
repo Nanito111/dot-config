@@ -27,6 +27,22 @@ end
 -- ponen ellas al abrirse; `reborder` la respeta.
 M.BORDERLESS = "borderless"
 
+-- El backdrop de :Lazy es un flotante que lazy.nvim crea SIN fijar `border`, así que hereda
+-- el winborder global y sale enmarcado a pantalla completa (parece otra ventana flotante).
+-- Lazy le pone filetype "lazy_backdrop": al detectarlo, se le quita el borde y se marca
+-- borderless (para que reborder también lo salte si se cambia el estilo con :Lazy abierto).
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("BordersLazyBackdrop", { clear = true }),
+  pattern = "lazy_backdrop",
+  desc = "El backdrop de :Lazy no debe heredar winborder (saldría enmarcado)",
+  callback = function(ev)
+    for _, win in ipairs(vim.fn.win_findbuf(ev.buf)) do
+      vim.w[win][M.BORDERLESS] = true
+      pcall(vim.api.nvim_win_set_config, win, { border = "none" })
+    end
+  end,
+})
+
 -- Reborde de las flotantes YA abiertas (el picker que estás usando, sin ir más lejos):
 -- winborder solo se lee al CREAR la ventana. Se salta únicamente las marcadas: mirar si
 -- ahora mismo tienen borde no sirve, porque tras previsualizar "none" ninguna lo tendría
