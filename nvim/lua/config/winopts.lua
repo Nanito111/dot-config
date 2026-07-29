@@ -50,6 +50,7 @@ local function is_special(buf)
   return ft == "dashboard"
     or ft == "explorer"
     or ft == "settings"
+    or ft == "mason"
     or ft == "netrw"
     or vim.bo[buf].buftype == "terminal"
 end
@@ -87,7 +88,7 @@ function M.apply(win)
     -- explorador y configuración: con el cursor oculto, la línea marcada es la única
     -- señal de la posición.
     local ft = vim.bo[buf].filetype
-    if ft == "explorer" or ft == "settings" then
+    if ft == "explorer" or ft == "settings" or ft == "mason" then
       api.nvim_set_option_value("cursorline", true, { win = win, scope = "local" })
     end
     return
