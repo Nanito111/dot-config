@@ -22,6 +22,10 @@ local KEYWORDS = {
   OPTIM = "TodoPERF",
 }
 
+-- Palabras distintas, ordenadas: las consume la fuente de autocompletado (todo/source.lua).
+M.keywords = vim.tbl_keys(KEYWORDS)
+table.sort(M.keywords)
+
 -- Estilo "badge": fondo de color + texto oscuro. Se define fg Y bg (no solo fg) porque el
 -- resaltado nativo/treesitter ya pinta estas palabras con fondo (Todo, @comment.todo…); con
 -- solo fg, ese fondo se colaba por debajo y quedaba texto de color sobre color.

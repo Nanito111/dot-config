@@ -18,7 +18,11 @@ return {
     },
     appearance = { nerd_font_variant = "mono" },
     sources = {
-      default = { "lsp", "path", "snippets", "buffer" },
+      default = { "lsp", "path", "snippets", "buffer", "todo" },
+      providers = {
+        -- tags del plugin de TODO (TODO:/FIXME:/…) al escribir en un comentario
+        todo = { name = "TODO", module = "plugins.local.todo.source" },
+      },
     },
     completion = {
       documentation = {
