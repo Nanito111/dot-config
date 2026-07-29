@@ -52,7 +52,7 @@ function M.open(pkg)
     title_pos = "center",
     backdrop = true,
     close_keys = { "q", "<Esc>" },
-    wo = { wrap = true, linebreak = true },
+    wo = { wrap = true, linebreak = true, number = false, relativenumber = false, signcolumn = "no", cursorline = false },
   })
 end
 

@@ -449,6 +449,7 @@ end
 --                           --     hl = { end_lnum, end_col, group? }: resalta solo ese
 --                           --     rango (1-based, end_col exclusiva) en vez de la línea
 --                           --   { lines, filetype?, cursor?, extmarks? } -> contenido custom
+--   preview_numbers = true?, -- false = sin números en el preview (para texto, no archivos)
 --   icon_path(item)?,       -- ruta del item para el icono (activa iconos si M.icons_enabled)
 --   display(item)?,         -- texto mostrado del item (el filtrado/selección usan el crudo)
 --   display_hl(item)?,      -- highlights de esa línea: { { group, col, end_col }, ... }
@@ -493,6 +494,12 @@ function M.pick(opts)
 
   -- backdrop opcional: oscurece el editor detrás del picker (por debajo de sus ventanas)
   local close_backdrop = opts.backdrop and require("plugins.local.backdrop").open() or nil
+
+  -- números en el preview: útiles para archivos (saltar a la línea), molestos para texto
+  -- plano (p. ej. la descripción de un paquete en mason). Se apagan con preview_numbers=false.
+  if preview_win and opts.preview_numbers == false then
+    pcall(api.nvim_set_option_value, "number", false, { win = preview_win, scope = "local" })
+  end
 
   state = {
     display = display,

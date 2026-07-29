@@ -20,6 +20,7 @@ local function set_hl()
   api.nvim_set_hl(0, "MasonOutdated", { fg = palette.yellow, bold = true }) -- ↑
   api.nvim_set_hl(0, "MasonProgress", { fg = palette.blue, bold = true }) -- spinner
   api.nvim_set_hl(0, "MasonMarker", { fg = palette.blue, bold = true }) -- ▸
+  api.nvim_set_hl(0, "MasonAdd", { fg = palette.green, bold = true }) -- fila "instalar"
   api.nvim_set_hl(0, "MasonCursorLine", { bg = palette.bg_highlight, bold = true })
 end
 theme.register(set_hl)
@@ -33,31 +34,44 @@ local function render(buf)
   end
   set_hl()
 
-  -- agrupar instalados por categoría
-  local by_cat = {}
-  for _, e in ipairs(actions.installed()) do
-    by_cat[e.category] = by_cat[e.category] or {}
-    table.insert(by_cat[e.category], e)
-  end
-  local cats = vim.tbl_keys(by_cat)
-  table.sort(cats)
-
   local lines, rows, marks = {}, {}, {}
   local function push(text, value)
     lines[#lines + 1] = text
     rows[#rows + 1] = value or false -- false = no seleccionable (ui.menu)
   end
 
-  if #cats == 0 then
-    push("  Sin herramientas instaladas", nil)
-    push("", nil)
-    push("  a  instalar una nueva", nil)
+  -- fila-acción arriba: ⏎ abre el picker para instalar algo nuevo (más intuitivo que 'a')
+  local add = "  \u{f067}  Instalar herramienta"
+  push(add, { action = "install" })
+  marks[#marks + 1] = { 0, 0, { end_col = #add, hl_group = "MasonAdd" } }
+
+  -- entradas: instalados ∪ los que se están instalando por PRIMERA vez (aún no instalados,
+  -- así que no salen en get_installed_packages; sin esto no se vería su progreso).
+  local entries = actions.installed()
+  local seen = {}
+  for _, e in ipairs(entries) do
+    seen[e.name] = true
+  end
+  for name, st in pairs(actions.in_progress) do
+    if not seen[name] then
+      entries[#entries + 1] = {
+        name = name,
+        pkg = st.pkg,
+        category = (st.pkg and st.pkg.spec and (st.pkg.spec.categories or {})[1]) or "Instalando",
+      }
+    end
   end
 
-  for ci, cat in ipairs(cats) do
-    if ci > 1 then
-      push("", nil)
-    end
+  local by_cat = {}
+  for _, e in ipairs(entries) do
+    by_cat[e.category] = by_cat[e.category] or {}
+    table.insert(by_cat[e.category], e)
+  end
+  local cats = vim.tbl_keys(by_cat)
+  table.sort(cats)
+
+  for _, cat in ipairs(cats) do
+    push("", nil)
     local header = "  " .. cat
     push(header, nil)
     marks[#marks + 1] = { #lines - 1, 0, { end_col = #header, hl_group = "MasonSection" } }
@@ -166,13 +180,6 @@ local function update_all(buf)
   end
 end
 
-local function details(buf)
-  local e = current(buf)
-  if e and e.pkg then
-    require("plugins.local.mason.details").open(e.pkg)
-  end
-end
-
 -- Picker fuzzy sobre el registro completo para instalar algo nuevo.
 local function install_new()
   local items = actions.available()
@@ -184,6 +191,7 @@ local function install_new()
     title = "Instalar herramienta",
     items = items,
     backdrop = true,
+    preview_numbers = false, -- el preview es texto (descripción), no un archivo
     preview = function(name)
       local pkg = actions.get(name)
       return pkg and { lines = require("plugins.local.mason.details").lines(pkg) } or nil
@@ -194,6 +202,19 @@ local function install_new()
       end
     end,
   })
+end
+
+-- ⏎ / K: en la fila-acción abre el picker de instalar; sobre un paquete, sus detalles.
+local function activate(buf)
+  local e = current(buf)
+  if not e then
+    return
+  end
+  if e.action == "install" then
+    install_new()
+  elseif e.pkg then
+    require("plugins.local.mason.details").open(e.pkg)
+  end
 end
 
 -- ── Ciclo de vida (vista del sidebar) ──────────────────────────────
@@ -226,14 +247,14 @@ function M.create()
   map("a", function()
     install_new()
   end)
-  map("K", details)
+  map("K", activate)
   map("r", function(b)
     render(b)
   end)
   map("R", function(b)
     render(b)
   end)
-  map("<CR>", details)
+  map("<CR>", activate)
   map("<Tab>", function()
     require("plugins.local.sidebar").next()
   end)
