@@ -187,6 +187,10 @@ local function expand(sb)
   local buf = sb.bufs[sb.view]
   if buf and api.nvim_buf_is_valid(buf) then
     api.nvim_win_set_buf(sb.win, buf)
+    -- el swap de buffer no dispara winopts sobre ESTA ventana (igual que en collapse): sin
+    -- esto la vista hereda el número/gutter del global al expandir (se veía la 1.ª vez que
+    -- se abría el sidebar, cuando la ventana aún no había pasado por winopts).
+    require("config.winopts").apply(sb.win)
   end
   api.nvim_win_set_width(sb.win, M.width())
   M.set_winbar(sb)
