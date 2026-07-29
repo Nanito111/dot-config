@@ -5,11 +5,38 @@ local state = require("plugins.local.explorer.state")
 local render = require("plugins.local.explorer.render")
 local watch = require("plugins.local.explorer.watch")
 local git = require("plugins.local.explorer.git")
+local util = require("plugins.local.explorer.util")
 
 local cur = state.cur
 local node_at_cursor = render.node_at_cursor
 
 local M = {}
+
+-- Revela el archivo abierto en la ventana principal (expande sus carpetas), lleva el cursor
+-- a su línea y centra la vista del árbol en él.
+function M.reveal_current()
+  local s = cur()
+  if not (s and s.win and api.nvim_win_is_valid(s.win)) then
+    return
+  end
+  local name = s.current_file
+  if not name or name == "" then
+    vim.notify("No hay archivo activo que revelar", vim.log.levels.INFO, { title = "Explorador" })
+    return
+  end
+  render.reveal(s)
+  render.render(s)
+  local target = util.normpath(name)
+  for i, n in ipairs(s.nodes) do
+    if not n.is_dir and util.normpath(n.path) == target then
+      pcall(api.nvim_win_set_cursor, s.win, { i + 1, 0 }) -- +1 por la línea raíz
+      pcall(api.nvim_win_call, s.win, function()
+        vim.cmd("normal! zz")
+      end)
+      return
+    end
+  end
+end
 
 -- Abre un archivo en una ventana de edición (evita el explorador, paneles fijos,
 -- netrw y flotantes)
