@@ -394,14 +394,17 @@ function M.paste()
 end
 
 -- y / Y: copiar al portapapeles la ruta del nodo (absoluta o relativa al cwd)
-function M.copy_path(relative)
+-- Copia al portapapeles la ruta del nodo bajo el cursor. mode: "abs" (absoluta),
+-- "rel" (relativa al cwd) o "name" (solo el nombre del archivo/carpeta).
+function M.copy_path(mode)
   local n = node_at_cursor(cur())
   if not n then
     return
   end
-  local p = relative and vim.fn.fnamemodify(n.path, ":.") or n.path
+  local mods = mode == "abs" and ":p" or mode == "name" and ":t" or ":."
+  local p = vim.fn.fnamemodify(n.path, mods):gsub("/$", "") -- sin barra final en carpetas
   vim.fn.setreg("+", p)
-  vim.notify("Copiado: " .. p)
+  vim.notify("Copiado: " .. p, vim.log.levels.INFO, { title = "Explorador" })
 end
 
 return M
