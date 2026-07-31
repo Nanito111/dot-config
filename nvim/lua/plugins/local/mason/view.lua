@@ -22,6 +22,7 @@ local function set_hl()
   api.nvim_set_hl(0, "MasonInfo", { fg = palette.comment }) -- línea de salida del instalador
   api.nvim_set_hl(0, "MasonMarker", { fg = palette.blue, bold = true }) -- ▸
   api.nvim_set_hl(0, "MasonAdd", { fg = palette.green, bold = true }) -- fila "instalar"
+  api.nvim_set_hl(0, "MasonArrow", { fg = palette.comment }) -- → del botón (como en settings)
   api.nvim_set_hl(0, "MasonCursorLine", { bg = palette.bg_highlight, bold = true })
 end
 theme.register(set_hl)
@@ -42,10 +43,15 @@ local function render(buf)
     rows[#rows + 1] = value or false -- false = no seleccionable (ui.menu)
   end
 
-  -- fila-acción arriba: ⏎ abre el picker para instalar algo nuevo (más intuitivo que 'a')
-  local add = "  \u{f067}  Instalar herramienta"
+  -- fila-acción arriba: ⏎ abre el picker para instalar algo nuevo (más intuitivo que 'a').
+  -- Con → a la derecha, como los botones "action" del panel de settings.
+  local label = "  \u{f067}  Instalar herramienta"
+  local arrow = "→"
+  local pad = math.max(1, width - 3 - vim.fn.strdisplaywidth(label) - vim.fn.strdisplaywidth(arrow))
+  local add = label .. string.rep(" ", pad) .. arrow
   push(add, { action = "install" })
-  marks[#marks + 1] = { 0, 0, { end_col = #add, hl_group = "MasonAdd" } }
+  marks[#marks + 1] = { 0, 0, { end_col = #label, hl_group = "MasonAdd" } }
+  marks[#marks + 1] = { 0, #label + pad, { end_col = #add, hl_group = "MasonArrow" } }
 
   -- entradas: instalados ∪ los que se están instalando por PRIMERA vez (aún no instalados,
   -- así que no salen en get_installed_packages; sin esto no se vería su progreso).

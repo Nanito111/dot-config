@@ -223,6 +223,10 @@ local function ex_create()
   map("x", actions.cut, "Cortar")
   map("y", actions.copy, "Copiar archivo/carpeta")
   map("p", actions.paste, "Pegar")
+  -- c abre el which-key con las opciones de copiar; ca/cr/cn siguen funcionando como chord
+  map("c", function()
+    require("plugins.local.whichkey").show("c")
+  end, "Copiar ruta…")
   -- c es prefijo: ca=absoluta · cr=relativa · cn=nombre
   map("ca", function()
     actions.copy_path("abs")
