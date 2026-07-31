@@ -40,6 +40,4 @@ vim.api.nvim_create_autocmd("User", {
   end,
 })
 
-vim.keymap.set("n", "<leader>M", M.open, { silent = true, desc = "Mason (herramientas)" })
-
 return M

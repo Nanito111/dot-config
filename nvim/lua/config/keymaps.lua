@@ -63,6 +63,9 @@ map("t", "<C-q>", [[<C-\><C-n>]], { silent = true, desc = "Salir del modo termin
 -- Ctrl+C en inserción = Esc de verdad (dispara InsertLeave, abreviaciones, etc.)
 map("i", "<C-c>", "<Esc>", { silent = true, desc = "Salir de inserción (como Esc)" })
 
+-- Ctrl+D en inserción = borrar el carácter a la derecha (como Supr), en vez del des-sangrado
+map("i", "<C-d>", "<Del>", { silent = true, desc = "Borrar el carácter a la derecha" })
+
 -- Marks
 map("n", "<leader>m", ":marks a-z<CR>", { silent = true, desc = "Listar marcas a-z" })
 
