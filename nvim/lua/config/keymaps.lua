@@ -66,9 +66,10 @@ map("i", "<C-c>", "<Esc>", { silent = true, desc = "Salir de inserción (como Es
 -- Ctrl+D en inserción = borrar el carácter a la derecha (como Supr), en vez del des-sangrado
 map("i", "<C-d>", "<Del>", { silent = true, desc = "Borrar el carácter a la derecha" })
 
--- Sangrar / des-sangrar la línea en normal (Ctrl+> / Ctrl+<)
-map("n", "<C->>", ">>", { desc = "Sangrar la línea" })
-map("n", "<C-lt>", "<<", { desc = "Des-sangrar la línea" })
+-- Sangrar / des-sangrar la línea en inserción (Ctrl+> / Ctrl+<). Destino: los <C-t>/<C-d>
+-- nativos de inserción (noremap: el <C-d> nativo des-sangra, no el remapeado a borrar).
+map("i", "<C->>", "<C-t>", { silent = true, desc = "Sangrar la línea" })
+map("i", "<C-lt>", "<C-d>", { silent = true, desc = "Des-sangrar la línea" })
 
 -- Marks
 map("n", "<leader>m", ":marks a-z<CR>", { silent = true, desc = "Listar marcas a-z" })
