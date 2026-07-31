@@ -66,6 +66,10 @@ map("i", "<C-c>", "<Esc>", { silent = true, desc = "Salir de inserción (como Es
 -- Ctrl+D en inserción = borrar el carácter a la derecha (como Supr), en vez del des-sangrado
 map("i", "<C-d>", "<Del>", { silent = true, desc = "Borrar el carácter a la derecha" })
 
+-- Sangrar / des-sangrar la línea en normal (Ctrl+> / Ctrl+<)
+map("n", "<C->>", ">>", { desc = "Sangrar la línea" })
+map("n", "<C-lt>", "<<", { desc = "Des-sangrar la línea" })
+
 -- Marks
 map("n", "<leader>m", ":marks a-z<CR>", { silent = true, desc = "Listar marcas a-z" })
 
