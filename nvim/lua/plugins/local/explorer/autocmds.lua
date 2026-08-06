@@ -115,12 +115,22 @@ autocmd("WinClosed", {
       local sidebar = require("plugins.local.sidebar")
       local ok, err = pcall(function()
         api.nvim_set_current_win(s.win)
-        -- la ventana del dashboard va al lado OPUESTO del panel (según su lado configurado)
+        -- la nueva ventana de edición va al lado OPUESTO del panel (según su lado configurado)
         local right = sidebar.side() == "right"
         vim.cmd(right and "noautocmd leftabove vsplit" or "noautocmd rightbelow vsplit")
-        vim.cmd("noautocmd enew") -- buffer vacío (no el explorador) para el dashboard
-        require("plugins.local.dashboard").open()
-        sidebar.refresh() -- el dashboard tiene el foco: el panel repone su ancho (colapsado)
+        vim.cmd("noautocmd enew") -- buffer vacío (no el explorador)
+        -- restaurar el último archivo que se veía (p.ej. tras cerrar un :terminal); si su
+        -- buffer sigue vivo lo reusamos (conserva cursor/undo); si no, reeditamos la ruta.
+        local prev = s.current_file
+        local b = prev and prev ~= "" and vim.fn.bufnr(prev) or -1
+        if b > 0 and api.nvim_buf_is_valid(b) and vim.bo[b].buftype == "" then
+          api.nvim_set_current_buf(b)
+        elseif prev and prev ~= "" and vim.fn.filereadable(prev) == 1 then
+          vim.cmd("noautocmd edit " .. vim.fn.fnameescape(prev))
+        else
+          require("plugins.local.dashboard").open() -- sin archivo que restaurar
+        end
+        sidebar.refresh() -- el foco quedó fuera del panel: repone su ancho (colapsado)
         require("config.util").wipe_orphan_buffers()
       end)
       rebuilding = false
