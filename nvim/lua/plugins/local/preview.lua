@@ -55,7 +55,8 @@ function M.load(buf, lines, opts)
   end)
 
   if opts.win and api.nvim_win_is_valid(opts.win) then
-    require("plugins.local.ui.win").set_opts(opts.win, WIN_OPTS)
+    local wo = opts.wrap and vim.tbl_extend("force", WIN_OPTS, { wrap = true, linebreak = true }) or WIN_OPTS
+    require("plugins.local.ui.win").set_opts(opts.win, wo)
   end
 end
 

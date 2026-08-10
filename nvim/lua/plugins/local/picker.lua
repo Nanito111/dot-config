@@ -152,7 +152,7 @@ local function preview_set(s, seq, path, lines)
   if not preview_current(s, seq) then
     return false
   end
-  require("plugins.local.preview").load(s.preview_buf, lines, { path = path, win = s.preview_win })
+  require("plugins.local.preview").load(s.preview_buf, lines, { path = path, win = s.preview_win, wrap = s.preview_wrap })
   s.preview_loaded = { path = path, count = #lines }
   return true
 end
@@ -172,6 +172,7 @@ local function do_preview(s, seq)
     require("plugins.local.preview").load(s.preview_buf, info.lines, {
       filetype = info.filetype,
       win = s.preview_win,
+      wrap = s.preview_wrap,
     })
     s.preview_loaded = nil
     api.nvim_buf_clear_namespace(s.preview_buf, ns_prev, 0, -1)
@@ -382,7 +383,7 @@ end
 -- Crea las ventanas flotantes. Con `input`, un prompt arriba (búsqueda) y los resultados
 -- debajo; sin `input`, no hay prompt y la lista lleva el título. Con `preview`, la lista
 -- ocupa la izquierda y se añade un panel de preview a la derecha.
-local function create_windows(title, preview, input, footer)
+local function create_windows(title, preview, input, footer, list_ratio, preview_wrap)
   local width = math.min(preview and 140 or 100, math.floor(vim.o.columns * (preview and 0.9 or 0.8)))
   local height = math.min(preview and 26 or 20, math.max(5, math.floor(vim.o.lines * (preview and 0.6 or 0.5))))
   local col = math.floor((vim.o.columns - width) / 2)
@@ -402,7 +403,7 @@ local function create_windows(title, preview, input, footer)
   end
 
   local ui = require("plugins.local.ui")
-  local res_w = preview and math.floor(width * 0.4) or width
+  local res_w = preview and math.floor(width * (list_ratio or 0.4)) or width
   local res_buf = api.nvim_create_buf(false, true)
   -- sin prompt, la lista tiene el foco y necesita cursorline apagado (scope local vía ui.win)
   local res_win = ui.float.open({
@@ -430,7 +431,7 @@ local function create_windows(title, preview, input, footer)
       height = height,
       row = res_row,
       col = col + res_w + 2,
-      wo = { number = true, cursorline = false, wrap = false },
+      wo = { number = true, cursorline = false, wrap = preview_wrap or false, linebreak = preview_wrap or false },
     }).win
   end
 
@@ -450,6 +451,8 @@ end
 --                           --     rango (1-based, end_col exclusiva) en vez de la línea
 --                           --   { lines, filetype?, cursor?, extmarks? } -> contenido custom
 --   preview_numbers = true?, -- false = sin números en el preview (para texto, no archivos)
+--   list_ratio = 0.4?,      -- fracción del ancho para la lista cuando hay preview (resto: preview)
+--   preview_wrap = false?,  -- true = ajuste de línea (wrap+linebreak) en el preview
 --   icon_path(item)?,       -- ruta del item para el icono (activa iconos si M.icons_enabled)
 --   display(item)?,         -- texto mostrado del item (el filtrado/selección usan el crudo)
 --   display_hl(item)?,      -- highlights de esa línea: { { group, col, end_col }, ... }
@@ -490,7 +493,7 @@ function M.pick(opts)
 
   local origin = api.nvim_get_current_win()
   local prompt_buf, prompt_win, res_buf, res_win, preview_buf, preview_win =
-    create_windows(opts.title, opts.preview ~= nil, input, opts.footer)
+    create_windows(opts.title, opts.preview ~= nil, input, opts.footer, opts.list_ratio, opts.preview_wrap)
 
   -- backdrop opcional: oscurece el editor detrás del picker (por debajo de sus ventanas)
   local close_backdrop = opts.backdrop and require("plugins.local.backdrop").open() or nil
@@ -514,6 +517,7 @@ function M.pick(opts)
     preview_buf = preview_buf,
     preview_win = preview_win,
     preview_fn = opts.preview,
+    preview_wrap = opts.preview_wrap,
     origin = origin,
     items = opts.items,
     source = opts.source,

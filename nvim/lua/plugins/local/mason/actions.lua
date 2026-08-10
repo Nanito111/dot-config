@@ -88,6 +88,25 @@ function M.available()
   return out
 end
 
+-- Catálogo de NO instalados con metadatos (para filtrar el picker por categoría/lenguaje).
+function M.catalog()
+  local reg = registry()
+  if not reg then
+    return {}
+  end
+  local out = {}
+  for _, pkg in ipairs(reg.get_all_packages()) do
+    if not pkg:is_installed() then
+      local s = pkg.spec or {}
+      out[#out + 1] = { name = pkg.name, categories = s.categories or {}, languages = s.languages or {} }
+    end
+  end
+  table.sort(out, function(a, b)
+    return a.name < b.name
+  end)
+  return out
+end
+
 function M.get(name)
   local reg = registry()
   if not reg then

@@ -195,22 +195,140 @@ local function update_all(buf)
   end
 end
 
--- Picker fuzzy sobre el registro completo para instalar algo nuevo.
+-- Picker fuzzy sobre el registro completo para instalar algo nuevo. Además del fuzzy por
+-- nombre, dos chips que se ciclan acotan el universo: categoría (<C-g>) y lenguaje (<C-l>).
+-- La lista de lenguajes depende de la categoría activa (así ciclar no es interminable).
+local function distinct_sorted(set)
+  local out = {}
+  for k in pairs(set) do
+    out[#out + 1] = k
+  end
+  table.sort(out)
+  return out
+end
+
 local function install_new()
-  local items = actions.available()
-  if #items == 0 then
+  local catalog = actions.catalog()
+  if #catalog == 0 then
     vim.notify("No hay más paquetes disponibles", vim.log.levels.INFO, { title = "Mason" })
     return
   end
+
+  local meta = {} -- name -> { categories, languages }
+  local cat_set = {}
+  for _, e in ipairs(catalog) do
+    meta[e.name] = e
+    for _, c in ipairs(e.categories) do
+      cat_set[c] = true
+    end
+  end
+  local cats = distinct_sorted(cat_set)
+  table.insert(cats, 1, "*")
+
+  -- lenguajes presentes en los paquetes de la categoría activa (o de todo si cat == "*")
+  local function langs_for(cat)
+    local set = {}
+    for _, e in ipairs(catalog) do
+      local in_cat = cat == "*" or vim.tbl_contains(e.categories, cat)
+      if in_cat then
+        for _, l in ipairs(e.languages) do
+          set[l] = true
+        end
+      end
+    end
+    local out = distinct_sorted(set)
+    table.insert(out, 1, "*")
+    return out
+  end
+
+  local ci, li = 1, 1 -- índices de categoría/lenguaje (1 = "*")
+  local langs = langs_for("*")
+
+  -- nombres del catálogo que pasan ambos chips
+  local function filtered()
+    local cat, lang = cats[ci], langs[li]
+    local out = {}
+    for _, e in ipairs(catalog) do
+      local ok_cat = cat == "*" or vim.tbl_contains(e.categories, cat)
+      local ok_lang = lang == "*" or vim.tbl_contains(e.languages, lang)
+      if ok_cat and ok_lang then
+        out[#out + 1] = e.name
+      end
+    end
+    return out
+  end
+
+  local function footer_text()
+    return string.format(
+      "[Cat: %s]  [Lang: %s]   <C-g> categoría · <C-l> lenguaje",
+      cats[ci],
+      langs[li]
+    )
+  end
+
+  local function apply(ctx)
+    ctx.set_items(filtered())
+    if ctx.list_win and api.nvim_win_is_valid(ctx.list_win) then
+      pcall(api.nvim_win_set_config, ctx.list_win, {
+        footer = " " .. footer_text() .. " ",
+        footer_pos = "center",
+      })
+    end
+  end
+
+  -- fila del picker: ● nombre  + sufijo atenuado "categoría · lenguajes"
+  local NAMEW = 24
+  local function render_row(name)
+    local m = meta[name] or {}
+    local cat = (m.categories or {})[1]
+    local langs2 = {}
+    for i = 1, math.min(2, #(m.languages or {})) do
+      langs2[i] = m.languages[i]
+    end
+    local right = cat or ""
+    if #langs2 > 0 then
+      right = (right ~= "" and (right .. " · ") or "") .. table.concat(langs2, ", ")
+    end
+    local left = "● " .. name
+    local pad = math.max(2, NAMEW - vim.fn.strdisplaywidth(name))
+    local text = left .. string.rep(" ", pad) .. right
+    return text, #left + pad -- texto, columna donde empieza el sufijo
+  end
+
   require("plugins.local.picker").pick({
     title = "Instalar herramienta",
-    items = items,
+    items = filtered(),
+    footer = footer_text(),
     backdrop = true,
+    list_ratio = 0.6, -- lista más ancha (los nombres+categoría necesitan sitio)
     preview_numbers = false, -- el preview es texto (descripción), no un archivo
+    preview_wrap = true, -- la descripción se ajusta en vez de cortarse
+    display = function(name)
+      return (render_row(name))
+    end,
+    display_hl = function(name)
+      local text, rstart = render_row(name)
+      return {
+        { group = "MasonInstalled", col = 0, end_col = #("●") },
+        { group = "Comment", col = rstart, end_col = #text },
+      }
+    end,
     preview = function(name)
       local pkg = actions.get(name)
       return pkg and { lines = require("plugins.local.mason.details").lines(pkg) } or nil
     end,
+    keymaps = {
+      ["<C-g>"] = function(ctx)
+        ci = ci % #cats + 1
+        li = 1
+        langs = langs_for(cats[ci]) -- la lista de lenguajes depende de la categoría
+        apply(ctx)
+      end,
+      ["<C-l>"] = function(ctx)
+        li = li % #langs + 1
+        apply(ctx)
+      end,
+    },
     on_select = function(name)
       if name then
         actions.install(name)
