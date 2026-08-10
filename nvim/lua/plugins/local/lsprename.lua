@@ -50,7 +50,7 @@ function M.confirm(files, title, encoding, on_confirm)
   local H = math.min(math.floor(vim.o.lines * 0.7), 26)
   local row = math.floor((vim.o.lines - H) / 2)
   local col = math.floor((vim.o.columns - W) / 2)
-  local list_w = math.max(32, math.min(38, math.floor(W * 0.42)))
+  local list_w = math.max(40, math.min(56, math.floor(W * 0.5)))
   local prev_w = W - list_w - 3
 
   -- Oscurecer el fondo (backdrop) para diferenciar el diálogo del buffer de código
