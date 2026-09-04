@@ -10,4 +10,7 @@ return {
   { "rose-pine/neovim", name = "rose-pine", lazy = false, priority = 1000 },
   { "EdenEast/nightfox.nvim", lazy = false, priority = 1000 },
   { "kepano/flexoki-neovim", name = "flexoki", lazy = false, priority = 1000 },
+  { "tanvirtin/monokai.nvim", lazy = false, priority = 1000 },
+  { "NLKNguyen/papercolor-theme", lazy = false, priority = 1000 },
+  { "savq/melange-nvim", name = "melange", lazy = false, priority = 1000 },
 }

@@ -21,13 +21,19 @@ M.themes = {
   { "kanagawa-wave" },
   { "kanagawa-dragon" },
   { "gruvbox-dark", cs = "gruvbox", bg = "dark" },
-  { "rose-pine" },
+  { "rose-pine-main" },
   { "rose-pine-moon" },
   { "nightfox" },
   { "duskfox" },
   { "nordfox" },
   { "carbonfox" },
   { "flexoki-dark" },
+  { "monokai" },
+  { "monokai_pro" },
+  { "monokai_soda" },
+  { "monokai_ristretto" },
+  { "papercolor-dark", cs = "PaperColor", bg = "dark" },
+  { "melange-dark", cs = "melange", bg = "dark" },
   -- ── Claros ──
   { "tokyonight-day", bg = "light" },
   { "catppuccin-latte", bg = "light" },
@@ -36,6 +42,8 @@ M.themes = {
   { "rose-pine-dawn", bg = "light" },
   { "dayfox", bg = "light" },
   { "flexoki-light", bg = "light" },
+  { "papercolor-light", cs = "PaperColor", bg = "light" },
+  { "melange-light", cs = "melange", bg = "light" },
 }
 
 local DEFAULT = "tokyonight-night"
