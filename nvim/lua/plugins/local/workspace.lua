@@ -64,14 +64,16 @@ function _G.tabline()
   return table.concat(parts)
 end
 
--- Crea un workspace: nueva tab con su propio cwd (tcd), nombre, explorador y dashboard
-function M.new(dir)
+-- Crea un workspace: nueva tab con su propio cwd (tcd), nombre, explorador y dashboard.
+-- `name` es opcional (editable en el prompt); si viene vacío, se usa el basename de la carpeta.
+function M.new(dir, name)
   dir = (dir and dir ~= "") and dir or vim.fn.getcwd()
   dir = vim.fn.fnamemodify(vim.fn.expand(dir), ":p")
+  name = (name and name ~= "") and name or vim.fn.fnamemodify(dir:gsub("[\\/]$", ""), ":t")
 
   vim.cmd("tabnew")
   vim.cmd("tcd " .. vim.fn.fnameescape(dir))
-  api.nvim_tabpage_set_var(0, "name", vim.fn.fnamemodify(dir:gsub("[\\/]$", ""), ":t"))
+  api.nvim_tabpage_set_var(0, "name", name)
 
   -- mismo layout que al iniciar: panel lateral + dashboard
   require("plugins.local.sidebar").open()

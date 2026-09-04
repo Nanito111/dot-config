@@ -260,7 +260,17 @@ end, { silent = true, desc = "Renombrar terminal actual" })
 -- Workspaces (tabs con cwd propio)
 map("n", "<leader>sn", function()
   require("plugins.local.dirpicker").pick({ prompt = "Carpeta del workspace: " }, function(dir)
-    require("plugins.local.workspace").new(dir)
+    if not (dir and dir ~= "") then
+      return
+    end
+    -- Nombre editable, precargado con el basename de la carpeta (⏎ acepta, Esc cancela)
+    local base = vim.fn.fnamemodify(vim.fn.expand(dir):gsub("[\\/]$", ""), ":t")
+    vim.ui.input({ prompt = "Nombre del workspace: ", default = base, relative = "editor" }, function(name)
+      if name == nil then
+        return -- Esc: cancelar la creación
+      end
+      require("plugins.local.workspace").new(dir, name)
+    end)
   end)
 end, { silent = true, desc = "Nuevo workspace (selector de carpetas)" })
 map("n", "<leader>sr", function()
