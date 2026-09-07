@@ -34,6 +34,7 @@ M.themes = {
   { "monokai_ristretto" },
   { "papercolor-dark", cs = "PaperColor", bg = "dark" },
   { "melange-dark", cs = "melange", bg = "dark" },
+  { "alabaster-dark", cs = "alabaster", bg = "dark" },
   -- ── Claros ──
   { "tokyonight-day", bg = "light" },
   { "catppuccin-latte", bg = "light" },
@@ -44,6 +45,7 @@ M.themes = {
   { "flexoki-light", bg = "light" },
   { "papercolor-light", cs = "PaperColor", bg = "light" },
   { "melange-light", cs = "melange", bg = "light" },
+  { "alabaster-light", cs = "alabaster", bg = "light" },
 }
 
 local DEFAULT = "tokyonight-night"
