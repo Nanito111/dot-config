@@ -12,6 +12,37 @@ local node_at_cursor = render.node_at_cursor
 
 local M = {}
 
+-- Ruta bajo el cursor considerando la línea 1 (la raíz, que no es un nodo del árbol).
+-- Devuelve path, is_dir; nil si no hay nada seleccionable.
+local function path_at_cursor(s)
+  local n = node_at_cursor(s)
+  if n then
+    return n.path, n.is_dir
+  end
+  if s.win and api.nvim_win_is_valid(s.win) and api.nvim_win_get_cursor(s.win)[1] == 1 then
+    return s.root, true
+  end
+end
+
+-- Abre una carpeta en el explorador del sistema (WSL: explorer.exe · mac: open · linux: xdg-open).
+-- vim.ui.open ya resuelve el abridor por plataforma; solo caemos a jobstart si no existiera.
+local function system_open(path)
+  local dir = vim.fn.isdirectory(path) == 1 and path or vim.fn.fnamemodify(path, ":h")
+  if vim.ui and vim.ui.open then
+    local _, err = vim.ui.open(dir)
+    if err then
+      return vim.notify(err, vim.log.levels.WARN, { title = "Explorador" })
+    end
+  elseif vim.fn.executable("explorer.exe") == 1 then
+    vim.fn.jobstart({ "explorer.exe", vim.fn.systemlist({ "wslpath", "-w", dir })[1] or dir }, { detach = true })
+  elseif vim.fn.executable("xdg-open") == 1 then
+    vim.fn.jobstart({ "xdg-open", dir }, { detach = true })
+  else
+    return vim.notify("No hay un abridor del sistema disponible", vim.log.levels.WARN, { title = "Explorador" })
+  end
+  vim.notify("Abriendo en el sistema: " .. dir, vim.log.levels.INFO, { title = "Explorador" })
+end
+
 -- Revela el archivo abierto en la ventana principal (expande sus carpetas), lleva el cursor
 -- a su línea y centra la vista del árbol en él.
 function M.reveal_current()
@@ -130,6 +161,24 @@ function M.go_up()
     return
   end
   s.root = vim.fn.fnamemodify(s.root, ":h")
+  render.render(s)
+  watch.start_watch(s)
+  git.update_git(s) -- marcas de git
+end
+
+-- -: entrar a una carpeta (cambiar la raíz al directorio padre)
+function M.go_in()
+  local s = cur()
+  if not s then
+    return
+  end
+
+  local n = node_at_cursor(s)
+  if not n then
+    return s.root
+  end
+
+  s.root = n.is_dir and n.path or vim.fn.fnamemodify(n.path, ":h")
   render.render(s)
   watch.start_watch(s)
   git.update_git(s) -- marcas de git
@@ -397,14 +446,30 @@ end
 -- Copia al portapapeles la ruta del nodo bajo el cursor. mode: "abs" (absoluta),
 -- "rel" (relativa al cwd) o "name" (solo el nombre del archivo/carpeta).
 function M.copy_path(mode)
-  local n = node_at_cursor(cur())
-  if not n then
+  local s = cur()
+  if not s then
+    return
+  end
+  local path = path_at_cursor(s) -- incluye la raíz (línea 1)
+  if not path then
     return
   end
   local mods = mode == "abs" and ":p" or mode == "name" and ":t" or ":."
-  local p = vim.fn.fnamemodify(n.path, mods):gsub("/$", "") -- sin barra final en carpetas
+  local p = vim.fn.fnamemodify(path, mods):gsub("/$", "") -- sin barra final en carpetas
   vim.fn.setreg("+", p)
   vim.notify("Copiado: " .. p, vim.log.levels.INFO, { title = "Explorador" })
+end
+
+-- O: abre la carpeta bajo el cursor (o la del archivo, o la raíz) en el explorador del sistema
+function M.open_in_system()
+  local s = cur()
+  if not s then
+    return
+  end
+  local path = path_at_cursor(s)
+  if path then
+    system_open(path)
+  end
 end
 
 return M
