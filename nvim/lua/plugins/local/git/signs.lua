@@ -187,6 +187,21 @@ local function update_head(buf)
   fetch(buf, "HEAD", committed_cache, dir, file) -- HEAD (git show HEAD:./archivo)
 end
 
+-- Debounce por buffer: update_head lanza 2 `git show`; en BufEnter eso se paga en CADA
+-- cambio de buffer/workspace (caro en WSL). Se coalesce la ráfaga y sale de la ruta crítica.
+local head_timers = {}
+local function schedule_head(buf)
+  local t = head_timers[buf]
+  if not t then
+    t = vim.uv.new_timer()
+    head_timers[buf] = t
+  end
+  t:stop()
+  t:start(40, 0, vim.schedule_wrap(function()
+    update_head(buf)
+  end))
+end
+
 -- ── Navegación entre hunks ─────────────────────────────────────────
 local function goto_hunk(dir)
   local buf = api.nvim_get_current_buf()
@@ -242,7 +257,7 @@ autocmd({ "BufReadPost", "BufWritePost", "BufEnter" }, {
   group = group,
   desc = "Actualizar signos de git",
   callback = function(ev)
-    update_head(ev.buf)
+    schedule_head(ev.buf)
   end,
 })
 
@@ -261,6 +276,12 @@ autocmd("BufDelete", {
     committed_cache[ev.buf] = nil
     hunk_cache[ev.buf] = nil
     summary_cache[ev.buf] = nil
+    local t = head_timers[ev.buf]
+    if t then
+      t:stop()
+      t:close()
+      head_timers[ev.buf] = nil
+    end
   end,
 })
 

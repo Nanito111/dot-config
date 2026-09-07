@@ -341,15 +341,25 @@ end, {
 
 local group = api.nvim_create_augroup("Statusline", { clear = true })
 
+-- Debounce: al cambiar de workspace, TabEnter y DirChanged se disparan juntos, y cada
+-- update_git lanza 1-2 procesos git (caro en WSL). Se coalescen en un único update diferido,
+-- fuera de la ruta crítica del switch (la rama ya se muestra desde la caché por-tab).
+local git_timer
+local function schedule_git()
+  if not git_timer then
+    git_timer = vim.uv.new_timer()
+  end
+  git_timer:stop()
+  git_timer:start(30, 0, vim.schedule_wrap(update_git))
+end
+
 -- Actualizar la rama según el cwd: al cambiar de directorio, cambiar de workspace
 -- (tab), recuperar el foco (por si cambió la rama fuera), guardar, o salir/cerrar una
 -- terminal embebida (capta commits/pull hechos en :terminal o lazygit).
 autocmd({ "DirChanged", "TabEnter", "FocusGained", "BufWritePost", "TermLeave", "TermClose" }, {
   group = group,
   desc = "Actualizar la rama de git del workspace (cwd)",
-  callback = function()
-    update_git()
-  end,
+  callback = schedule_git,
 })
 update_git() -- rama inicial de la tab actual
 
