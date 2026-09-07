@@ -24,17 +24,18 @@ local function path_at_cursor(s)
   end
 end
 
--- Abre una carpeta en el explorador del sistema (WSL: explorer.exe · mac: open · linux: xdg-open).
--- vim.ui.open ya resuelve el abridor por plataforma; solo caemos a jobstart si no existiera.
+-- Abre una carpeta en el explorador del sistema (WSL: explorer.exe · mac/linux: vim.ui.open).
+-- En WSL no sirve vim.ui.open: explorer.exe sale con código 1 (lo trata como error) y no acepta
+-- rutas /mnt/c. Lo fiable es `explorer.exe .` con cwd en la carpeta.
 local function system_open(path)
   local dir = vim.fn.isdirectory(path) == 1 and path or vim.fn.fnamemodify(path, ":h")
-  if vim.ui and vim.ui.open then
+  if vim.fn.has("wsl") == 1 or vim.fn.executable("explorer.exe") == 1 then
+    vim.fn.jobstart({ "explorer.exe", "." }, { cwd = dir, detach = true })
+  elseif vim.ui and vim.ui.open then
     local _, err = vim.ui.open(dir)
     if err then
       return vim.notify(err, vim.log.levels.WARN, { title = "Explorador" })
     end
-  elseif vim.fn.executable("explorer.exe") == 1 then
-    vim.fn.jobstart({ "explorer.exe", vim.fn.systemlist({ "wslpath", "-w", dir })[1] or dir }, { detach = true })
   elseif vim.fn.executable("xdg-open") == 1 then
     vim.fn.jobstart({ "xdg-open", dir }, { detach = true })
   else
