@@ -43,12 +43,22 @@ usr_cmd("ReloadConfig", function(o)
     --                      su framework deprecado y suelta errores.
     --   blink.cmp       -> aplica keymaps buffer-local; al recargarlo quedan apuntando
     --                      a la instancia vieja y <C-n>/<C-p> se comportan mal.
+    --   colorschemes    -> solo proveen :colorscheme y el tema se re-aplica al final; al
+    --                      desactivarlos lazy hace require de su módulo principal (que en
+    --                      algunos no existe, p. ej. alabaster/melange) y suelta errores.
     -- Para cambios en estos, reinicia Neovim (o :LspRestart para el LSP).
     local SKIP_RELOAD = {
       ["lazy.nvim"] = true,
       ["nvim-lspconfig"] = true,
       ["blink.cmp"] = true,
     }
+    -- todos los temas declarados en specs/themes.lua (nombre lazy = name o basename del repo)
+    local ok_th, theme_specs = pcall(require, "plugins.specs.themes")
+    if ok_th then
+      for _, spec in ipairs(theme_specs) do
+        SKIP_RELOAD[spec.name or spec[1]:match("[^/]+$")] = true
+      end
+    end
     local okc, Config = pcall(require, "lazy.core.config")
     if okc then
       -- nombres de los plugins cargados ANTES de re-parsear (el re-parseo resetea su estado)
