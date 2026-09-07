@@ -12,28 +12,38 @@
 -- donde colors = function(pair, palette) redefine grupos; pair(grupo, fg, bg, opts?)
 -- define el grupo y su "<grupo>Sep". Se detecta solo al reiniciar / :ReloadConfig.
 
--- Carga todos los presets de presets/*.lua (nombre del archivo = nombre del preset).
-local function load_presets()
-  local presets = {}
-  local dir = "lua/plugins/local/statusline/presets"
-  for _, path in ipairs(vim.api.nvim_get_runtime_file(dir .. "/*.lua", true)) do
-    local name = vim.fn.fnamemodify(path, ":t:r")
+-- Nombres de los presets (glob de presets/*.lua, sin requerirlos).
+local function preset_names()
+  local names = {}
+  for _, path in ipairs(vim.api.nvim_get_runtime_file("lua/plugins/local/statusline/presets/*.lua", true)) do
+    names[#names + 1] = vim.fn.fnamemodify(path, ":t:r")
+  end
+  table.sort(names)
+  return names
+end
+
+-- Tabla perezosa: presets[name] requiere el módulo la 1.ª vez y lo cachea. Al arrancar solo
+-- se carga el preset activo; los demás, al seleccionarlos. Un preset inválido cachea `false`
+-- (no truthy) para no reintentar el require en cada acceso.
+local lazy_presets = setmetatable({}, {
+  __index = function(t, name)
     local ok, preset = pcall(require, "plugins.local.statusline.presets." .. name)
-    if ok and type(preset) == "table" then
-      presets[name] = preset
-    else
+    local value = (ok and type(preset) == "table") and preset or false
+    if not value then
       vim.schedule(function()
         vim.notify("Preset de statusline inválido: " .. name, vim.log.levels.WARN)
       end)
     end
-  end
-  return presets
-end
+    rawset(t, name, value)
+    return value
+  end,
+})
 
 return {
   -- ── Presets de statusline ─────────────────────────────────────────
   preset = "default", -- preset activo al arrancar (si no hay preferencia guardada)
-  presets = load_presets(),
+  presets = lazy_presets, -- perezoso: solo el activo se carga al arrancar
+  preset_names = preset_names(), -- lista para el selector/autocompletado (sin cargar módulos)
 
   -- ── Catálogo de bordes (extremos de píldora) ──────────────────────
   borders = {

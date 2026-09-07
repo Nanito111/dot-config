@@ -147,7 +147,7 @@ end
 
 -- ── Presets (border + layout + colores) ────────────────────────────
 function M.presets()
-  return vim.tbl_keys(cfg.presets)
+  return cfg.preset_names
 end
 
 -- Preset activo (para el panel de configuración)
