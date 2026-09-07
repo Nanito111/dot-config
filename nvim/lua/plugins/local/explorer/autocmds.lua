@@ -81,10 +81,23 @@ autocmd("BufEnter", {
     end
     if s.current_file ~= name then
       s.current_file = name
-      render.reveal(s) -- expandir hasta el archivo
-      render.render(s)
-      -- mover el cursor del explorador al archivo (sin robar el foco)
       local target = normpath(name)
+      -- si el archivo YA es visible, no re-escanear el disco: solo re-pintar (mueve el
+      -- resaltado). Solo se hace reveal+build cuando hay que expandir carpetas nuevas.
+      local visible = false
+      for _, n in ipairs(s.nodes) do
+        if not n.is_dir and normpath(n.path) == target then
+          visible = true
+          break
+        end
+      end
+      if visible then
+        render.render(s, true) -- reusar nodos
+      else
+        render.reveal(s) -- expandir hasta el archivo
+        render.render(s)
+      end
+      -- mover el cursor del explorador al archivo (sin robar el foco)
       for i, n in ipairs(s.nodes) do
         if not n.is_dir and normpath(n.path) == target then
           pcall(api.nvim_win_set_cursor, s.win, { i + 1, 0 }) -- +1 por la línea raíz

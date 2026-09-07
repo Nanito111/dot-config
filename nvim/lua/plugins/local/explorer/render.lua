@@ -83,12 +83,17 @@ local function icon_color_group(col)
 end
 
 -- Dibuja el árbol en el buffer de `s`
-function M.render(s)
+-- `reuse` = true reaprovecha s.nodes sin re-escanear el disco (build): solo re-pinta.
+-- Útil cuando la estructura no cambió (p. ej. al abrir un archivo ya visible, para mover
+-- el resaltado de la línea actual) — clave en FS lentos como /mnt/c (WSL).
+function M.render(s, reuse)
   if not (s and s.buf and api.nvim_buf_is_valid(s.buf)) then
     return
   end
-  s.nodes = {}
-  build(s, s.root, 0, s.nodes)
+  if not reuse then
+    s.nodes = {}
+    build(s, s.root, 0, s.nodes)
+  end
   local colored = vim.g.explorer_colored_icons
   local current = s.current_file and normpath(s.current_file) or nil
 
