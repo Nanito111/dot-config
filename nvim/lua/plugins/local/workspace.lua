@@ -109,6 +109,46 @@ function M.jump(n)
   end
 end
 
+-- Reordena el workspace actual: delta > 0 lo mueve a la derecha, < 0 a la izquierda.
+-- En el extremo no hace nada (no envuelve), como arrastrar una pestaña hasta el borde.
+function M.move(delta)
+  local n = #api.nvim_list_tabpages()
+  if n < 2 then
+    return vim.notify("No hay otros workspaces", vim.log.levels.WARN, { title = "Workspace" })
+  end
+  local pos = api.nvim_tabpage_get_number(0)
+  if (delta > 0 and pos == n) or (delta < 0 and pos == 1) then
+    return -- ya está en el extremo
+  end
+  vim.cmd("tabmove " .. (delta > 0 and "+1" or "-1"))
+  vim.cmd("redrawtabline")
+end
+
+-- Selector de workspaces: lista nº · nombre · ruta; al elegir salta a esa tab.
+function M.pick()
+  local tabs = api.nvim_list_tabpages()
+  local items, map = {}, {}
+  for i, tab in ipairs(tabs) do
+    local cwd = vim.fn.fnamemodify(vim.fn.getcwd(-1, i), ":~")
+    local s = string.format("%d  %s   %s", i, tab_name(i, tab), cwd)
+    while map[s] do -- desambiguar duplicados (invisibles: espacios al final)
+      s = s .. " "
+    end
+    items[#items + 1] = s
+    map[s] = tab
+  end
+  require("plugins.local.picker").pick({
+    title = "Workspaces",
+    items = items,
+    on_select = function(sel)
+      local tab = sel and map[sel]
+      if tab and api.nvim_tabpage_is_valid(tab) then
+        api.nvim_set_current_tabpage(tab)
+      end
+    end,
+  })
+end
+
 -- ── Buffers por workspace (tab) ────────────────────────────────────
 -- Los buffers en Neovim son globales; aquí rastreamos cuáles pertenecen
 -- a cada tab para que <Tab>/<S-Tab> ciclen solo dentro del workspace.

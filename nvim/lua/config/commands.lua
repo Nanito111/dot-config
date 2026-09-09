@@ -152,6 +152,10 @@ usr_cmd("WorkspaceRename", function(o)
   require("plugins.local.workspace").rename(o.args)
 end, { nargs = 1, desc = "Renombrar el workspace actual" })
 
+usr_cmd("Workspaces", function()
+  require("plugins.local.workspace").pick()
+end, { desc = "Listar workspaces (selector)" })
+
 -- Cerrar buffer respetando el workspace (misma lógica que <leader>x): al cerrar el
 -- actual se muestra otro del MISMO workspace, no uno global de otra tab. Con argumento
 -- (nº o nombre de buffer) se delega al :bdelete nativo; sin argumento cierra el actual.

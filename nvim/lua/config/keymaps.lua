@@ -242,6 +242,7 @@ map("n", "<leader>fb", "<cmd>Buffers<CR>", { silent = true, desc = "Seleccionar 
 map("n", "<leader>fw", "<cmd>Grep<CR>", { silent = true, desc = "Buscar contenido en el cwd" })
 map("n", "<leader>ft", "<cmd>Terminals<CR>", { silent = true, desc = "Terminales del workspace" })
 map("n", "<leader>fT", "<cmd>Todos<CR>", { silent = true, desc = "Buscar TODOs del proyecto" })
+map("n", "<leader>fs", "<cmd>Workspaces<CR>", { silent = true, desc = "Listar workspaces" })
 
 -- Terminales con nombre
 map("n", "<leader>tn", function()
@@ -287,6 +288,12 @@ end, { silent = true, desc = "Workspace siguiente" })
 map("n", "<leader>sh", function()
   require("plugins.local.workspace").cycle(-1)
 end, { silent = true, desc = "Workspace anterior" })
+map("n", "<leader>sL", function()
+  require("plugins.local.workspace").move(1)
+end, { silent = true, desc = "Mover el workspace a la derecha" })
+map("n", "<leader>sH", function()
+  require("plugins.local.workspace").move(-1)
+end, { silent = true, desc = "Mover el workspace a la izquierda" })
 -- Ir directo al workspace N (mismo número que muestra la tabline): <leader>s1 … s9
 for i = 1, 9 do
   map("n", "<leader>s" .. i, function()
