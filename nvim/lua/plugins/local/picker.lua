@@ -724,11 +724,52 @@ function M.grep()
   -- item mostrado -> posición del match. Se acumula (no se reinicia por consulta) para que
   -- una respuesta lenta y ya descartada no borre las posiciones de la lista visible.
   local meta = {}
+  local ic = require("config.icons")
+  -- Descompone "ruta:línea:col:texto" (la ruta es no-voraz; el texto puede traer ':').
+  local function parts(item)
+    local path, lnum, _, text = item:match("^(.-):(%d+):(%d+):(.*)$")
+    if not path then
+      return nil
+    end
+    return path, lnum, (text or ""):gsub("^%s+", "") -- sin sangría inicial del código
+  end
+  -- Fila mostrada: <icono> archivo:línea  texto   carpeta. El nombre va PRIMERO (siempre
+  -- visible aunque la ruta sea profunda); la carpeta al final, atenuada, para desambiguar.
+  local function row(item)
+    local path, lnum, text = parts(item)
+    if not path then
+      return item, nil, nil
+    end
+    local icon = M.icons_enabled and (ic.icon(path) .. " ") or ""
+    local head = icon .. vim.fn.fnamemodify(path, ":t") .. ":" .. lnum .. "  " .. text
+    local dir = vim.fn.fnamemodify(path, ":h")
+    if dir == "" or dir == "." then
+      return head, path, nil
+    end
+    return head .. "   " .. dir, path, #head + 3 -- columna byte donde empieza la carpeta
+  end
   pick({
     title = "Contenido (cwd)",
     backdrop = true,
-    icon_path = function(item)
-      return item:match("^(.-):%d+:%d+:") -- ruta del formato vimgrep
+    display = function(item)
+      return (row(item))
+    end,
+    display_hl = function(item)
+      local line, path, dir_col = row(item)
+      if not path then
+        return
+      end
+      local hls = {}
+      if M.icons_enabled then
+        local col = ic.color(path)
+        if col then
+          hls[#hls + 1] = { group = icon_group(col), col = 0, end_col = #ic.icon(path) }
+        end
+      end
+      if dir_col then
+        hls[#hls + 1] = { group = "Comment", col = dir_col, end_col = #line }
+      end
+      return hls
     end,
     source = function(query, cb)
       if query == "" then
