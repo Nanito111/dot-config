@@ -52,6 +52,7 @@ local function is_special(buf)
     or ft == "settings"
     or ft == "mason"
     or ft == "netrw"
+    or ft == "minimap"
     or vim.bo[buf].buftype == "terminal"
 end
 
