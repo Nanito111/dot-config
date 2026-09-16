@@ -32,6 +32,7 @@ local M = {}
 ---@field backdrop? boolean|{ blend?: integer, zindex?: integer }  Capa oscura atada al close()
 ---@field close_keys? string[]  Teclas (modo n) que llaman a close()
 ---@field close_on_leave? boolean  Cerrar al salir del buffer via BufLeave (default: false)
+---@field exclusive? boolean    Flotante principal único: al abrirlo cierra el anterior exclusivo
 ---@field on_close? fun()       Callback al cerrar
 
 ---@param opts FloatOpts
@@ -82,12 +83,16 @@ function M.open(opts)
     local bopts = type(opts.backdrop) == "table" and opts.backdrop or {}
     backdrop_close = require("plugins.local.ui.backdrop").open(bopts)
   end
+  local entry -- si es exclusivo, su entrada en el manager de "flotante principal único"
   local closed = false
   local function close()
     if closed then
       return
     end
     closed = true
+    if entry then
+      require("plugins.local.ui.exclusive").release(entry)
+    end
     if backdrop_close then
       pcall(backdrop_close)
     end
@@ -96,6 +101,11 @@ function M.open(opts)
     if opts.on_close then
       pcall(opts.on_close)
     end
+  end
+  -- exclusivo: al abrir este, cerrar el flotante principal anterior (no se apilan)
+  if opts.exclusive then
+    entry = { close = close }
+    require("plugins.local.ui.exclusive").claim(entry)
   end
   for _, lhs in ipairs(opts.close_keys or {}) do
     vim.keymap.set("n", lhs, close, { buffer = buf, nowait = true, silent = true })

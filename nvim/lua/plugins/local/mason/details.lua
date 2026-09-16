@@ -51,6 +51,7 @@ function M.open(pkg)
     title = " " .. pkg.name .. " ",
     title_pos = "center",
     backdrop = true,
+    exclusive = true,
     close_keys = { "q", "<Esc>" },
     wo = { wrap = true, linebreak = true, number = false, relativenumber = false, signcolumn = "no", cursorline = false },
   })

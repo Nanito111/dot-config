@@ -209,6 +209,7 @@ function M.open()
     title_pos = "center",
     footer = " j/k · ␣ tipo · h/l cantidad · a añadir · x quitar · q cerrar ",
     footer_pos = "center",
+    exclusive = true,
     wo = { cursorline = true, winhighlight = "CursorLine:IndentTblCursorLine", wrap = false },
   }).win
 

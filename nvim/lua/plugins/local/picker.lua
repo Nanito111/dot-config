@@ -43,11 +43,17 @@ end
 --          items, source, on_select, shown, idx, count, seq }
 local state = nil
 
+-- El picker es un flotante principal (compuesto: prompt+lista+preview): participa del
+-- manager de "flotante único" para que abrir/cerrar no lo apile con el terminal flotante.
+local exclusive = require("plugins.local.ui.exclusive")
+local exclusive_entry = {} -- .close se asigna tras definir close()
+
 -- Cierra el picker y vuelve a la ventana de origen
 local function close()
   if not state then
     return
   end
+  exclusive.release(exclusive_entry)
   local s = state
   state = nil
   pcall(api.nvim_win_close, s.prompt_win, true)
@@ -75,6 +81,7 @@ local function close()
     s.on_cancel() -- se cerró sin elegir (Esc / foco fuera): deshacer el preview
   end
 end
+exclusive_entry.close = close
 
 -- ── Preview (carga acotada + asíncrona) ────────────────────────────
 -- Para no congelar el picker con archivos grandes, el preview:
@@ -529,6 +536,7 @@ function M.pick(opts)
     count = 0,
     seq = 0,
   }
+  exclusive.claim(exclusive_entry) -- flotante principal: cierra el anterior (terminal, popup…)
 
   -- teclas de navegación/confirmación/cierre (compartidas por ambos modos)
   local function nav(kmap)

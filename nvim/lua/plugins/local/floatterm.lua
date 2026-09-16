@@ -19,6 +19,7 @@ local function open_win(buf, title)
     title = " " .. title .. " ",
     title_pos = "center",
     backdrop = true, -- capa oscura detrás, como el resto de modales
+    exclusive = true, -- abrir otro flotante cierra este (no se apilan); el proceso sobrevive
   })
 end
 
