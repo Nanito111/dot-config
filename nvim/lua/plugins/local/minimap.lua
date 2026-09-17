@@ -254,21 +254,37 @@ function M.jump()
   vim.cmd("normal! zz")
 end
 
--- Abre/cierra según el estado activado y la ventana actual.
+-- Abre/cierra según el estado activado y las ventanas de la tab.
 local function reconcile()
   if not enabled then
     return close()
   end
-  local code = api.nvim_get_current_win()
-  if is_code_win(code) then
-    src_win = code
+  local cur = api.nvim_get_current_win()
+  if is_code_win(cur) then
+    src_win = cur
     if mm_win and api.nvim_win_is_valid(mm_win) then
       render()
     else
       open()
     end
-  elseif code ~= mm_win then
-    close() -- en un buffer especial / flotante: ocultar
+    return
+  end
+  -- El foco pasó a un flotante, al sidebar o a un buffer especial: NO ocultar el minimapa
+  -- por eso. Solo se cierra si ya no queda NINGUNA ventana de código en la tab (p. ej.
+  -- dashboard o terminal a pantalla completa).
+  if not is_code_win(src_win) then
+    src_win = nil
+    for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
+      if is_code_win(w) then
+        src_win = w
+        break
+      end
+    end
+  end
+  if not src_win then
+    close()
+  elseif mm_win and api.nvim_win_is_valid(mm_win) then
+    render() -- mantener el mapa reflejando la ventana de código vigente
   end
 end
 
