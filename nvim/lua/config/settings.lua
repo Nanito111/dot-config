@@ -27,6 +27,10 @@ local DEFAULTS = {
   ["ui.picker_icons"] = true,
   ["ui.sidebar_width"] = 35,
   ["ui.sidebar_side"] = "left",
+  ["ui.minimap"] = false,
+  ["ui.minimap_width"] = 20,
+  ["ui.minimap_side"] = "auto",
+  ["ui.minimap_symbols"] = "dot",
 }
 M.DEFAULTS = DEFAULTS
 
@@ -257,6 +261,7 @@ local function build()
   local indent = require("plugins.local.indentline")
   local statusline = require("plugins.local.statusline")
   local picker = require("plugins.local.picker")
+  local minimap = require("plugins.local.minimap")
 
   -- adaptador para settings respaldados por un proveedor (apply puro + set que persiste)
   local function provider(spec)
@@ -390,6 +395,62 @@ local function build()
           set = function(v)
             require("plugins.local.sidebar").set_side(v)
           end,
+        }),
+      },
+    },
+    {
+      title = "Minimapa",
+      items = {
+        provider({
+          id = "ui.minimap",
+          label = "Minimapa",
+          type = "bool",
+          default = DEFAULTS["ui.minimap"],
+          get = minimap.is_enabled,
+          apply = minimap.set_enabled,
+          set = minimap.set_enabled,
+        }),
+        provider({
+          id = "ui.minimap_width",
+          label = "Ancho del minimapa",
+          type = "number",
+          default = DEFAULTS["ui.minimap_width"],
+          min = 8,
+          max = 40,
+          step = 1,
+          get = minimap.get_width,
+          apply = minimap.apply_width,
+          set = minimap.set_width,
+        }),
+        provider({
+          id = "ui.minimap_side",
+          label = "Lado del minimapa",
+          type = "enum",
+          default = DEFAULTS["ui.minimap_side"],
+          choices = function()
+            return { "auto", "left", "right" }
+          end,
+          display = function(v)
+            return v == "auto" and "auto (opuesto al panel)" or (v == "right" and "derecha" or "izquierda")
+          end,
+          get = minimap.get_side,
+          apply = minimap.apply_side,
+          set = minimap.set_side,
+        }),
+        provider({
+          id = "ui.minimap_symbols",
+          label = "Símbolos del minimapa",
+          type = "enum",
+          default = DEFAULTS["ui.minimap_symbols"],
+          choices = function()
+            return { "dot", "block" }
+          end,
+          display = function(v)
+            return v == "block" and "bloques" or "braille"
+          end,
+          get = minimap.get_symbols,
+          apply = minimap.apply_symbols,
+          set = minimap.set_symbols,
         }),
       },
     },

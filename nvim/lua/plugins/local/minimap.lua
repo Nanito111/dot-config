@@ -1,29 +1,68 @@
 -- Minimapa propio (plugin-free) en una VENTANA PROPIA (split), no un flotante: reserva su
--- espacio como el sidebar, así no tapa el código. Codifica el buffer en braille (2×4 puntos
--- por carácter), resalta el viewport visible y la línea del cursor, y sincroniza con el
--- scroll. Off por defecto; <leader>um lo alterna. Va al lado OPUESTO al sidebar y se
--- auto-oculta en buffers especiales / flotantes.
+-- espacio como el sidebar, así no tapa el código. Codifica el buffer en braille (dot) o en
+-- bloques de cuadrante (block), resalta el viewport y la línea del cursor, y sincroniza con
+-- el scroll. Configurable desde el panel (activado/ancho/lado/símbolos) y con <leader>um.
+-- Solo clickeable; se auto-oculta en buffers especiales pero persiste con flotantes/sidebar.
 local api = vim.api
 local M = {}
 
-local WIDTH = 20 -- columnas del minimapa
 local MAXW = 160 -- ancho de referencia (columnas fuente -> puntos); más allá se recorta
-
 local ns = api.nvim_create_namespace("minimap")
+
 local enabled = false
 local mm_win, mm_buf -- ventana/buffer del minimapa
 local src_win -- ventana de código que se está reflejando
 local timer -- debounce del re-encode
-local last -- { L, H, scale } del último render (para mapear filas<->líneas)
+local last -- { L, H, scale, ch } del último render (para mapear filas<->líneas)
+-- overrides en vivo (preview del panel); nil = leer de settings
+local ov = { width = nil, side = nil, symbols = nil }
 
--- ── Braille: bit de cada subcelda (dx 0..1, dy 0..3) ───────────────
-local BASE = 0x2800
+-- ── Config (override en vivo o valor persistido) ───────────────────
+local function setting(id, default)
+  return require("config.settings").value(id, default)
+end
+local function width()
+  return ov.width or setting("ui.minimap_width", 20)
+end
+local function side_pref()
+  return ov.side or setting("ui.minimap_side", "auto")
+end
+local function symbols()
+  return ov.symbols or setting("ui.minimap_symbols", "dot")
+end
+
+-- ── Codificadores: braille (2×4) o bloques de cuadrante (2×2) ───────
 local DOT = {
   [0] = { 0x01, 0x02, 0x04, 0x40 }, -- columna izquierda (dy 0..3)
   [1] = { 0x08, 0x10, 0x20, 0x80 }, -- columna derecha
 }
+-- bloques de cuadrante por máscara (TL=1, TR=2, BL=4, BR=8)
+local QUAD = {
+  [0] = " ", [1] = "▘", [2] = "▝", [3] = "▀", [4] = "▖", [5] = "▌", [6] = "▞", [7] = "▛",
+  [8] = "▗", [9] = "▚", [10] = "▐", [11] = "▜", [12] = "▄", [13] = "▙", [14] = "▟", [15] = "█",
+}
+local ENC = {
+  dot = {
+    ch = 4, -- filas de punto por carácter
+    char = function(bits)
+      return vim.fn.nr2char(0x2800 + bits)
+    end,
+    bit = function(dx, dy)
+      return DOT[dx][dy + 1]
+    end,
+  },
+  block = {
+    ch = 2,
+    char = function(bits)
+      return QUAD[bits]
+    end,
+    bit = function(dx, dy)
+      return dx == 0 and (dy == 0 and 1 or 4) or (dy == 0 and 2 or 8)
+    end,
+  },
+}
 
--- Mapea una línea fuente (1-based) a la fila del minimapa (0-based) y viceversa.
+-- Mapea línea fuente (1-based) <-> fila del minimapa (0-based).
 local function line_to_row(line)
   if not last then
     return 0
@@ -31,7 +70,7 @@ local function line_to_row(line)
   if last.scale then
     return math.floor((line - 1) * last.H / last.L)
   end
-  return math.floor((line - 1) / 4)
+  return math.floor((line - 1) / last.ch)
 end
 local function row_to_line(row)
   if not last then
@@ -40,13 +79,14 @@ local function row_to_line(row)
   if last.scale then
     return math.floor(row * last.L / last.H) + 1
   end
-  return row * 4 + 1
+  return row * last.ch + 1
 end
 
--- Codifica `lines` en `H` filas de `WIDTH` glifos braille.
-local function encode(lines, H)
+-- Codifica `lines` en `H` filas de `w` glifos, según el juego de símbolos activo.
+local function encode(lines, H, w)
+  local enc = ENC[symbols()] or ENC.dot
   local L = #lines
-  local dot_rows, dot_cols = H * 4, WIDTH * 2
+  local dot_rows, dot_cols = H * enc.ch, w * 2
   local scale = L > dot_rows
 
   local refw = 40
@@ -60,7 +100,7 @@ local function encode(lines, H)
     end
   end
 
-  local grid = {} -- grid[dot_row * dot_cols + dot_col] = true
+  local grid = {}
   for i = 1, L do
     local ln = lines[i]
     local r = scale and math.floor((i - 1) * dot_rows / L) or (i - 1)
@@ -71,7 +111,7 @@ local function encode(lines, H)
     local maxj = math.min(#ln, refw)
     for j = 1, maxj do
       local b = ln:byte(j)
-      if b ~= 32 and b ~= 9 then -- no es espacio ni tab = "tinta"
+      if b ~= 32 and b ~= 9 then
         local c = math.floor((j - 1) * dot_cols / refw)
         if c < dot_cols then
           grid[rowbase + c] = true
@@ -83,42 +123,39 @@ local function encode(lines, H)
   local out = {}
   for cr = 0, H - 1 do
     local chars = {}
-    for cc = 0, WIDTH - 1 do
-      local dots = 0
+    for cc = 0, w - 1 do
+      local bits = 0
       for dx = 0, 1 do
-        for dy = 0, 3 do
-          if grid[(cr * 4 + dy) * dot_cols + (cc * 2 + dx)] then
-            dots = dots + DOT[dx][dy + 1]
+        for dy = 0, enc.ch - 1 do
+          if grid[(cr * enc.ch + dy) * dot_cols + (cc * 2 + dx)] then
+            bits = bits + enc.bit(dx, dy)
           end
         end
       end
-      chars[#chars + 1] = vim.fn.nr2char(BASE + dots)
+      chars[#chars + 1] = enc.char(bits)
     end
     out[#out + 1] = table.concat(chars)
   end
-  return out, { L = L, H = H, scale = scale }
+  return out, { L = L, H = H, scale = scale, ch = enc.ch }
 end
 
 -- ── Resaltados desde la paleta ─────────────────────────────────────
 local function set_hl()
   local p = require("config.palette")
   api.nvim_set_hl(0, "MinimapNormal", { fg = p.comment, bg = p.bg })
-  api.nvim_set_hl(0, "MinimapView", { bg = p.bg_highlight }) -- rango visible en pantalla
-  api.nvim_set_hl(0, "MinimapCursor", { bg = p.blue, fg = p.bg }) -- línea del cursor
+  api.nvim_set_hl(0, "MinimapView", { bg = p.bg_highlight })
+  api.nvim_set_hl(0, "MinimapCursor", { bg = p.blue, fg = p.bg })
 end
 
--- ¿esta ventana es de código "normal" (no minimapa, no flotante, no buffer especial)?
+-- ¿esta ventana es de código "normal"? (no minimapa, no flotante, no buffer especial)
 local function is_code_win(win)
   if not (win and api.nvim_win_is_valid(win)) then
     return false
   end
-  if api.nvim_win_get_config(win).relative ~= "" then
+  if api.nvim_win_get_config(win).relative ~= "" or win == mm_win then
     return false
   end
   local buf = api.nvim_win_get_buf(win)
-  if win == mm_win then
-    return false
-  end
   local ft = vim.bo[buf].filetype
   return ft ~= "dashboard"
     and ft ~= "explorer"
@@ -141,8 +178,7 @@ local function update_view()
   local top = vim.fn.line("w0", src_win)
   local bot = vim.fn.line("w$", src_win)
   local cur = api.nvim_win_get_cursor(src_win)[1]
-  local r0, r1 = line_to_row(top), line_to_row(bot)
-  for r = r0, r1 do
+  for r = line_to_row(top), line_to_row(bot) do
     pcall(api.nvim_buf_set_extmark, mm_buf, ns, r, 0, { line_hl_group = "MinimapView", hl_eol = true })
   end
   pcall(api.nvim_buf_set_extmark, mm_buf, ns, line_to_row(cur), 0, {
@@ -165,7 +201,7 @@ local function render()
     return
   end
   local lines = api.nvim_buf_get_lines(api.nvim_win_get_buf(src_win), 0, -1, false)
-  local out, meta = encode(lines, H)
+  local out, meta = encode(lines, H, width())
   last = meta
   vim.bo[mm_buf].modifiable = true
   api.nvim_buf_set_lines(mm_buf, 0, -1, false, out)
@@ -173,7 +209,6 @@ local function render()
   update_view()
 end
 
--- Debounce del re-encode (ediciones/scroll disparan ráfagas).
 local function schedule_render()
   if not timer then
     timer = vim.uv.new_timer()
@@ -183,7 +218,12 @@ local function schedule_render()
 end
 
 -- ── Ciclo de vida de la ventana ────────────────────────────────────
+-- Lado efectivo: "auto" = opuesto al sidebar; si no, el valor fijado.
 local function side()
+  local pref = side_pref()
+  if pref == "left" or pref == "right" then
+    return pref
+  end
   return require("config.settings").value("ui.sidebar_side", "left") == "left" and "right" or "left"
 end
 
@@ -202,8 +242,7 @@ local function open()
     vim.bo[mm_buf].bufhidden = "hide"
     vim.bo[mm_buf].swapfile = false
     vim.bo[mm_buf].filetype = "minimap"
-    -- Solo clickeable: el clic salta a esa zona y devuelve el foco al código. No se opera
-    -- por teclado como una ventana normal; se neutraliza lo que la haría sentir de archivo.
+    -- Solo clickeable: el clic salta a esa zona y devuelve el foco al código.
     for _, k in ipairs({ "<LeftMouse>", "<2-LeftMouse>" }) do
       vim.keymap.set("n", k, function()
         M.jump()
@@ -213,11 +252,10 @@ local function open()
       vim.keymap.set("n", k, "<Nop>", { buffer = mm_buf, silent = true, nowait = true })
     end
   end
-  -- split a lo alto completo del lado correspondiente (como el sidebar)
   vim.cmd(side() == "left" and "noautocmd topleft vsplit" or "noautocmd botright vsplit")
   mm_win = api.nvim_get_current_win()
   api.nvim_win_set_buf(mm_win, mm_buf)
-  api.nvim_win_set_width(mm_win, WIDTH)
+  api.nvim_win_set_width(mm_win, width())
   require("plugins.local.ui.win").set_opts(mm_win, {
     winfixwidth = true,
     number = false,
@@ -230,7 +268,7 @@ local function open()
     winhighlight = "Normal:MinimapNormal,NormalNC:MinimapNormal,EndOfBuffer:MinimapNormal",
     statuscolumn = "",
   })
-  api.nvim_set_current_win(code) -- devolver el foco al código
+  api.nvim_set_current_win(code)
   render()
 end
 
@@ -269,9 +307,8 @@ local function reconcile()
     end
     return
   end
-  -- El foco pasó a un flotante, al sidebar o a un buffer especial: NO ocultar el minimapa
-  -- por eso. Solo se cierra si ya no queda NINGUNA ventana de código en la tab (p. ej.
-  -- dashboard o terminal a pantalla completa).
+  -- foco en flotante/sidebar/especial: mantener el minimapa mientras exista alguna ventana
+  -- de código; cerrarlo solo si no queda ninguna (dashboard/terminal a pantalla completa).
   if not is_code_win(src_win) then
     src_win = nil
     for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
@@ -284,7 +321,15 @@ local function reconcile()
   if not src_win then
     close()
   elseif mm_win and api.nvim_win_is_valid(mm_win) then
-    render() -- mantener el mapa reflejando la ventana de código vigente
+    render()
+  end
+end
+
+-- Re-crea la ventana con los ajustes actuales (ancho/lado) si está abierta.
+local function reopen()
+  if enabled and mm_win and api.nvim_win_is_valid(mm_win) then
+    close()
+    reconcile()
   end
 end
 
@@ -296,14 +341,11 @@ local function ensure_autocmds()
   did_autocmds = true
   require("config.theme").register(set_hl)
   local grp = api.nvim_create_augroup("Minimap", { clear = true })
-  api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, {
-    group = grp,
-    callback = vim.schedule_wrap(reconcile),
-  })
+  api.nvim_create_autocmd({ "BufEnter", "WinEnter" }, { group = grp, callback = vim.schedule_wrap(reconcile) })
   api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
     group = grp,
     callback = function(a)
-      if enabled and a.buf == (src_win and api.nvim_win_is_valid(src_win) and api.nvim_win_get_buf(src_win)) then
+      if enabled and src_win and api.nvim_win_is_valid(src_win) and a.buf == api.nvim_win_get_buf(src_win) then
         schedule_render()
       end
     end,
@@ -313,7 +355,7 @@ local function ensure_autocmds()
     callback = function()
       if enabled and is_code_win(api.nvim_get_current_win()) then
         src_win = api.nvim_get_current_win()
-        update_view() -- barato: solo mueve el resaltado del viewport
+        update_view()
       end
     end,
   })
@@ -327,15 +369,82 @@ local function ensure_autocmds()
   })
 end
 
-function M.toggle()
+-- ── API pública (keymap + panel de configuración) ──────────────────
+function M.set_enabled(v)
   ensure_autocmds()
-  enabled = not enabled
+  enabled = v and true or false
+  require("config.settings").record("ui.minimap", enabled, false)
   reconcile()
+end
+
+function M.toggle()
+  M.set_enabled(not enabled)
   vim.notify(
     enabled and "Minimapa activado" or "Minimapa desactivado",
     vim.log.levels.INFO,
     { title = "Minimap", ephemeral = true }
   )
+end
+
+function M.is_enabled()
+  return enabled
+end
+
+-- Ancho: apply = vista previa en vivo; set = persiste.
+function M.get_width()
+  return width()
+end
+function M.apply_width(v)
+  ov.width = v
+  if mm_win and api.nvim_win_is_valid(mm_win) then
+    pcall(api.nvim_win_set_width, mm_win, v)
+    render()
+  end
+end
+function M.set_width(v)
+  require("config.settings").record("ui.minimap_width", v, 20)
+  ov.width = nil
+  if mm_win and api.nvim_win_is_valid(mm_win) then
+    pcall(api.nvim_win_set_width, mm_win, v)
+    render()
+  end
+end
+
+-- Lado: cambiar recrea la ventana en el otro borde.
+function M.get_side()
+  return side_pref()
+end
+function M.apply_side(v)
+  ov.side = v
+  reopen()
+end
+function M.set_side(v)
+  require("config.settings").record("ui.minimap_side", v, "auto")
+  ov.side = nil
+  reopen()
+end
+
+-- Símbolos: cambiar re-encodea.
+function M.get_symbols()
+  return symbols()
+end
+function M.apply_symbols(v)
+  ov.symbols = v
+  render()
+end
+function M.set_symbols(v)
+  require("config.settings").record("ui.minimap_symbols", v, "dot")
+  ov.symbols = nil
+  render()
+end
+
+-- Arranque: si quedó activado, engancharlo (se abrirá al entrar a una ventana de código).
+function M.setup()
+  if require("config.settings").value("ui.minimap", false) then
+    enabled = true
+    ensure_autocmds()
+    vim.schedule(reconcile)
+  end
 end
 
 return M

@@ -74,6 +74,7 @@ require("plugins.local.git")
 require("plugins.local.winbar")
 require("plugins.local.explorer")
 require("plugins.local.indentline") -- guías de indentación en buffers de código
+require("plugins.local.minimap").setup() -- restaura el minimapa si quedó activado
 require("plugins.local.cursor") -- cursor + línea del cursor coloreados según el modo
 require("plugins.local.envcloak") -- ocultar valores en archivos .env
 require("plugins.local.todo") -- resaltar TODO/FIXME + picker de proyecto (:Todos)
