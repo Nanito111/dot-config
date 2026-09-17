@@ -421,6 +421,20 @@ api.nvim_create_autocmd("TabEnter", {
   end,
 })
 
+-- No redimensionable con el mouse: si se arrastra su separador, se repone el ancho fijo.
+api.nvim_create_autocmd("WinResized", {
+  group = api.nvim_create_augroup("SidebarFixWidth", { clear = true }),
+  callback = function()
+    local sb = cur()
+    if sb and sb.win and api.nvim_win_is_valid(sb.win) then
+      local want = sb.collapsed and COLLAPSED_WIDTH or M.width()
+      if api.nvim_win_get_width(sb.win) ~= want then
+        pcall(api.nvim_win_set_width, sb.win, want)
+      end
+    end
+  end,
+})
+
 -- Cursor oculto dentro del sidebar (guicursor es global: se guarda y se repone al salir)
 local saved_guicursor
 api.nvim_create_autocmd("BufEnter", {

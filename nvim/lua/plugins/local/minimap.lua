@@ -362,9 +362,14 @@ local function ensure_autocmds()
   api.nvim_create_autocmd("WinResized", {
     group = grp,
     callback = function()
-      if enabled then
-        schedule_render()
+      if not enabled then
+        return
       end
+      -- no redimensionable con el mouse: reponer el ancho fijo si se arrastró su separador
+      if mm_win and api.nvim_win_is_valid(mm_win) and api.nvim_win_get_width(mm_win) ~= width() then
+        pcall(api.nvim_win_set_width, mm_win, width())
+      end
+      schedule_render()
     end,
   })
 end
