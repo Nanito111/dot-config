@@ -421,9 +421,9 @@ api.nvim_create_autocmd("TabEnter", {
   end,
 })
 
--- No redimensionable con el mouse: se repone el ancho fijo. Con DEBOUNCE (al soltar el
--- separador, no durante el arrastre): reponer en cada evento pelea con el arrastre en curso
--- y en cierto punto colapsa una ventana. Así se deja redimensionar libre y se corrige al final.
+-- No redimensionable con el mouse ni reubicable: se repone lado + ancho fijos. Con DEBOUNCE
+-- (al soltar el separador, no durante el arrastre): corregir en cada evento pelea con el
+-- arrastre en curso y colapsa. Así se deja redimensionar libre y se corrige al final.
 local fixw_timer
 api.nvim_create_autocmd("WinResized", {
   group = api.nvim_create_augroup("SidebarFixWidth", { clear = true }),
@@ -433,14 +433,22 @@ api.nvim_create_autocmd("WinResized", {
     end
     fixw_timer:stop()
     fixw_timer:start(80, 0, vim.schedule_wrap(function()
-      local sb = cur()
-      if sb and sb.win and api.nvim_win_is_valid(sb.win) then
-        local want = sb.collapsed and COLLAPSED_WIDTH or M.width()
-        if api.nvim_win_get_width(sb.win) ~= want then
-          pcall(api.nvim_win_set_width, sb.win, want)
-        end
-      end
+      M.reconcile() -- repone el lado (si se movió con <C-w>) y el ancho
     end))
+  end,
+})
+
+-- Paneles fijos: no se pueden mover de posición con <C-w>. Se neutralizan los chords que
+-- MUEVEN la ventana actual (H/J/K/L, swap x, rotar r/R, a otra tab T); los de NAVEGACIÓN
+-- (<C-w>h/l/w/p…) siguen funcionando para salir del panel.
+api.nvim_create_autocmd("FileType", {
+  group = api.nvim_create_augroup("PanelNoMove", { clear = true }),
+  pattern = { "explorer", "settings", "mason", "minimap" },
+  desc = "Paneles fijos: no moverlos con <C-w>",
+  callback = function(ev)
+    for _, k in ipairs({ "<C-w>H", "<C-w>J", "<C-w>K", "<C-w>L", "<C-w>x", "<C-w>r", "<C-w>R", "<C-w>T" }) do
+      vim.keymap.set("n", k, "<Nop>", { buffer = ev.buf, nowait = true, silent = true })
+    end
   end,
 })
 
