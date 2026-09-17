@@ -109,6 +109,12 @@ end
 
 -- Reenvía las teclas crudas a Vim (comando integrado), conservando el count
 local function feed(seq, count)
+  -- Paneles fijos (b:fixed_panel): no dejar mover/reubicar la ventana con <C-w> (H/J/K/L,
+  -- swap x, rotar r/R, a otra tab T). Se bloquea aquí porque whichkey reenvía el comando
+  -- nativo con noremap y ningún keymap lo intercepta. La navegación (<C-w>h/l/w/p…) pasa.
+  if vim.b.fixed_panel and seq:byte(1) == 23 and seq:match("^.[HJKLxrRT]$") then
+    return
+  end
   local prefix = (count and count > 0) and tostring(count) or ""
   -- "i" = insertar al frente del typeahead (respeta teclas pendientes),
   -- "n" = sin remapear (ejecuta el comando nativo, no vuelve a entrar aquí)

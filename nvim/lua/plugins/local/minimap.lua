@@ -30,6 +30,14 @@ end
 local function symbols()
   return ov.symbols or setting("ui.minimap_symbols", "dot")
 end
+-- Lado efectivo: "auto" = opuesto al sidebar; si no, el valor fijado.
+local function side()
+  local pref = side_pref()
+  if pref == "left" or pref == "right" then
+    return pref
+  end
+  return require("config.settings").value("ui.sidebar_side", "left") == "left" and "right" or "left"
+end
 
 -- ── Codificadores: braille (2×4) o bloques de cuadrante (2×2) ───────
 local DOT = {
@@ -222,15 +230,6 @@ local function schedule_render()
 end
 
 -- ── Ciclo de vida de la ventana ────────────────────────────────────
--- Lado efectivo: "auto" = opuesto al sidebar; si no, el valor fijado.
-local function side()
-  local pref = side_pref()
-  if pref == "left" or pref == "right" then
-    return pref
-  end
-  return require("config.settings").value("ui.sidebar_side", "left") == "left" and "right" or "left"
-end
-
 local function open()
   if mm_win and api.nvim_win_is_valid(mm_win) then
     return
