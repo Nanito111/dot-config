@@ -35,6 +35,7 @@ M.themes = {
   { "papercolor-dark", cs = "PaperColor", bg = "dark" },
   { "melange-dark", cs = "melange", bg = "dark" },
   { "alabaster-dark", cs = "alabaster", bg = "dark" },
+  { "poimandres" },
   -- ── Claros ──
   { "tokyonight-day", bg = "light" },
   { "catppuccin-latte", bg = "light" },

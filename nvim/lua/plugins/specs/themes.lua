@@ -14,4 +14,5 @@ return {
   { "NLKNguyen/papercolor-theme", lazy = false, priority = 1000 },
   { "savq/melange-nvim", name = "melange", lazy = false, priority = 1000 },
   { "dchinmay2/alabaster.nvim", name = "alabaster", lazy = false, priority = 1000 },
+  { "olivercederborg/poimandres.nvim", lazy = false, priority = 1000 },
 }
