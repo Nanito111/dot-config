@@ -198,6 +198,12 @@ end
 -- se quita de las listas de las demás tabs.
 local function record_exclusive(store, buf, tab)
   tab = tab or api.nvim_get_current_tabpage()
+  -- Los terminales no tienen path: persistimos su workspace dueño en el propio buffer, que
+  -- sobrevive a :ReloadConfig (donde tab_terms se reinicia). rebuild() lo usa para no
+  -- reasignarlos a la tab actual solo porque estén ocultos.
+  if store == tab_terms then
+    pcall(api.nvim_buf_set_var, buf, "ws_tab", tab)
+  end
   for t, list in pairs(store) do
     if t ~= tab then
       for i = #list, 1, -1 do
@@ -336,7 +342,12 @@ local function rebuild()
       local owner = owner_tab_by_path(api.nvim_buf_get_name(buf)) or api.nvim_get_current_tabpage()
       record_exclusive(tab_buffers, buf, owner)
     elseif is_tab_term(buf) then
-      record_exclusive(tab_terms, buf, term_owner(buf))
+      -- preferir el workspace dueño sellado en el buffer (sobrevive al reload); si su tab
+      -- ya no existe, caer a la ventana que lo muestra / la tab actual.
+      local ok, stamped = pcall(api.nvim_buf_get_var, buf, "ws_tab")
+      local owner = (ok and type(stamped) == "number" and api.nvim_tabpage_is_valid(stamped)) and stamped
+        or term_owner(buf)
+      record_exclusive(tab_terms, buf, owner)
     end
   end
 end
