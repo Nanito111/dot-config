@@ -421,17 +421,26 @@ api.nvim_create_autocmd("TabEnter", {
   end,
 })
 
--- No redimensionable con el mouse: si se arrastra su separador, se repone el ancho fijo.
+-- No redimensionable con el mouse: se repone el ancho fijo. Con DEBOUNCE (al soltar el
+-- separador, no durante el arrastre): reponer en cada evento pelea con el arrastre en curso
+-- y en cierto punto colapsa una ventana. Así se deja redimensionar libre y se corrige al final.
+local fixw_timer
 api.nvim_create_autocmd("WinResized", {
   group = api.nvim_create_augroup("SidebarFixWidth", { clear = true }),
   callback = function()
-    local sb = cur()
-    if sb and sb.win and api.nvim_win_is_valid(sb.win) then
-      local want = sb.collapsed and COLLAPSED_WIDTH or M.width()
-      if api.nvim_win_get_width(sb.win) ~= want then
-        pcall(api.nvim_win_set_width, sb.win, want)
-      end
+    if not fixw_timer then
+      fixw_timer = vim.uv.new_timer()
     end
+    fixw_timer:stop()
+    fixw_timer:start(80, 0, vim.schedule_wrap(function()
+      local sb = cur()
+      if sb and sb.win and api.nvim_win_is_valid(sb.win) then
+        local want = sb.collapsed and COLLAPSED_WIDTH or M.width()
+        if api.nvim_win_get_width(sb.win) ~= want then
+          pcall(api.nvim_win_set_width, sb.win, want)
+        end
+      end
+    end))
   end,
 })
 

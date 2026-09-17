@@ -196,6 +196,10 @@ local function render()
   if not is_code_win(src_win) then
     return
   end
+  -- reponer el ancho fijo (por si se arrastró el separador); render() está debounced
+  if api.nvim_win_get_width(mm_win) ~= width() then
+    pcall(api.nvim_win_set_width, mm_win, width())
+  end
   local H = api.nvim_win_get_height(mm_win)
   if H < 1 then
     return
@@ -359,17 +363,14 @@ local function ensure_autocmds()
       end
     end,
   })
+  -- no redimensionable con el mouse: render() (debounced) repone el ancho al soltar el
+  -- separador. Corregir en cada evento pelea con el arrastre en curso y colapsa.
   api.nvim_create_autocmd("WinResized", {
     group = grp,
     callback = function()
-      if not enabled then
-        return
+      if enabled then
+        schedule_render()
       end
-      -- no redimensionable con el mouse: reponer el ancho fijo si se arrastró su separador
-      if mm_win and api.nvim_win_is_valid(mm_win) and api.nvim_win_get_width(mm_win) ~= width() then
-        pcall(api.nvim_win_set_width, mm_win, width())
-      end
-      schedule_render()
     end,
   })
 end
