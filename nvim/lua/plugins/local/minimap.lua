@@ -457,6 +457,24 @@ local function ensure_autocmds()
       end
     end,
   })
+  -- sin scroll aunque el minimapa NO tenga el foco: la rueda sobre él (con el foco en el
+  -- editor) lo desplaza y los maps del buffer no se consultan. Si se desplazó, volver al tope.
+  api.nvim_create_autocmd("WinScrolled", {
+    group = grp,
+    callback = function()
+      if not (enabled and mm_win and api.nvim_win_is_valid(mm_win)) then
+        return
+      end
+      local top = api.nvim_win_call(mm_win, function()
+        return vim.fn.line("w0")
+      end)
+      if top ~= 1 then -- idempotente: al reponerlo a 1, el siguiente evento ya no entra
+        api.nvim_win_call(mm_win, function()
+          vim.fn.winrestview({ topline = 1, leftcol = 0 })
+        end)
+      end
+    end,
+  })
 end
 
 -- ── API pública (keymap + panel de configuración) ──────────────────
