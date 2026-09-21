@@ -8,7 +8,8 @@ local M = {}
 
 local MAXW = 160 -- ancho de referencia (columnas fuente -> puntos); más allá se recorta
 local ns = api.nvim_create_namespace("minimap") -- viewport + línea del cursor
-local ns_git = api.nvim_create_namespace("minimap_git") -- marcas de git (add/change/delete)
+local ns_git = api.nvim_create_namespace("minimap_git") -- marcas de git (add/change/delete) — borde izq
+local ns_diag = api.nvim_create_namespace("minimap_diag") -- diagnósticos por severidad — borde der
 
 local enabled = false
 local mm_win, mm_buf -- ventana/buffer del minimapa
@@ -157,6 +158,10 @@ local function set_hl()
   api.nvim_set_hl(0, "MinimapGitAdd", { fg = p.green })
   api.nvim_set_hl(0, "MinimapGitChange", { fg = p.yellow })
   api.nvim_set_hl(0, "MinimapGitDelete", { fg = p.red })
+  api.nvim_set_hl(0, "MinimapDiagError", { fg = p.red })
+  api.nvim_set_hl(0, "MinimapDiagWarn", { fg = p.orange })
+  api.nvim_set_hl(0, "MinimapDiagInfo", { fg = p.blue })
+  api.nvim_set_hl(0, "MinimapDiagHint", { fg = p.cyan })
 end
 
 -- ¿esta ventana es de código "normal"? (no minimapa, no flotante, no buffer especial)
@@ -230,6 +235,35 @@ local function apply_git()
   end
 end
 
+-- Marca en el borde DERECHO de cada fila la severidad de diagnósticos de las líneas que
+-- representa (rojo=error, naranja=aviso, azul=info, cian=pista). Namespace propio.
+local DIAG_HL = {
+  [vim.diagnostic.severity.ERROR] = "MinimapDiagError",
+  [vim.diagnostic.severity.WARN] = "MinimapDiagWarn",
+  [vim.diagnostic.severity.INFO] = "MinimapDiagInfo",
+  [vim.diagnostic.severity.HINT] = "MinimapDiagHint",
+}
+local function apply_diag()
+  if not (mm_buf and api.nvim_buf_is_valid(mm_buf) and last and src_win and api.nvim_win_is_valid(src_win)) then
+    return
+  end
+  api.nvim_buf_clear_namespace(mm_buf, ns_diag, 0, -1)
+  local rows = {} -- fila -> severidad más grave (ERROR=1 es la de menor número)
+  for _, d in ipairs(vim.diagnostic.get(api.nvim_win_get_buf(src_win))) do
+    local r = line_to_row(d.lnum + 1)
+    if not rows[r] or d.severity < rows[r] then
+      rows[r] = d.severity
+    end
+  end
+  for r, sev in pairs(rows) do
+    pcall(api.nvim_buf_set_extmark, mm_buf, ns_diag, r, 0, {
+      virt_text = { { "▐", DIAG_HL[sev] } },
+      virt_text_pos = "right_align",
+      priority = 160,
+    })
+  end
+end
+
 -- Re-encodea el buffer de código en el minimapa (y reaplica el viewport).
 local function render()
   if not (mm_win and api.nvim_win_is_valid(mm_win) and mm_buf and api.nvim_buf_is_valid(mm_buf)) then
@@ -254,6 +288,7 @@ local function render()
   vim.bo[mm_buf].modifiable = false
   update_view()
   apply_git()
+  apply_diag()
 end
 
 local function schedule_render()
@@ -409,6 +444,15 @@ local function ensure_autocmds()
     group = grp,
     callback = function()
       if enabled then
+        schedule_render()
+      end
+    end,
+  })
+  -- refrescar las marcas de diagnósticos cuando cambian
+  api.nvim_create_autocmd("DiagnosticChanged", {
+    group = grp,
+    callback = function(a)
+      if enabled and src_win and api.nvim_win_is_valid(src_win) and a.buf == api.nvim_win_get_buf(src_win) then
         schedule_render()
       end
     end,
