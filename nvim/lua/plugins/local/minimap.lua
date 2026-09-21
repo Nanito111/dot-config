@@ -72,6 +72,16 @@ local ENC = {
   },
 }
 
+-- Símbolo de la marca (git/diag) según el estilo activo: barra de columna izquierda/derecha
+-- en braille o en bloque, para que combine con el resto del minimapa.
+local MARK = {
+  dot = { left = "⡇", right = "⢸" },
+  block = { left = "▌", right = "▐" },
+}
+local function mark(side_)
+  return (MARK[symbols()] or MARK.dot)[side_]
+end
+
 -- Mapea línea fuente (1-based) <-> fila del minimapa (0-based).
 local function line_to_row(line)
   if not last then
@@ -228,7 +238,7 @@ local function apply_git()
   end
   for r, cat in pairs(rows) do
     pcall(api.nvim_buf_set_extmark, mm_buf, ns_git, r, 0, {
-      virt_text = { { "▎", GIT_HL[cat] } },
+      virt_text = { { mark("left"), GIT_HL[cat] } },
       virt_text_pos = "overlay",
       priority = 150,
     })
@@ -257,7 +267,7 @@ local function apply_diag()
   end
   for r, sev in pairs(rows) do
     pcall(api.nvim_buf_set_extmark, mm_buf, ns_diag, r, 0, {
-      virt_text = { { "▐", DIAG_HL[sev] } },
+      virt_text = { { mark("right"), DIAG_HL[sev] } },
       virt_text_pos = "right_align",
       priority = 160,
     })
