@@ -300,10 +300,27 @@ local function schedule_render()
 end
 
 -- ── Ciclo de vida de la ventana ────────────────────────────────────
+-- Cierra ventanas/buffers de minimapa HUÉRFANOS (los que no son los actuales). Tras
+-- :ReloadConfig el módulo se recrea con estado nuevo (mm_win=nil) pero la ventana anterior
+-- sigue en pantalla; sin esto quedaría muerta y al alternar aparecería una segunda.
+local function close_orphans()
+  for _, w in ipairs(api.nvim_list_wins()) do
+    if w ~= mm_win and api.nvim_win_is_valid(w) and vim.bo[api.nvim_win_get_buf(w)].filetype == "minimap" then
+      pcall(api.nvim_win_close, w, true)
+    end
+  end
+  for _, b in ipairs(api.nvim_list_bufs()) do
+    if b ~= mm_buf and api.nvim_buf_is_valid(b) and vim.bo[b].filetype == "minimap" then
+      pcall(api.nvim_buf_delete, b, { force = true })
+    end
+  end
+end
+
 local function open()
   if mm_win and api.nvim_win_is_valid(mm_win) then
     return
   end
+  close_orphans() -- por si quedó uno de una recarga previa
   local code = api.nvim_get_current_win()
   if not is_code_win(code) then
     return
@@ -546,8 +563,10 @@ function M.set_symbols(v)
   render()
 end
 
--- Arranque: si quedó activado, engancharlo (se abrirá al entrar a una ventana de código).
+-- Arranque / :ReloadConfig: limpiar cualquier minimapa huérfano de la sesión anterior y,
+-- si quedó activado, re-engancharlo (se abrirá al entrar a una ventana de código).
 function M.setup()
+  close_orphans()
   if require("config.settings").value("ui.minimap", false) then
     enabled = true
     ensure_autocmds()
