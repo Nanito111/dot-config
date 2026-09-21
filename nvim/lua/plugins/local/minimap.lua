@@ -72,14 +72,33 @@ local ENC = {
   },
 }
 
--- Símbolo de la marca (git/diag) según el estilo activo: barra de columna izquierda/derecha
--- en braille o en bloque, para que combine con el resto del minimapa.
-local MARK = {
-  dot = { left = "⡇", right = "⢸" },
-  block = { left = "▌", right = "▐" },
-}
-local function mark(side_)
-  return (MARK[symbols()] or MARK.dot)[side_]
+-- Marca de git/diag en el estilo activo. En braille, la columna (izq/der) se llena con
+-- 1-4 puntos según CUÁNTAS líneas cambiadas caen en esa fila del minimapa (más líneas =
+-- barra más llena); en bloque se usa el medio bloque.
+local LEFT_BITS = { 0x01, 0x02, 0x04, 0x40 } -- puntos 1,2,3,7 (columna izquierda, arriba→abajo)
+local RIGHT_BITS = { 0x08, 0x10, 0x20, 0x80 } -- puntos 4,5,6,8 (columna derecha)
+local function mark(side_, dots)
+  if symbols() ~= "dot" then
+    return side_ == "left" and "▌" or "▐"
+  end
+  local bits = side_ == "left" and LEFT_BITS or RIGHT_BITS
+  local b = 0
+  for i = 1, math.max(1, math.min(dots or 4, 4)) do
+    b = b + bits[i]
+  end
+  return vim.fn.nr2char(0x2800 + b)
+end
+
+-- Líneas de código que representa cada fila del minimapa (para escalar los puntos).
+local function row_span()
+  if last and last.scale then
+    return math.max(1, math.ceil(last.L / last.H))
+  end
+  return (last and last.ch) or 4
+end
+-- Nº de puntos (1-4) para `n` líneas marcadas dentro de una fila que abarca `span`.
+local function dots_for(n, span)
+  return math.max(1, math.min(4, math.ceil(n / span * 4)))
 end
 
 -- Mapea línea fuente (1-based) <-> fila del minimapa (0-based).
@@ -229,16 +248,23 @@ local function apply_git()
   if not (ok and git.line_status) then
     return
   end
-  local rows = {} -- fila del minimapa -> categoría (la de mayor prioridad)
+  local rows = {} -- fila -> { cat = categoría más prioritaria, n = líneas marcadas }
   for line, cat in pairs(git.line_status(api.nvim_win_get_buf(src_win))) do
     local r = line_to_row(line)
-    if not rows[r] or (GIT_PRI[cat] or 0) > (GIT_PRI[rows[r]] or 0) then
-      rows[r] = cat
+    local e = rows[r]
+    if not e then
+      e = { cat = cat, n = 0 }
+      rows[r] = e
+    end
+    e.n = e.n + 1
+    if (GIT_PRI[cat] or 0) > (GIT_PRI[e.cat] or 0) then
+      e.cat = cat
     end
   end
-  for r, cat in pairs(rows) do
+  local span = row_span()
+  for r, e in pairs(rows) do
     pcall(api.nvim_buf_set_extmark, mm_buf, ns_git, r, 0, {
-      virt_text = { { mark("left"), GIT_HL[cat] } },
+      virt_text = { { mark("left", dots_for(e.n, span)), GIT_HL[e.cat] } },
       virt_text_pos = "overlay",
       priority = 150,
     })
@@ -258,16 +284,23 @@ local function apply_diag()
     return
   end
   api.nvim_buf_clear_namespace(mm_buf, ns_diag, 0, -1)
-  local rows = {} -- fila -> severidad más grave (ERROR=1 es la de menor número)
+  local rows = {} -- fila -> { sev = severidad más grave (ERROR=1), n = diagnósticos }
   for _, d in ipairs(vim.diagnostic.get(api.nvim_win_get_buf(src_win))) do
     local r = line_to_row(d.lnum + 1)
-    if not rows[r] or d.severity < rows[r] then
-      rows[r] = d.severity
+    local e = rows[r]
+    if not e then
+      e = { sev = d.severity, n = 0 }
+      rows[r] = e
+    end
+    e.n = e.n + 1
+    if d.severity < e.sev then
+      e.sev = d.severity
     end
   end
-  for r, sev in pairs(rows) do
+  local span = row_span()
+  for r, e in pairs(rows) do
     pcall(api.nvim_buf_set_extmark, mm_buf, ns_diag, r, 0, {
-      virt_text = { { mark("right"), DIAG_HL[sev] } },
+      virt_text = { { mark("right", dots_for(e.n, span)), DIAG_HL[e.sev] } },
       virt_text_pos = "right_align",
       priority = 160,
     })
