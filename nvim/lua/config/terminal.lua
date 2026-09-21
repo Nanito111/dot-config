@@ -8,7 +8,8 @@ local function goto_target_win()
       return false -- flotante
     end
     local ft = vim.bo[api.nvim_win_get_buf(w)].filetype
-    return ft ~= "netrw" and ft ~= "explorer"
+    -- no crear terminales sobre paneles fijos (explorador, minimapa, settings, mason)
+    return ft ~= "netrw" and ft ~= "explorer" and ft ~= "minimap" and ft ~= "settings" and ft ~= "mason"
   end
   local win = api.nvim_get_current_win()
   if not ok(win) then

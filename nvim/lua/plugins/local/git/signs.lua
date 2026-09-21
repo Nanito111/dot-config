@@ -12,6 +12,7 @@ local index_cache = {}
 local committed_cache = {}
 local hunk_cache = {}
 local summary_cache = {} -- summary_cache[buf] = { added, changed, removed } (sin stagear)
+local status_cache = {} -- status_cache[buf] = { [línea] = "add"|"change"|"delete" } (para el minimapa)
 local timers = {}
 
 local SIGNS = {
@@ -76,6 +77,8 @@ local function refresh(buf)
   api.nvim_buf_clear_namespace(buf, ns, 0, -1)
   hunk_cache[buf] = {}
   summary_cache[buf] = nil
+  local st = {}
+  status_cache[buf] = st
 
   local index = index_cache[buf]
   if not index then
@@ -97,12 +100,14 @@ local function refresh(buf)
       added = added + cb
       for i = 0, cb - 1 do
         place(buf, sb + i, "add")
+        st[sb + i] = "add"
       end
     elseif cb == 0 then -- borradas
       first = math.max(sb, 1)
       kind = (sb == 0) and "topdelete" or "delete"
       removed = removed + ca
       place(buf, first, kind)
+      st[first] = "delete"
     else -- modificadas (changedelete si además se quitaron líneas)
       kind, first = (ca > cb) and "changedelete" or "change", sb
       changed = changed + cb
@@ -111,6 +116,7 @@ local function refresh(buf)
       end
       for i = 0, cb - 1 do
         place(buf, sb + i, kind)
+        st[sb + i] = "change"
       end
     end
     hunk_cache[buf][#hunk_cache[buf] + 1] = { start = first, kind = kind }
@@ -130,6 +136,9 @@ local function refresh(buf)
       local lb = index_to_buf(math.max(si, 1), unstaged)
       if lb then
         place(buf, lb, "staged_delete", 6)
+        if not st[lb] then
+          st[lb] = "delete"
+        end
       end
     else
       local kind = (ch == 0) and "staged_add" or "staged_change"
@@ -137,6 +146,9 @@ local function refresh(buf)
         local lb = index_to_buf(si + i, unstaged)
         if lb then
           place(buf, lb, kind, 6)
+          if not st[lb] then
+            st[lb] = (ch == 0) and "add" or "change"
+          end
         end
       end
     end
@@ -241,6 +253,15 @@ function M.summary(buf)
   return summary_cache[buf]
 end
 
+-- Estado de git por línea del buffer: { [línea] = "add"|"change"|"delete" }. Lo usa el
+-- minimapa para marcar en su columna las líneas con cambios.
+function M.line_status(buf)
+  if not buf or buf == 0 then
+    buf = api.nvim_get_current_buf()
+  end
+  return status_cache[buf] or {}
+end
+
 function M.next_hunk()
   goto_hunk(1)
 end
@@ -276,6 +297,7 @@ autocmd("BufDelete", {
     committed_cache[ev.buf] = nil
     hunk_cache[ev.buf] = nil
     summary_cache[ev.buf] = nil
+    status_cache[ev.buf] = nil
     local t = head_timers[ev.buf]
     if t then
       t:stop()

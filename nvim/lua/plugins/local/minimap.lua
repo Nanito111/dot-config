@@ -7,7 +7,8 @@ local api = vim.api
 local M = {}
 
 local MAXW = 160 -- ancho de referencia (columnas fuente -> puntos); más allá se recorta
-local ns = api.nvim_create_namespace("minimap")
+local ns = api.nvim_create_namespace("minimap") -- viewport + línea del cursor
+local ns_git = api.nvim_create_namespace("minimap_git") -- marcas de git (add/change/delete)
 
 local enabled = false
 local mm_win, mm_buf -- ventana/buffer del minimapa
@@ -153,6 +154,9 @@ local function set_hl()
   api.nvim_set_hl(0, "MinimapNormal", { fg = p.comment, bg = p.bg })
   api.nvim_set_hl(0, "MinimapView", { bg = p.bg_highlight })
   api.nvim_set_hl(0, "MinimapCursor", { bg = p.blue, fg = p.bg })
+  api.nvim_set_hl(0, "MinimapGitAdd", { fg = p.green })
+  api.nvim_set_hl(0, "MinimapGitChange", { fg = p.yellow })
+  api.nvim_set_hl(0, "MinimapGitDelete", { fg = p.red })
 end
 
 -- ¿esta ventana es de código "normal"? (no minimapa, no flotante, no buffer especial)
@@ -196,6 +200,36 @@ local function update_view()
   })
 end
 
+-- Marca en la 1.ª celda de cada fila el estado de git de las líneas que representa
+-- (verde=añadido, amarillo=cambiado, rojo=borrado). Namespace propio: no se borra al
+-- mover el cursor (update_view solo toca `ns`).
+local GIT_HL = { add = "MinimapGitAdd", change = "MinimapGitChange", delete = "MinimapGitDelete" }
+local GIT_PRI = { add = 1, change = 2, delete = 3 }
+local function apply_git()
+  if not (mm_buf and api.nvim_buf_is_valid(mm_buf) and last and src_win and api.nvim_win_is_valid(src_win)) then
+    return
+  end
+  api.nvim_buf_clear_namespace(mm_buf, ns_git, 0, -1)
+  local ok, git = pcall(require, "plugins.local.git.signs")
+  if not (ok and git.line_status) then
+    return
+  end
+  local rows = {} -- fila del minimapa -> categoría (la de mayor prioridad)
+  for line, cat in pairs(git.line_status(api.nvim_win_get_buf(src_win))) do
+    local r = line_to_row(line)
+    if not rows[r] or (GIT_PRI[cat] or 0) > (GIT_PRI[rows[r]] or 0) then
+      rows[r] = cat
+    end
+  end
+  for r, cat in pairs(rows) do
+    pcall(api.nvim_buf_set_extmark, mm_buf, ns_git, r, 0, {
+      virt_text = { { "▎", GIT_HL[cat] } },
+      virt_text_pos = "overlay",
+      priority = 150,
+    })
+  end
+end
+
 -- Re-encodea el buffer de código en el minimapa (y reaplica el viewport).
 local function render()
   if not (mm_win and api.nvim_win_is_valid(mm_win) and mm_buf and api.nvim_buf_is_valid(mm_buf)) then
@@ -219,6 +253,7 @@ local function render()
   api.nvim_buf_set_lines(mm_buf, 0, -1, false, out)
   vim.bo[mm_buf].modifiable = false
   update_view()
+  apply_git()
 end
 
 local function schedule_render()
@@ -254,6 +289,11 @@ local function open()
     for _, k in ipairs({ "<Tab>", "<S-Tab>", "<leader>x" }) do
       vim.keymap.set("n", k, "<Nop>", { buffer = mm_buf, silent = true, nowait = true })
     end
+    -- sin scroll: el mapa muestra TODO el archivo escalado a la ventana, no hay a dónde
+    -- desplazarse. Neutralizar la rueda del ratón (dejaría ver espacio vacío al scrollear).
+    for _, k in ipairs({ "<ScrollWheelUp>", "<ScrollWheelDown>", "<ScrollWheelLeft>", "<ScrollWheelRight>" }) do
+      vim.keymap.set("n", k, "<Nop>", { buffer = mm_buf, silent = true, nowait = true })
+    end
   end
   vim.cmd(side() == "left" and "noautocmd topleft vsplit" or "noautocmd botright vsplit")
   mm_win = api.nvim_get_current_win()
@@ -268,6 +308,7 @@ local function open()
     list = false,
     wrap = false,
     cursorline = false,
+    scrolloff = 0, -- sin margen: el cursor/clic no desplaza la vista
     winhighlight = "Normal:MinimapNormal,NormalNC:MinimapNormal,EndOfBuffer:MinimapNormal",
     statuscolumn = "",
   })
