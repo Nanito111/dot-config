@@ -44,6 +44,21 @@ local function tab_name(i, tab)
   return base ~= "" and base or "[sin nombre]"
 end
 
+-- Nombre del workspace actual (t:name o basename del cwd)
+local function cur_name()
+  local ok, n = pcall(api.nvim_tabpage_get_var, 0, "name")
+  if ok and n ~= "" then
+    return n
+  end
+  local base = vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+  return base ~= "" and base or "[sin nombre]"
+end
+
+-- Avisa a quien escuche (p. ej. Clippy) de una acción de workspace.
+local function emit(action, name)
+  api.nvim_exec_autocmds("User", { pattern = "Workspace" .. action, data = { name = name } })
+end
+
 -- Tabline personalizada: cada workspace en una píldora redondeada
 function _G.tabline()
   local cur = api.nvim_get_current_tabpage()
@@ -81,12 +96,14 @@ function M.new(dir, name)
   require("plugins.local.sidebar").refresh()
   require("plugins.local.dashboard").open()
   vim.cmd("redrawtabline")
+  emit("New", name)
 end
 
 -- Renombra el workspace (tab) actual
 function M.rename(name)
   api.nvim_tabpage_set_var(0, "name", name)
   vim.cmd("redrawtabline")
+  emit("Renamed", name)
 end
 
 -- Va al workspace siguiente (delta > 0) o anterior. Con uno solo, `gt`/`gT` no harían
@@ -97,6 +114,7 @@ function M.cycle(delta)
     return
   end
   vim.cmd(delta > 0 and "tabnext" or "tabprevious")
+  emit("Switch", cur_name())
 end
 
 -- Salta al workspace (tab) número n — el mismo número que muestra la tabline.
@@ -104,6 +122,7 @@ function M.jump(n)
   local tabs = api.nvim_list_tabpages()
   if tabs[n] then
     api.nvim_set_current_tabpage(tabs[n])
+    emit("Switch", cur_name())
   else
     vim.notify("No existe el workspace " .. n, vim.log.levels.WARN, { title = "Workspace" })
   end
@@ -122,6 +141,7 @@ function M.move(delta)
   end
   vim.cmd("tabmove " .. (delta > 0 and "+1" or "-1"))
   vim.cmd("redrawtabline")
+  emit("Moved", cur_name())
 end
 
 -- Selector de workspaces: lista nº · nombre · ruta; al elegir salta a esa tab.
@@ -144,6 +164,7 @@ function M.pick()
       local tab = sel and map[sel]
       if tab and api.nvim_tabpage_is_valid(tab) then
         api.nvim_set_current_tabpage(tab)
+        emit("Switch", cur_name())
       end
     end,
   })

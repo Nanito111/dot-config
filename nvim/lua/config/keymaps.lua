@@ -301,6 +301,14 @@ for i = 1, 9 do
   end, { silent = true, desc = "Ir al workspace " .. i })
 end
 
+-- Clippy (mascota-asistente)
+map("n", "<leader>pp", function()
+  require("plugins.local.clippy").toggle()
+end, { silent = true, desc = "Clippy: activar/desactivar" })
+map("n", "<leader>pt", function()
+  require("plugins.local.clippy").tip()
+end, { silent = true, desc = "Clippy: soltar un tip" })
+
 -- Notificaciones
 map("n", "<leader>nh", "<cmd>Notifications<CR>", { silent = true, desc = "Historial de notificaciones" })
 map("n", "<leader>nd", function()
