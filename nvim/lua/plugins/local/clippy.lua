@@ -4,23 +4,30 @@
 local api = vim.api
 local M = {}
 
-local MASCOT = vim.fn.nr2char(0xF014F) -- 󰅏 clip de Nerd Font
-local MASCOT_W = 2 -- ancho de celda
-local Z = 250 -- zindex: por encima de splits y flotantes normales
-local STEP_MS = 200 -- cada cuánto avanza un paso (mayor = más lento)
-local PAUSE_MIN, PAUSE_MAX = 45, 110 -- ticks quieto al llegar a un destino (~9-22s)
+-- local MASCOT = vim.fn.nr2char(0xF014F) -- 󰅏 clip de Nerd Font
+local MASCOT = {
+  "╭─╮╮",
+  "o O│",
+  "│╰╯│",
+  "╰──╯"
+}
+local MASCOT_W = 4                       -- ancho en celdas
+local MASCOT_H = #MASCOT                 -- alto (nº de filas)
+local Z = 250                            -- zindex: por encima de splits y flotantes normales
+local STEP_MS = 10                       -- ms entre pasos mientras se mueve (menor = más rápido)
+local PAUSE_MIN, PAUSE_MAX = 5000, 10000 -- ms quieto al llegar a un destino (sin gastar CPU)
 local BUBBLE_W = 42
-local SHOW_MS = 8000 -- cuánto queda visible el bocadillo
-local TIP_GAP = 90 -- segundos mínimos entre tips por inactividad
+local SHOW_MS = 3000                   -- cuánto queda visible el bocadillo
+local TIP_GAP = 30                     -- segundos mínimos entre tips por inactividad
 
-local m_win, m_buf -- mascota
-local b_win, b_buf -- bocadillo
+local m_win, m_buf                     -- mascota
+local b_win, b_buf                     -- bocadillo
+local t_win, t_buf                     -- cola del bocadillo
 local move_timer, hide_timer
 local enabled = false
 local last_tip = 0
 local pos = { row = 5, col = 5 }
 local target = { row = 5, col = 5 }
-local pause = 0
 local dragging = false
 local drag_off = { row = 0, col = 0 }
 
@@ -59,7 +66,8 @@ local function term_kind(buf)
   if vim.bo[buf].buftype ~= "terminal" then
     return nil
   end
-  local hay = (api.nvim_buf_get_name(buf) .. " " .. (vim.b[buf].term_title or "") .. " " .. (vim.b[buf].term_name or "")):lower()
+  local hay = (api.nvim_buf_get_name(buf) .. " " .. (vim.b[buf].term_title or "") .. " " .. (vim.b[buf].term_name or ""))
+  :lower()
   if hay:find("lazygit") then
     return "lazygit"
   elseif hay:find("claude") then
@@ -151,14 +159,14 @@ end
 
 local function set_hl()
   local p = require("config.palette")
-  api.nvim_set_hl(0, "ClippyMascot", { bg = "NONE" }) -- sin fondo: solo el carácter
-  api.nvim_set_hl(0, "ClippyNormal", { fg = p.fg, bg = p.bg_highlight })
-  api.nvim_set_hl(0, "ClippyBorder", { fg = p.blue, bg = p.bg_highlight })
+  api.nvim_set_hl(0, "ClippyMascot", { fg = p.fg, bg = "NONE", bold = true }) -- sin fondo: solo el carácter
+  api.nvim_set_hl(0, "ClippyNormal", { fg = p.fg, bg = "NONE" })
+  api.nvim_set_hl(0, "ClippyBorder", { fg = p.fg, bg = "NONE" })
 end
 
 -- ── Movimiento ──────────────────────────────────────────────────────
 local function bounds()
-  return math.max(1, vim.o.lines - 4), math.max(0, vim.o.columns - MASCOT_W - 1)
+  return math.max(1, vim.o.lines - MASCOT_H - 2), math.max(0, vim.o.columns - MASCOT_W - 1)
 end
 local function new_target()
   local mr, mc = bounds()
@@ -175,36 +183,70 @@ end
 
 -- Coloca el bocadillo pegado a la mascota (encima; debajo si no cabe).
 local function place_bubble()
-  if not (b_win and api.nvim_win_is_valid(b_win)) then
-    return
-  end
-  local h = api.nvim_win_get_height(b_win) + 2 -- + borde (arriba/abajo)
-  local w = api.nvim_win_get_width(b_win) + 2 -- + borde (izq/der)
-  -- encima de la mascota SIN solaparla (borde inferior una fila arriba); si no cabe, debajo
-  local row = pos.row - h - 1
-  if row < 0 then
-    row = pos.row + 1
-  end
+  if not (b_win and api.nvim_win_is_valid(b_win)) then return end
+  local h = api.nvim_win_get_height(b_win) + 2
+  local w = api.nvim_win_get_width(b_win) + 2
+  local row = pos.row - h - 1  -- intentar arriba
+  local above = row >= 0
+  if not above then row = pos.row + MASCOT_H + 1 end -- +1: deja la fila de la cola
   local col = math.min(pos.col, math.max(0, vim.o.columns - w))
   pcall(api.nvim_win_set_config, b_win, { relative = "editor", row = row, col = col })
+
+  -- cola: una fila entre bocadillo y mascota
+  if t_win and api.nvim_win_is_valid(t_win) then
+    local tail = above and "╰─╮" or "╭─╯"
+    -- centrar la cola horizontalmente sobre la mascota
+    local tail_col = pos.col + math.floor(MASCOT_W / 2) - 1
+    local tail_row = above and (row + h) or (pos.row + MASCOT_H) -- fila libre entre mascota y bocadillo
+    vim.bo[t_buf].modifiable = true
+    api.nvim_buf_set_lines(t_buf, 0, -1, false, { tail })
+    vim.bo[t_buf].modifiable = false
+    pcall(api.nvim_win_set_config, t_win, {
+      relative = "editor",
+      row = tail_row,
+      col = tail_col,
+    })
+  end
 end
 
-local function step()
+-- El movimiento y la pausa se turnan el mismo timer: mientras camina va en modo
+-- repetido (STEP_MS); al llegar, se para y arranca un disparo único que dura la pausa
+-- y luego vuelve a caminar. Así, quieto, no gasta CPU (nada de despertar 100 veces/s).
+local step, start_moving, rest_then_wander
+
+function start_moving()
+  if not move_timer then
+    move_timer = vim.uv.new_timer()
+  end
+  move_timer:stop()
+  move_timer:start(STEP_MS, STEP_MS, vim.schedule_wrap(step))
+end
+
+function rest_then_wander(ms)
+  if not move_timer then
+    move_timer = vim.uv.new_timer()
+  end
+  move_timer:stop()
+  move_timer:start(ms, 0, vim.schedule_wrap(function()
+    if not enabled then
+      return
+    end
+    new_target()
+    start_moving()
+  end))
+end
+
+function step()
   if not (enabled and m_win and api.nvim_win_is_valid(m_win)) then
     return
   end
   if dragging then
     return -- mientras se arrastra con el mouse, no deambula
   end
-  if pause > 0 then
-    pause = pause - 1
-    return
-  end
   local nr = toward(pos.row, target.row, 1)
   local nc = toward(pos.col, target.col, 1)
   if nr == pos.row and nc == pos.col then
-    pause = math.random(PAUSE_MIN, PAUSE_MAX) -- descanso al llegar
-    new_target()
+    rest_then_wander(math.random(PAUSE_MIN, PAUSE_MAX)) -- descanso al llegar
     return
   end
   pos.row, pos.col = nr, nc
@@ -227,7 +269,7 @@ local function on_press()
     local mp = vim.fn.getmousepos()
     local er = mp.screenrow - 1
     local ec = mp.screencol - 1
-    if er == pos.row and ec >= pos.col and ec < pos.col + MASCOT_W then
+    if er >= pos.row and er < pos.row + MASCOT_H and ec >= pos.col and ec < pos.col + MASCOT_W then
       dragging = true
       drag_off = { row = er - pos.row, col = ec - pos.col }
       return
@@ -255,7 +297,7 @@ local function on_release()
   if dragging then
     dragging = false
     new_target() -- retoma el deambular desde donde quedó
-    pause = math.random(PAUSE_MIN, PAUSE_MAX)
+    start_moving()
     return
   end
   feed_native("<LeftRelease>")
@@ -282,14 +324,14 @@ local function open_mascot()
     m_buf = api.nvim_create_buf(false, true)
     vim.bo[m_buf].bufhidden = "hide"
     vim.bo[m_buf].filetype = "clippy"
-    api.nvim_buf_set_lines(m_buf, 0, -1, false, { MASCOT })
+    api.nvim_buf_set_lines(m_buf, 0, -1, false, MASCOT)
   end
   m_win = api.nvim_open_win(m_buf, false, {
     relative = "editor",
     row = pos.row,
     col = pos.col,
     width = MASCOT_W,
-    height = 1,
+    height = MASCOT_H,
     style = "minimal",
     border = "none", -- sin marco: solo el carácter
     focusable = false,
@@ -304,7 +346,11 @@ local function close_bubble()
   if b_win and api.nvim_win_is_valid(b_win) then
     pcall(api.nvim_win_close, b_win, true)
   end
+  if t_win and api.nvim_win_is_valid(t_win) then
+    pcall(api.nvim_win_close, t_win, true)
+  end
   b_win = nil
+  t_win = nil
 end
 
 local function close_all()
@@ -368,7 +414,32 @@ function M.say(msg)
   else
     pcall(api.nvim_win_set_config, b_win, { width = BUBBLE_W, height = #lines })
   end
+
+  -- cola del bocadillo
+  if not (t_buf and api.nvim_buf_is_valid(t_buf)) then
+    t_buf = api.nvim_create_buf(false, true)
+    vim.bo[t_buf].bufhidden = "hide"
+    vim.bo[t_buf].filetype = "clippy"
+  end
+  if not (t_win and api.nvim_win_is_valid(t_win)) then
+    t_win = api.nvim_open_win(t_buf, false, {
+      relative = "editor",
+      row = 0, col = 0,
+      width = 3,
+      height = 1,
+      style = "minimal",
+      border = "none",
+      focusable = false,
+      zindex = Z + 1,
+      noautocmd = true,
+    })
+    require("plugins.local.ui.win").set_opts(t_win, {
+      winhighlight = "Normal:ClippyBorder,EndOfBuffer:ClippyBorder",
+    })
+  end
+
   place_bubble()
+
   if not hide_timer then
     hide_timer = vim.uv.new_timer()
   end
@@ -440,6 +511,16 @@ local function ensure_autocmds()
       end
     end,
   })
+  -- Cuando se abre una terminal
+  api.nvim_create_autocmd("TermEnter", {
+    group = grp,
+    callback = function()
+      if enabled and (os.time() - last_tip) > TIP_GAP and math.random(0, 3) == 0 then
+        last_tip = os.time()
+        M.say(remark())
+      end
+    end,
+  })
   -- Global entre workspaces: los flotantes son por-tab, así que al cambiar de tab se reabre
   -- la mascota en la actual (cerrando la de la anterior) para que siga presente.
   api.nvim_create_autocmd("TabEnter", {
@@ -488,10 +569,7 @@ function M.toggle()
     pos = { row = math.floor(vim.o.lines / 2), col = math.floor(vim.o.columns / 2) }
     new_target()
     open_mascot()
-    if not move_timer then
-      move_timer = vim.uv.new_timer()
-    end
-    move_timer:start(STEP_MS, STEP_MS, vim.schedule_wrap(step))
+    start_moving()
     set_mouse_maps()
     M.say(GREET)
   else
