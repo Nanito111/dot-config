@@ -31,6 +31,9 @@ local DEFAULTS = {
   ["ui.minimap_width"] = 20,
   ["ui.minimap_side"] = "auto",
   ["ui.minimap_symbols"] = "dot",
+  ["ui.clippy"] = false,
+  ["ui.clippy_chatter"] = "normal",
+  ["ui.clippy_speed"] = "lento",
 }
 M.DEFAULTS = DEFAULTS
 
@@ -262,6 +265,7 @@ local function build()
   local statusline = require("plugins.local.statusline")
   local picker = require("plugins.local.picker")
   local minimap = require("plugins.local.minimap")
+  local clippy = require("plugins.local.clippy")
 
   -- adaptador para settings respaldados por un proveedor (apply puro + set que persiste)
   local function provider(spec)
@@ -451,6 +455,47 @@ local function build()
           get = minimap.get_symbols,
           apply = minimap.apply_symbols,
           set = minimap.set_symbols,
+        }),
+      },
+    },
+    {
+      title = "Clippy",
+      items = {
+        provider({
+          id = "ui.clippy",
+          label = "Clippy (mascota)",
+          type = "bool",
+          default = DEFAULTS["ui.clippy"],
+          get = clippy.is_enabled,
+          apply = clippy.set_enabled,
+          set = clippy.set_enabled,
+        }),
+        provider({
+          id = "ui.clippy_chatter",
+          label = "Charla de Clippy",
+          type = "enum",
+          default = DEFAULTS["ui.clippy_chatter"],
+          choices = function()
+            return { "callado", "poco", "normal", "hablador" }
+          end,
+          get = clippy.get_chatter,
+          apply = clippy.set_chatter,
+          set = clippy.set_chatter,
+        }),
+        provider({
+          id = "ui.clippy_speed",
+          label = "Velocidad de Clippy",
+          type = "enum",
+          default = DEFAULTS["ui.clippy_speed"],
+          choices = function()
+            return { "lento", "normal", "rapido" }
+          end,
+          display = function(v)
+            return v == "rapido" and "rápido" or v
+          end,
+          get = clippy.get_speed,
+          apply = clippy.set_speed,
+          set = clippy.set_speed,
         }),
       },
     },
