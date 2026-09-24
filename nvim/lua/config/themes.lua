@@ -28,10 +28,13 @@ M.themes = {
   { "nordfox" },
   { "carbonfox" },
   { "flexoki-dark" },
-  { "monokai" },
-  { "monokai_pro" },
-  { "monokai_soda" },
-  { "monokai_ristretto" },
+  -- loctvl842/monokai-pro.nvim (Monokai Pro con filtros); el filtro por defecto es "pro"
+  { "monokai-pro" },
+  { "monokai-pro-octagon" },
+  { "monokai-pro-machine" },
+  { "monokai-pro-ristretto" },
+  { "monokai-pro-spectrum" },
+  { "monokai-pro-classic" },
   { "papercolor-dark", cs = "PaperColor", bg = "dark" },
   { "melange-dark", cs = "melange", bg = "dark" },
   { "alabaster-dark", cs = "alabaster", bg = "dark" },
@@ -47,6 +50,7 @@ M.themes = {
   { "papercolor-light", cs = "PaperColor", bg = "light" },
   { "melange-light", cs = "melange", bg = "light" },
   { "alabaster-light", cs = "alabaster", bg = "light" },
+  { "monokai-pro-light", bg = "light" },
 }
 
 local DEFAULT = "tokyonight-night"
