@@ -235,18 +235,9 @@ function step()
 end
 
 -- ── Animación del personaje ─────────────────────────────────────────
--- Estado según lo que hace: hablando (hay bocadillo) > moviéndose (trayecto en curso) > quieto.
-local function cur_state()
-  if b_win and api.nvim_win_is_valid(b_win) then
-    return "talking"
-  elseif dragging or t < 1 then
-    return "moving"
-  end
-  return "idle"
-end
-
--- Ánimo transitorio por evento (independiente de si habla): feliz al guardar (saluda),
--- preocupado con errores. El sueño se deduce de la inactividad.
+-- La pose depende de lo que hace el CUERPO: ánimo por evento > dormido (inactivo) >
+-- caminando (trayecto en curso o arrastre) > quieto. Hablar NO cambia la pose (el bocadillo
+-- ya lo indica), así puede caminar mientras habla (p. ej. al huir suelta una frase y se va).
 local mood, mood_until = nil, 0
 local last_activity = os.time()
 local SLEEP_AFTER = 90 -- s sin actividad (y quieto) para quedarse dormido
@@ -254,26 +245,26 @@ local function set_mood(name, secs)
   mood, mood_until = name, os.time() + (secs or 3)
 end
 
--- Un tick de animación: elige la pose del estado/ánimo actual y la pinta.
+-- Un tick de animación: elige la pose actual y la pinta.
 local function anim_tick()
   if not (enabled and m_buf and api.nvim_buf_is_valid(m_buf)) then
     return
   end
-  local s = cur_state()
   local now = os.time()
+  local moving = dragging or t < 1
   local pose
   if mood and now < mood_until then
     pose = (mood == "worried") and "worried" or "wave" -- feliz -> saludo
-  elseif s == "idle" and (now - last_activity) > SLEEP_AFTER then
+  elseif not moving and (now - last_activity) > SLEEP_AFTER then
     pose = "sleep"
-  elseif s == "moving" then
+  elseif moving then
     -- avanza el ciclo de caminar (reinicia al empezar a moverse)
-    anim_frame = (s ~= anim_state) and 1 or (anim_frame % #WALK + 1)
+    anim_frame = (anim_state ~= "moving") and 1 or (anim_frame % #WALK + 1)
     pose = WALK[anim_frame]
   else
-    pose = "idle" -- reposo / hablando (el bocadillo ya indica que habla)
+    pose = "idle"
   end
-  anim_state = s
+  anim_state = moving and "moving" or "still"
   api.nvim_buf_set_lines(m_buf, 0, -1, false, pack(POSES[pose]))
 end
 

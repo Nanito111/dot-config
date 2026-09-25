@@ -13,17 +13,17 @@ M.POSES = {
     "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
     "  # #   ", "  # #   ", " #   #  ", " #   #  ", " #   #  ", "        ", "        ", "        ",
   },
-  up_l = { -- caminar: rodilla izquierda arriba (figura en alto)
+  up_l = { -- caminar: pierna izquierda levantada (rodilla afuera), derecha apoyada al centro
     "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
-    "   ##   ", "  # #   ", "  # #   ", "   ##   ", "    #   ", "     #  ", "        ", "        ",
+    "   ##   ", "  # #   ", "  # #   ", "   ##   ", "    #   ", "        ", "        ", "        ",
   },
-  up_r = { -- caminar: rodilla derecha arriba (figura en alto)
+  up_r = { -- caminar: pierna derecha levantada (rodilla afuera), izquierda apoyada al centro
     "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
-    "   ##   ", "   # #  ", "   # #  ", "   ##   ", "   #    ", "  #     ", "        ", "        ",
+    "   ##   ", "   # #  ", "   # #  ", "   ##   ", "   #    ", "        ", "        ", "        ",
   },
-  pass = { -- caminar: paso intermedio, piernas juntas y figura 1 punto abajo (rebote)
+  pass = { -- caminar: paso intermedio, piernas juntas al centro y figura 1 punto abajo (rebote)
     "        ", "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ",
-    "   #    ", "   ##   ", "   ##   ", "   ##   ", "  #  #  ", "        ", "        ", "        ",
+    "   #    ", "   ##   ", "   ##   ", "   ##   ", "   ##   ", "        ", "        ", "        ",
   },
   wave = { -- saludo (al aparecer / feliz): brazo derecho en alto
     "   ## # ", "   ###  ", "   ##   ", "   #    ", "  ##    ", " # #    ", "   #    ", "   #    ",
