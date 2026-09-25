@@ -4,69 +4,16 @@
 local api = vim.api
 local M = {}
 
--- Mascota "stickman" dibujada con braille (2x4 puntos por celda). Cada pose es una rejilla
--- de 8x16 puntos ('#' = encendido) que se empaqueta en una figura de 4x4 celdas. Se anima
--- según el estado (parado / caminando con rebote) y el ánimo por evento (saludo, preocupado,
--- dormido). Nota: el braille debería verse a 1 celda; si no, cambiar la fuente del terminal.
-local COLS, ROWS = 4, 4
-local POSES = {
-  idle = {
-    "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
-    "  # #   ", "  # #   ", " #   #  ", " #   #  ", " #   #  ", "        ", "        ", "        ",
-  },
-  up_l = { -- caminar: rodilla izquierda arriba (figura en alto)
-    "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
-    "   ##   ", "  # #   ", "  # #   ", "   ##   ", "    #   ", "     #  ", "        ", "        ",
-  },
-  up_r = { -- caminar: rodilla derecha arriba (figura en alto)
-    "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
-    "   ##   ", "   # #  ", "   # #  ", "   ##   ", "   #    ", "  #     ", "        ", "        ",
-  },
-  pass = { -- caminar: paso intermedio, piernas juntas y figura 1 punto abajo (rebote)
-    "        ", "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ",
-    "   #    ", "   ##   ", "   ##   ", "   ##   ", "  #  #  ", "        ", "        ", "        ",
-  },
-  wave = { -- saludo (al aparecer / feliz): brazo derecho en alto
-    "   ## # ", "   ###  ", "   ##   ", "   #    ", "  ##    ", " # #    ", "   #    ", "   #    ",
-    "  # #   ", "  # #   ", " #   #  ", " #   #  ", " #   #  ", "        ", "        ", "        ",
-  },
-  worried = { -- preocupado (errores): brazos arriba, alarmado
-    " #    # ", " #    # ", " # ## # ", "  ####  ", "   #    ", "   #    ", "   #    ", "   #    ",
-    "   ##   ", "   ##   ", "  #  #  ", "  #  #  ", " #    # ", "        ", "        ", "        ",
-  },
-  sleep = { -- dormido (inactividad): parado con "z z" arriba
-    "   ## ##", "   ## # ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
-    "  # #   ", "  # #   ", " #   #  ", " #   #  ", " #   #  ", "        ", "        ", "        ",
-  },
-}
-local WALK = { "up_l", "pass", "up_r", "pass" } -- ciclo de caminar
-local BITS = { [0] = { 0x01, 0x02, 0x04, 0x40 }, [1] = { 0x08, 0x10, 0x20, 0x80 } }
+local sprite = require("plugins.local.clippy.sprite")
+local chatter = require("plugins.local.clippy.chatter")
 
--- Empaqueta una rejilla 8x16 en ROWS filas de COLS caracteres braille.
-local function pack(grid)
-  local out = {}
-  for cr = 0, ROWS - 1 do
-    local line = {}
-    for cc = 0, COLS - 1 do
-      local val = 0
-      for dx = 0, 1 do
-        for dy = 0, 3 do
-          local row = grid[cr * 4 + dy + 1] or ""
-          if row:sub(cc * 2 + dx + 1, cc * 2 + dx + 1) == "#" then
-            val = val + BITS[dx][dy + 1]
-          end
-        end
-      end
-      line[#line + 1] = vim.fn.nr2char(0x2800 + val)
-    end
-    out[cr + 1] = table.concat(line)
-  end
-  return out
-end
-
-local MASCOT = pack(POSES.idle) -- figura base (tamaño y relleno inicial)
-local MASCOT_W, MASCOT_H = COLS, ROWS
-local ANIM_MS = 160 -- ms entre frames (marcha fluida)
+-- Alias de los submódulos, para no tocar los usos de más abajo.
+local MASCOT = sprite.MASCOT
+local MASCOT_W, MASCOT_H = sprite.W, sprite.H
+local ANIM_MS = sprite.ANIM_MS
+local pack, POSES, WALK, set_hl = sprite.pack, sprite.POSES, sprite.WALK, sprite.set_hl
+local GREET, PRAISE, FLEE, WS_LINES = chatter.GREET, chatter.PRAISE, chatter.FLEE, chatter.WS_LINES
+local pick, talk_ok, chatter_p, remark = chatter.pick, chatter.talk_ok, chatter.chatter_p, chatter.remark
 local Z = 250                            -- zindex: por encima de splits y flotantes normales
 local STEP_MS = 10                       -- ms entre pasos mientras se mueve (menor = más rápido)
 local PAUSE_MIN, PAUSE_MAX = 5000, 10000 -- ms quieto al llegar a un destino (sin gastar CPU)
@@ -91,51 +38,6 @@ local perp = { r = 0, c = 0 } -- vector unitario perpendicular al trayecto
 local dragging = false
 local drag_off = { row = 0, col = 0 }
 
-local GREET = "¡Hola! Soy Clippy, tu asistente. Andaré por aquí."
-local PRAISE = { "¡Guardado! 💾", "Buen trabajo, sigue así ✨", "Todo en orden." }
-local FLEE = {
-  "¡Uy, perdón! Te dejo trabajar.",
-  "Me quito de en medio.",
-  "¡Ahí voy, que no te tapo!",
-  "Perdona, no quería estorbar.",
-  "Mejor me corro para allá.",
-  "¡Todo tuyo el código!",
-}
-local WS_LINES = {
-  WorkspaceNew = {
-    "¡Workspace '%s' listo! A estrenarlo.",
-    "Nuevo espacio '%s'. Empezamos de cero.",
-    "Creaste '%s'. Me mudo contigo.",
-  },
-  WorkspaceRenamed = {
-    "Ahora esto se llama '%s'. Anotado.",
-    "'%s', buen nombre.",
-  },
-  WorkspaceSwitch = {
-    "Te moviste a '%s'. Te sigo.",
-    "Cambiando de aires: '%s'.",
-    "En '%s' ahora. ¿Qué toca?",
-  },
-  WorkspaceMoved = {
-    "Reordenando workspaces, muy prolijo.",
-    "'%s' cambió de lugar. Ordenadito.",
-  },
-}
-
-local function pick(t)
-  return t[math.random(#t)]
-end
-
--- Nivel de charla (configurable): probabilidad de comentar una acción. "callado" = 0 (solo
--- mascota, sin frases). Se lee de settings en cada evento para reflejar cambios en caliente.
-local CHATTER = { callado = 0, poco = 0.15, normal = 0.34, hablador = 0.7 }
-local function chatter_p()
-  return CHATTER[require("config.settings").value("ui.clippy_chatter", "normal")] or 0.34
-end
-local function talk_ok()
-  return math.random() < chatter_p()
-end
-
 -- Velocidad (configurable): rango de avance de t por tick (mayor = más rápido).
 local SPEED = {
   lento = { 0.0015, 0.0025 },
@@ -147,111 +49,6 @@ local function speed_step()
   return s[1] + math.random() * s[2]
 end
 
--- Frase al azar, tirando de lo que está pasando ahora mismo (archivo, lenguaje,
--- posición, cambios sin guardar, avisos del LSP, hora) para que parezca al tanto.
--- Qué corre en un buffer de terminal: mira nombre del buffer + título del terminal
--- (que el programa actualiza) + el nombre que le pusimos nosotros.
-local function term_kind(buf)
-  if vim.bo[buf].buftype ~= "terminal" then
-    return nil
-  end
-  local hay = (api.nvim_buf_get_name(buf) .. " " .. (vim.b[buf].term_title or "") .. " " .. (vim.b[buf].term_name or ""))
-  :lower()
-  if hay:find("lazygit") then
-    return "lazygit"
-  elseif hay:find("claude") then
-    return "claude"
-  end
-  return "terminal"
-end
-
-local function remark()
-  local buf = api.nvim_get_current_buf()
-  local tk = term_kind(buf)
-  if tk == "lazygit" then
-    return pick({
-      "Veo que andas en lazygit. Cuidado con ese force-push.",
-      "Commiteando, ¿eh? Que no se te escape nada.",
-      "lazygit: donde los conflictos van a morir.",
-      "Un buen stage vale más que mil disculpas.",
-    })
-  elseif tk == "claude" then
-    return pick({
-      "¿Charlando con Claude? Salúdalo de mi parte.",
-      "Delegando en la IA, muy siglo XXI.",
-      "Yo superviso mientras Claude teclea.",
-      "Dos asistentes en pantalla; qué lujo.",
-    })
-  elseif tk == "terminal" then
-    return pick({
-      "Una terminal abierta. A teclear se ha dicho.",
-      "Comandos van, comandos vienen.",
-      "¿Compilando algo? Cruzo los dedos.",
-      "Ojo con ese rm -rf, que yo miro.",
-    })
-  end
-  local out = {
-    "Deambular es mi cardio.",
-    "No hago nada útil, pero te hago compañía.",
-    "A veces solo quiero pasear por el buffer.",
-    "Bonito tema el que tienes puesto.",
-  }
-  local function add(s)
-    out[#out + 1] = s
-  end
-  local name = vim.fn.expand("%:t")
-  local ft = vim.bo[buf].filetype
-  local lines = api.nvim_buf_line_count(buf)
-  local row = (api.nvim_win_get_cursor(0) or { 1 })[1]
-  if vim.bo[buf].modified then
-    add(("Tienes cambios sin guardar en %s. Solo lo menciono…"):format(name ~= "" and name or "este buffer"))
-  end
-  if name ~= "" then
-    add(("Andas con %s, ya veo."):format(name))
-  else
-    add("Un buffer sin nombre; lienzo en blanco.")
-  end
-  if ft ~= "" then
-    add(("Veo que escribes %s. Observando..."):format(ft))
-  end
-  if lines > 500 then
-    add(("%d líneas… esto ... spaguetti?."):format(lines))
-  elseif lines <= 5 then
-    add("Archivo cortito, se agradece.")
-  end
-  if row <= 1 then
-    add("Arrancando desde arriba, clásico.")
-  elseif row >= lines - 1 then
-    add("Ya casi tocas el final del archivo.")
-  else
-    add(("Vas por la línea %d de %d."):format(row, lines))
-  end
-  local nd = 0
-  pcall(function()
-    nd = #vim.diagnostic.get(buf)
-  end)
-  if nd > 0 then
-    add(("Cuento %d aviso%s del LSP por ahí. Tú sabrás."):format(nd, nd == 1 and "" or "s"))
-  end
-  local h = tonumber(os.date("%H")) or 12
-  if h < 6 then
-    add("¿Programando de madrugada? Yo también trasnocho.")
-  elseif h < 12 then
-    add("Buen día para escribir código.")
-  elseif h < 20 then
-    add("La tarde rinde, sigue así.")
-  else
-    add("Ya es de noche; no te desveles mucho.")
-  end
-  return out[math.random(#out)]
-end
-
-local function set_hl()
-  local p = require("config.palette")
-  api.nvim_set_hl(0, "ClippyMascot", { fg = p.green or p.blue, bg = "NONE", bold = true }) -- stickman con color, sin fondo
-  api.nvim_set_hl(0, "ClippyNormal", { fg = p.fg, bg = "NONE" })
-  api.nvim_set_hl(0, "ClippyBorder", { fg = p.fg, bg = "NONE" })
-end
 
 -- ── Movimiento ──────────────────────────────────────────────────────
 local function bounds()
