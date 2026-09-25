@@ -4,29 +4,69 @@
 local api = vim.api
 local M = {}
 
--- Cara de la mascota (4 celdas de ancho, 4 de alto). Filas superior/inferior fijas; se
--- animan los ojos (fila 2) y la boca (fila 3). Los ojos dependen de la EXPRESIÓN: redondos
--- en reposo/hablando, y medias lunas apuntando hacia donde camina (izq/der/arriba/abajo).
--- Nota: ◐◑◒◓● son de "ancho ambiguo"; deberían verse a 1 celda, si no, hay que cambiarlos.
-local TOP, BOT = "╭─╮ ", "╰──╯"
-local MOUTH_SMILE, MOUTH_OPEN = "│╰╯│", "│╰╯│"
-local EYE = {
-  idle = "●", -- reposo: ojo redondo
-  talk = "●", -- hablando: igual (protagoniza la boca)
-  left = "◐", -- media luna: mira a la izquierda
-  right = "◑", -- ...a la derecha
-  up = "◓", -- ...arriba
-  down = "◒", -- ...abajo
+-- Mascota "stickman" dibujada con braille (2x4 puntos por celda). Cada pose es una rejilla
+-- de 8x16 puntos ('#' = encendido) que se empaqueta en una figura de 4x4 celdas. Se anima
+-- según el estado (parado / caminando con rebote) y el ánimo por evento (saludo, preocupado,
+-- dormido). Nota: el braille debería verse a 1 celda; si no, cambiar la fuente del terminal.
+local COLS, ROWS = 4, 4
+local POSES = {
+  idle = {
+    "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
+    "  # #   ", "  # #   ", " #   #  ", " #   #  ", " #   #  ", "        ", "        ", "        ",
+  },
+  up_l = { -- caminar: rodilla izquierda arriba (figura en alto)
+    "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
+    "   ##   ", "  # #   ", "  # #   ", "   ##   ", "    #   ", "     #  ", "        ", "        ",
+  },
+  up_r = { -- caminar: rodilla derecha arriba (figura en alto)
+    "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
+    "   ##   ", "   # #  ", "   # #  ", "   ##   ", "   #    ", "  #     ", "        ", "        ",
+  },
+  pass = { -- caminar: paso intermedio, piernas juntas y figura 1 punto abajo (rebote)
+    "        ", "   ##   ", "   ##   ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ",
+    "   #    ", "   ##   ", "   ##   ", "   ##   ", "  #  #  ", "        ", "        ", "        ",
+  },
+  wave = { -- saludo (al aparecer / feliz): brazo derecho en alto
+    "   ## # ", "   ###  ", "   ##   ", "   #    ", "  ##    ", " # #    ", "   #    ", "   #    ",
+    "  # #   ", "  # #   ", " #   #  ", " #   #  ", " #   #  ", "        ", "        ", "        ",
+  },
+  worried = { -- preocupado (errores): brazos arriba, alarmado
+    " #    # ", " #    # ", " # ## # ", "  ####  ", "   #    ", "   #    ", "   #    ", "   #    ",
+    "   ##   ", "   ##   ", "  #  #  ", "  #  #  ", " #    # ", "        ", "        ", "        ",
+  },
+  sleep = { -- dormido (inactividad): parado con "z z" arriba
+    "   ## ##", "   ## # ", "   #    ", "  ###   ", " # # #  ", "   #    ", "   #    ", "   #    ",
+    "  # #   ", "  # #   ", " #   #  ", " #   #  ", " #   #  ", "        ", "        ", "        ",
+  },
 }
-local BLINK = "─" -- parpadeo (párpado cerrado)
--- Fila de ojos: dos ojos separados (col 1 y 3) + borde derecho.
-local function eye_row(ch)
-  return ch .. " " .. ch .. "╭"
+local WALK = { "up_l", "pass", "up_r", "pass" } -- ciclo de caminar
+local BITS = { [0] = { 0x01, 0x02, 0x04, 0x40 }, [1] = { 0x08, 0x10, 0x20, 0x80 } }
+
+-- Empaqueta una rejilla 8x16 en ROWS filas de COLS caracteres braille.
+local function pack(grid)
+  local out = {}
+  for cr = 0, ROWS - 1 do
+    local line = {}
+    for cc = 0, COLS - 1 do
+      local val = 0
+      for dx = 0, 1 do
+        for dy = 0, 3 do
+          local row = grid[cr * 4 + dy + 1] or ""
+          if row:sub(cc * 2 + dx + 1, cc * 2 + dx + 1) == "#" then
+            val = val + BITS[dx][dy + 1]
+          end
+        end
+      end
+      line[#line + 1] = vim.fn.nr2char(0x2800 + val)
+    end
+    out[cr + 1] = table.concat(line)
+  end
+  return out
 end
-local MASCOT = { TOP, eye_row("●"), MOUTH_SMILE, BOT } -- cara base (tamaño y relleno inicial)
-local MASCOT_W = 4                       -- ancho en celdas
-local MASCOT_H = #MASCOT                 -- alto (nº de filas)
-local ANIM_MS = 280                      -- ms entre frames de animación
+
+local MASCOT = pack(POSES.idle) -- figura base (tamaño y relleno inicial)
+local MASCOT_W, MASCOT_H = COLS, ROWS
+local ANIM_MS = 160 -- ms entre frames (marcha fluida)
 local Z = 250                            -- zindex: por encima de splits y flotantes normales
 local STEP_MS = 10                       -- ms entre pasos mientras se mueve (menor = más rápido)
 local PAUSE_MIN, PAUSE_MAX = 5000, 10000 -- ms quieto al llegar a un destino (sin gastar CPU)
@@ -208,7 +248,7 @@ end
 
 local function set_hl()
   local p = require("config.palette")
-  api.nvim_set_hl(0, "ClippyMascot", { fg = p.fg, bg = "NONE", bold = true }) -- sin fondo: solo el carácter
+  api.nvim_set_hl(0, "ClippyMascot", { fg = p.green or p.blue, bg = "NONE", bold = true }) -- stickman con color, sin fondo
   api.nvim_set_hl(0, "ClippyNormal", { fg = p.fg, bg = "NONE" })
   api.nvim_set_hl(0, "ClippyBorder", { fg = p.fg, bg = "NONE" })
 end
@@ -408,39 +448,8 @@ local function cur_state()
   return "idle"
 end
 
--- Hacia dónde camina, según el vector del trayecto (origen→destino): el eje dominante decide
--- izquierda/derecha o arriba/abajo (las medias lunas sí pueden mirar en las cuatro).
-local function move_dir()
-  local dc, dr = target.col - origin.col, target.row - origin.row
-  if math.abs(dc) >= math.abs(dr) then
-    return dc >= 0 and "right" or "left"
-  end
-  return dr >= 0 and "down" or "up"
-end
-
--- Parpadeo natural: ojos abiertos casi siempre y un cierre breve (un tick) cada tantos
--- ticks aleatorios, en vez de abrir/cerrar a ritmo fijo.
-local blink_in, blink_left = math.random(6, 20), 0
-local function eyes_closed()
-  if blink_left > 0 then
-    blink_left = blink_left - 1
-    return true
-  end
-  blink_in = blink_in - 1
-  if blink_in <= 0 then
-    blink_in = math.random(6, 22) -- ~1.7 a ~6 s hasta el próximo parpadeo
-    blink_left = (math.random() < 0.15) and 1 or 0 -- de vez en cuando, doble parpadeo
-    return true
-  end
-  return false
-end
-
--- Expresiones emocionales transitorias por evento (independientes de si habla o no):
--- feliz al guardar, preocupado con errores. El sueño se deduce de la inactividad.
-local MOOD = {
-  happy = { eye = "^", mouth = MOUTH_SMILE }, -- ojos contentos ^^
-  worried = { eye = "◉", mouth = "│╭╮│" }, -- ojos muy abiertos + boca hacia abajo
-}
+-- Ánimo transitorio por evento (independiente de si habla): feliz al guardar (saluda),
+-- preocupado con errores. El sueño se deduce de la inactividad.
 local mood, mood_until = nil, 0
 local last_activity = os.time()
 local SLEEP_AFTER = 90 -- s sin actividad (y quieto) para quedarse dormido
@@ -448,38 +457,27 @@ local function set_mood(name, secs)
   mood, mood_until = name, os.time() + (secs or 3)
 end
 
--- Un tick de animación: compone la cara del estado/expresión actual y la pinta.
+-- Un tick de animación: elige la pose del estado/ánimo actual y la pinta.
 local function anim_tick()
   if not (enabled and m_buf and api.nvim_buf_is_valid(m_buf)) then
     return
   end
   local s = cur_state()
   local now = os.time()
-  local m = (mood and now < mood_until) and MOOD[mood] or nil
-  local top, eye, mouth = TOP, nil, nil
-
-  -- boca: si habla, alterna abierta/cerrada (así se ve "hablando")
-  if s == "talking" then
-    anim_frame = (s ~= anim_state) and 1 or ((anim_frame == 1) and 2 or 1)
-    mouth = (anim_frame == 1) and MOUTH_OPEN or MOUTH_SMILE
+  local pose
+  if mood and now < mood_until then
+    pose = (mood == "worried") and "worried" or "wave" -- feliz -> saludo
+  elseif s == "idle" and (now - last_activity) > SLEEP_AFTER then
+    pose = "sleep"
+  elseif s == "moving" then
+    -- avanza el ciclo de caminar (reinicia al empezar a moverse)
+    anim_frame = (s ~= anim_state) and 1 or (anim_frame % #WALK + 1)
+    pose = WALK[anim_frame]
+  else
+    pose = "idle" -- reposo / hablando (el bocadillo ya indica que habla)
   end
-
-  if m then -- expresión emocional: manda en los ojos (y en la boca si no habla)
-    eye = m.eye
-    mouth = mouth or m.mouth
-  elseif s == "idle" and (now - last_activity) > SLEEP_AFTER then -- dormido: ojos cerrados + z
-    anim_frame = (s ~= anim_state) and 1 or ((anim_frame == 1) and 2 or 1)
-    top = (anim_frame == 1) and "╭─╮z" or "╭─╮Z"
-    eye, mouth = "─", "│╰╯│"
-  else -- normal: ojos por dirección/reposo con parpadeo natural
-    eye = (s == "moving") and EYE[move_dir()] or EYE.idle
-    if eyes_closed() then
-      eye = BLINK
-    end
-  end
-
   anim_state = s
-  api.nvim_buf_set_lines(m_buf, 0, -1, false, { top, eye_row(eye), mouth or MOUTH_SMILE, BOT })
+  api.nvim_buf_set_lines(m_buf, 0, -1, false, pack(POSES[pose]))
 end
 
 local function start_anim()
@@ -823,8 +821,11 @@ local function do_enable(greet)
   start_moving()
   start_anim()
   set_mouse_maps()
-  if greet and chatter_p() > 0 then
-    M.say(GREET)
+  if greet then
+    set_mood("happy", 3) -- aparece saludando
+    if chatter_p() > 0 then
+      M.say(GREET)
+    end
   end
 end
 
