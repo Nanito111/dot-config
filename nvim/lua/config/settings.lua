@@ -31,6 +31,7 @@ local DEFAULTS = {
   ["ui.minimap_width"] = 20,
   ["ui.minimap_side"] = "auto",
   ["ui.minimap_symbols"] = "dot",
+  ["editor.format_on_save"] = true,
 }
 M.DEFAULTS = DEFAULTS
 
@@ -262,6 +263,7 @@ local function build()
   local statusline = require("plugins.local.statusline")
   local picker = require("plugins.local.picker")
   local minimap = require("plugins.local.minimap")
+  local format = require("config.format")
 
   -- adaptador para settings respaldados por un proveedor (apply puro + set que persiste)
   local function provider(spec)
@@ -468,6 +470,15 @@ local function build()
             require("plugins.local.settings.indent_table").open()
           end,
         },
+        provider({
+          id = "editor.format_on_save",
+          label = "Formatear al guardar",
+          type = "bool",
+          default = DEFAULTS["editor.format_on_save"],
+          get = format.get,
+          apply = format.set,
+          set = format.set,
+        }),
         vimopt({ opt = "wrap", label = "Ajuste de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "number", label = "Números de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "relativenumber", label = "Números relativos", type = "bool", scope = "win" }),

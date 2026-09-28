@@ -84,8 +84,8 @@ function M.on_attach(buf)
     vim.lsp.buf.code_action({ filter = function(a) return not a.disabled end })
   end, "LSP: acciones de código")
   map("<leader>lf", function()
-    vim.lsp.buf.format({ async = true })
-  end, "LSP: formatear buffer")
+    require("config.format").format() -- conform; si no hay formateador, cae al del LSP
+  end, "Formatear buffer")
 
   -- Navegación por el picker (o salto directo si hay un único resultado)
   map("<leader>lR", function()
