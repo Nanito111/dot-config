@@ -93,9 +93,8 @@ function M.on_attach(buf)
       end,
     })
   end, "LSP: acciones de código")
-  map("<leader>lf", function()
-    require("config.format").format() -- conform; si no hay formateador, cae al del LSP
-  end, "Formatear buffer")
+  -- <leader>lf / <leader>lF (formatear / toggle formato-al-guardar) los define el spec de
+  -- conform (global), para no duplicar el mapeo (which-key lo mostraba como "+2").
 
   -- Navegación por el picker (o salto directo si hay un único resultado)
   map("<leader>lR", function()
