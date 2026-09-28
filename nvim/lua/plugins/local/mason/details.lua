@@ -53,7 +53,14 @@ function M.open(pkg)
     backdrop = true,
     exclusive = true,
     close_keys = { "q", "<Esc>" },
-    wo = { wrap = true, linebreak = true, number = false, relativenumber = false, signcolumn = "no", cursorline = false },
+    wo = {
+      wrap = true,
+      linebreak = true,
+      number = false,
+      relativenumber = false,
+      signcolumn = "no",
+      cursorline = false,
+    },
   })
 end
 

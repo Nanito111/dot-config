@@ -23,17 +23,17 @@ opt.smartindent = true
 -- Búsqueda
 opt.ignorecase = true
 opt.smartcase = true
-opt.hlsearch = true    -- resaltar coincidencias de búsqueda
+opt.hlsearch = true -- resaltar coincidencias de búsqueda
 opt.incsearch = true
 
 -- UI
-opt.signcolumn = "yes"  -- siempre mostrar la columna de signos (para LSP, git)
-opt.cursorline = true   -- resaltar línea actual
-opt.showmode = false    -- no mostrar "-- INSERT --"/"-- TERMINAL --": ya está en la statusline
-opt.scrolloff = 8       -- margen vertical al hacer scroll
-opt.wrap = false        -- no romper líneas largas
+opt.signcolumn = "yes" -- siempre mostrar la columna de signos (para LSP, git)
+opt.cursorline = true -- resaltar línea actual
+opt.showmode = false -- no mostrar "-- INSERT --"/"-- TERMINAL --": ya está en la statusline
+opt.scrolloff = 8 -- margen vertical al hacer scroll
+opt.wrap = false -- no romper líneas largas
 opt.timeout = true
-opt.timeoutlen = 300    -- espera entre teclas de una secuencia (y retardo del which-key)
+opt.timeoutlen = 300 -- espera entre teclas de una secuencia (y retardo del which-key)
 
 -- No mostrar la pantalla de intro de Neovim ("NVIM v… type :help"): es lo que se ve
 -- como "Neovim por defecto" mientras el terminal pinta antes de aparecer el dashboard.
@@ -47,11 +47,11 @@ opt.listchars = { trail = "·", tab = "→ ", nbsp = "␣", extends = "›", pre
 opt.fillchars:append({ eob = " " })
 
 -- Sistema
-opt.undofile = true     -- historial de undo persistente entre sesiones
+opt.undofile = true -- historial de undo persistente entre sesiones
 opt.swapfile = false
 opt.backup = false
-opt.updatetime = 250    -- respuesta más rápida (para LSP)
-opt.clipboard = "unnamedplus"  -- integración con el portapapeles del sistema
+opt.updatetime = 250 -- respuesta más rápida (para LSP)
+opt.clipboard = "unnamedplus" -- integración con el portapapeles del sistema
 opt.termguicolors = true
 
 -- Shell según el sistema operativo (usado por las terminales)

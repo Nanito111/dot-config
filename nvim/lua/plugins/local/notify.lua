@@ -175,7 +175,7 @@ end
 -- ── Historial (:Notifications) ─────────────────────────────────────
 function M.show_history()
   if #history == 0 then
-    vim.notify("Sin notificaciones todavía", nil, { ephemeral = true})
+    vim.notify("Sin notificaciones todavía", nil, { ephemeral = true })
     return
   end
   local lines, hls = {}, {}

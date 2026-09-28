@@ -170,12 +170,9 @@ end, { bang = true, nargs = "?", complete = "buffer", desc = "Cerrar buffer resp
 -- Redirigir :bd / :bdelete a :Bdelete, pero SOLO cuando son el comando en sí (no
 -- cuando "bd" aparece como argumento de otro comando). Conserva bang y argumentos.
 local function bd_abbrev(lhs)
-  vim.cmd(string.format(
-    "cnoreabbrev <expr> %s (getcmdtype() ==# ':' && getcmdline() ==# %q) ? 'Bdelete' : %q",
-    lhs,
-    lhs,
-    lhs
-  ))
+  vim.cmd(
+    string.format("cnoreabbrev <expr> %s (getcmdtype() ==# ':' && getcmdline() ==# %q) ? 'Bdelete' : %q", lhs, lhs, lhs)
+  )
 end
 bd_abbrev("bd")
 bd_abbrev("bdelete")
@@ -194,4 +191,3 @@ end, { desc = "Git blame de la línea actual (popup)" })
 usr_cmd("TrailingSpaces", function()
   require("plugins.local.trailing").toggle()
 end, { desc = "Alternar resaltado de espacios al final" })
-

@@ -47,8 +47,11 @@ local function render()
   end
 
   local function row_line(ft, typ, amount)
-    return "  " .. ft .. string.rep(" ", w_ft - vim.fn.strdisplaywidth(ft) + GAP)
-      .. typ .. string.rep(" ", w_type - vim.fn.strdisplaywidth(typ) + GAP)
+    return "  "
+      .. ft
+      .. string.rep(" ", w_ft - vim.fn.strdisplaywidth(ft) + GAP)
+      .. typ
+      .. string.rep(" ", w_type - vim.fn.strdisplaywidth(typ) + GAP)
       .. amount
   end
 
@@ -224,12 +227,24 @@ function M.open()
   end
   map("<Space>", toggle_type)
   map("t", toggle_type)
-  map("l", function() change_amount(1) end)
-  map("<Right>", function() change_amount(1) end)
-  map("+", function() change_amount(1) end)
-  map("h", function() change_amount(-1) end)
-  map("<Left>", function() change_amount(-1) end)
-  map("-", function() change_amount(-1) end)
+  map("l", function()
+    change_amount(1)
+  end)
+  map("<Right>", function()
+    change_amount(1)
+  end)
+  map("+", function()
+    change_amount(1)
+  end)
+  map("h", function()
+    change_amount(-1)
+  end)
+  map("<Left>", function()
+    change_amount(-1)
+  end)
+  map("-", function()
+    change_amount(-1)
+  end)
   map("a", add_ft)
   map("x", remove_ft)
   map("q", M.close)

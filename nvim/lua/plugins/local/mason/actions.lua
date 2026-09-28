@@ -34,14 +34,18 @@ local function ensure_spinner()
     return
   end
   spin_timer = vim.uv.new_timer()
-  spin_timer:start(80, 80, vim.schedule_wrap(function()
-    spin_idx = spin_idx % #FRAMES + 1
-    if next(M.in_progress) then
-      on_change()
-    else
-      stop_spinner()
-    end
-  end))
+  spin_timer:start(
+    80,
+    80,
+    vim.schedule_wrap(function()
+      spin_idx = spin_idx % #FRAMES + 1
+      if next(M.in_progress) then
+        on_change()
+      else
+        stop_spinner()
+      end
+    end)
+  )
 end
 function M.spinner()
   return FRAMES[spin_idx]
@@ -176,7 +180,11 @@ function M.uninstall(pkg)
       if success ~= false then
         vim.notify(pkg.name .. " desinstalado", vim.log.levels.INFO, { title = "Mason" })
       else
-        vim.notify("Falló desinstalar " .. pkg.name .. "\n" .. tostring(err), vim.log.levels.ERROR, { title = "Mason" })
+        vim.notify(
+          "Falló desinstalar " .. pkg.name .. "\n" .. tostring(err),
+          vim.log.levels.ERROR,
+          { title = "Mason" }
+        )
       end
       on_change()
     end)
@@ -196,9 +204,12 @@ function M.subscribe()
   subscribed = true
   for _, ev in ipairs({ "package:install:success", "package:install:failed", "package:uninstall:success" }) do
     pcall(function()
-      reg:on(ev, vim.schedule_wrap(function()
-        on_change()
-      end))
+      reg:on(
+        ev,
+        vim.schedule_wrap(function()
+          on_change()
+        end)
+      )
     end)
   end
 end

@@ -77,11 +77,21 @@ function M.on_attach(buf)
     vim.lsp.buf.hover()
   end, "LSP: hover (documentación)")
   -- rename propio (confirmación + undo). require() al invocar -> recargable
-  map("<leader>lr", function() require("plugins.local.lsprename").rename() end, "LSP: renombrar símbolo (con confirmación)")
-  map("grn", function() require("plugins.local.lsprename").rename() end, "LSP: renombrar símbolo (con confirmación)")
-  map("<leader>lu", function() require("plugins.local.lsprename").undo() end, "LSP: revertir el último rename")
+  map("<leader>lr", function()
+    require("plugins.local.lsprename").rename()
+  end, "LSP: renombrar símbolo (con confirmación)")
+  map("grn", function()
+    require("plugins.local.lsprename").rename()
+  end, "LSP: renombrar símbolo (con confirmación)")
+  map("<leader>lu", function()
+    require("plugins.local.lsprename").undo()
+  end, "LSP: revertir el último rename")
   map("<leader>la", function()
-    vim.lsp.buf.code_action({ filter = function(a) return not a.disabled end })
+    vim.lsp.buf.code_action({
+      filter = function(a)
+        return not a.disabled
+      end,
+    })
   end, "LSP: acciones de código")
   map("<leader>lf", function()
     require("config.format").format() -- conform; si no hay formateador, cae al del LSP

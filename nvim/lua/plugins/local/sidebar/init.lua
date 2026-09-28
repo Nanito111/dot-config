@@ -145,12 +145,12 @@ local function render_collapsed(sb)
   api.nvim_buf_clear_namespace(buf, collapsed_ns, 0, -1)
 
   for i, id in ipairs(order) do
-    local line = top + i - 1  -- índice de línea 0-based
+    local line = top + i - 1 -- índice de línea 0-based
     local hl = (sb.view == id) and "SidebarActivePanel" or "SidebarInactivePanel"
-      pcall(api.nvim_buf_set_extmark, buf, collapsed_ns, line, col, {
-          end_col = col + #views[id].icon,
-          hl_group = hl,
-      })
+    pcall(api.nvim_buf_set_extmark, buf, collapsed_ns, line, col, {
+      end_col = col + #views[id].icon,
+      hl_group = hl,
+    })
   end
 end
 
@@ -431,15 +431,19 @@ api.nvim_create_autocmd("WinResized", {
       fixw_timer = vim.uv.new_timer()
     end
     fixw_timer:stop()
-    fixw_timer:start(80, 0, vim.schedule_wrap(function()
-      local sb = cur()
-      if sb and sb.win and api.nvim_win_is_valid(sb.win) then
-        local want = sb.collapsed and COLLAPSED_WIDTH or M.width()
-        if api.nvim_win_get_width(sb.win) ~= want then
-          pcall(api.nvim_win_set_width, sb.win, want)
+    fixw_timer:start(
+      80,
+      0,
+      vim.schedule_wrap(function()
+        local sb = cur()
+        if sb and sb.win and api.nvim_win_is_valid(sb.win) then
+          local want = sb.collapsed and COLLAPSED_WIDTH or M.width()
+          if api.nvim_win_get_width(sb.win) ~= want then
+            pcall(api.nvim_win_set_width, sb.win, want)
+          end
         end
-      end
-    end))
+      end)
+    )
   end,
 })
 

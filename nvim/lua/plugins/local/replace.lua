@@ -212,8 +212,13 @@ M.close = close
 
 local function field(title, row, width, col)
   local pr = require("plugins.local.ui").input.open({
-    prompt = title, relative = "editor", width = width, row = row, col = col,
-    title_pos = "left", enter = false,
+    prompt = title,
+    relative = "editor",
+    width = width,
+    row = row,
+    col = col,
+    title_pos = "left",
+    enter = false,
   })
   return pr.buf, pr.win
 end
@@ -266,16 +271,30 @@ function M.open(query)
     api.nvim_set_current_win(other)
   end)
   map("<CR>", replace_one) -- reemplaza la actual y avanza a la siguiente
-  map("<C-n>", function() move(1) end)
-  map("<Down>", function() move(1) end)
-  map("<C-p>", function() move(-1) end)
-  map("<Up>", function() move(-1) end)
+  map("<C-n>", function()
+    move(1)
+  end)
+  map("<Down>", function()
+    move(1)
+  end)
+  map("<C-p>", function()
+    move(-1)
+  end)
+  map("<Up>", function()
+    move(-1)
+  end)
   map("<C-a>", replace_all)
   map("<M-CR>", replace_one) -- alias (por si el terminal sí entrega Alt+Enter)
   map("<M-a>", replace_all) -- alias
-  map("<M-e>", function() toggle("regex") end)
-  map("<M-c>", function() toggle("case") end)
-  map("<M-w>", function() toggle("word") end)
+  map("<M-e>", function()
+    toggle("regex")
+  end)
+  map("<M-c>", function()
+    toggle("case")
+  end)
+  map("<M-w>", function()
+    toggle("word")
+  end)
 
   api.nvim_create_autocmd({ "TextChangedI", "TextChanged" }, {
     buffer = find_buf,

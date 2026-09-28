@@ -46,8 +46,16 @@ local function set_hl()
   -- comentario normal, no como una insignia suelta. Nuestras marcas (extmark, prioridad alta)
   -- siguen mandando sobre los tags que sí reconocemos.
   for _, g in ipairs({
-    "@comment.todo", "@comment.note", "@comment.warning", "@comment.error", "@comment.hint",
-    "@text.todo", "@text.note", "@text.warning", "@text.danger", "Todo",
+    "@comment.todo",
+    "@comment.note",
+    "@comment.warning",
+    "@comment.error",
+    "@comment.hint",
+    "@text.todo",
+    "@text.note",
+    "@text.warning",
+    "@text.danger",
+    "Todo",
   }) do
     api.nvim_set_hl(0, g, { link = "Comment" })
   end
@@ -58,9 +66,7 @@ set_hl()
 local MAX_LINES = 5000 -- por encima, no resaltar (evita penalizar archivos enormes)
 
 local function eligible(buf)
-  return api.nvim_buf_is_valid(buf)
-    and vim.bo[buf].buftype == ""
-    and api.nvim_buf_line_count(buf) <= MAX_LINES
+  return api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "" and api.nvim_buf_line_count(buf) <= MAX_LINES
 end
 
 -- Dibuja las marcas en un buffer (toda la extensión; hay tope de líneas)
@@ -99,9 +105,13 @@ local function schedule(buf)
   if not timers[buf] then
     timers[buf] = vim.uv.new_timer()
   end
-  timers[buf]:start(150, 0, vim.schedule_wrap(function()
-    render(buf)
-  end))
+  timers[buf]:start(
+    150,
+    0,
+    vim.schedule_wrap(function()
+      render(buf)
+    end)
+  )
 end
 
 local group = api.nvim_create_augroup("Todo", { clear = true })

@@ -118,9 +118,12 @@ M.components = {
     if not s then
       return nil
     end
-    local raw = "%#StGitAdd#+" .. (s.added or 0)
-      .. " %#StGitChange#~" .. (s.changed or 0)
-      .. " %#StGitDelete#-" .. (s.removed or 0)
+    local raw = "%#StGitAdd#+"
+      .. (s.added or 0)
+      .. " %#StGitChange#~"
+      .. (s.changed or 0)
+      .. " %#StGitDelete#-"
+      .. (s.removed or 0)
     -- ancho mínimo para que crecer de 1 a 2 dígitos no desplace a los vecinos
     return { raw = raw, hl = "StGit", min_width = 14, align = "l" }
   end,
@@ -180,10 +183,22 @@ M.components = {
     local sev = vim.diagnostic.severity
     local c = vim.diagnostic.count(0)
     local e, w, i, h = c[sev.ERROR] or 0, c[sev.WARN] or 0, c[sev.INFO] or 0, c[sev.HINT] or 0
-    local raw = "%#StDiagError#" .. cfg.icons.diag_error .. " " .. e
-      .. " %#StDiagWarn#" .. cfg.icons.diag_warn .. " " .. w
-      .. " %#StDiagInfo#" .. cfg.icons.diag_info .. " " .. i
-      .. " %#StDiagHint#" .. cfg.icons.diag_hint .. " " .. h
+    local raw = "%#StDiagError#"
+      .. cfg.icons.diag_error
+      .. " "
+      .. e
+      .. " %#StDiagWarn#"
+      .. cfg.icons.diag_warn
+      .. " "
+      .. w
+      .. " %#StDiagInfo#"
+      .. cfg.icons.diag_info
+      .. " "
+      .. i
+      .. " %#StDiagHint#"
+      .. cfg.icons.diag_hint
+      .. " "
+      .. h
     -- ancho mínimo para que los conteos (1↔2 dígitos) no desplacen a los vecinos
     return { raw = raw, hl = "StInfo", min_width = 22, align = "l" }
   end,

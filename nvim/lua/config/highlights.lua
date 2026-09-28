@@ -22,8 +22,16 @@ local function set_hl()
   -- temas (gruvbox) les ponen un fondo más claro que la columna, y se ven como una banda.
   -- Se conserva el color del icono (fg) y solo se iguala el fondo.
   for _, name in ipairs({
-    "LineNr", "LineNrAbove", "LineNrBelow", "SignColumn", "FoldColumn",
-    "DiagnosticSignError", "DiagnosticSignWarn", "DiagnosticSignInfo", "DiagnosticSignHint", "DiagnosticSignOk",
+    "LineNr",
+    "LineNrAbove",
+    "LineNrBelow",
+    "SignColumn",
+    "FoldColumn",
+    "DiagnosticSignError",
+    "DiagnosticSignWarn",
+    "DiagnosticSignInfo",
+    "DiagnosticSignHint",
+    "DiagnosticSignOk",
   }) do
     local h = api.nvim_get_hl(0, { name = name, link = false })
     h.bg = bg

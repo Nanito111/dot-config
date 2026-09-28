@@ -61,8 +61,14 @@ function M.confirm(files, title, encoding, on_confirm)
   -- ── Preview (derecha, sin foco): buffer scratch con el resultado ──
   local preview_buf = api.nvim_create_buf(false, true)
   local preview_win = ui.float.open({
-    buf = preview_buf, relative = "editor", row = row, col = col + list_w + 3, width = prev_w, height = H,
-    title = " Preview ", title_pos = "center",
+    buf = preview_buf,
+    relative = "editor",
+    row = row,
+    col = col + list_w + 3,
+    width = prev_w,
+    height = H,
+    title = " Preview ",
+    title_pos = "center",
     wo = { cursorline = true, number = true },
   }).win
 
@@ -91,8 +97,15 @@ function M.confirm(files, title, encoding, on_confirm)
 
   local lh = math.min(total + 2, H)
   local list_win = ui.float.open({
-    buf = list_buf, enter = true, relative = "editor", row = row, col = col, width = list_w, height = lh,
-    title = " " .. title .. " ", title_pos = "left",
+    buf = list_buf,
+    enter = true,
+    relative = "editor",
+    row = row,
+    col = col,
+    width = list_w,
+    height = lh,
+    title = " " .. title .. " ",
+    title_pos = "left",
     footer = " j/k archivos · C-n/p cambios · ←→ · ⏎ ",
     footer_pos = "center",
     wo = { cursorline = true },
@@ -168,7 +181,14 @@ function M.confirm(files, title, encoding, on_confirm)
         local delta = 0
         for _, ed in ipairs(es) do
           local sc = ed.s + delta
-          pcall(api.nvim_buf_set_extmark, preview_buf, ns_prev, l, sc, { end_row = l, end_col = sc + #ed.txt, hl_group = "DiffText" })
+          pcall(
+            api.nvim_buf_set_extmark,
+            preview_buf,
+            ns_prev,
+            l,
+            sc,
+            { end_row = l, end_col = sc + #ed.txt, hl_group = "DiffText" }
+          )
           cur_positions[#cur_positions + 1] = { l, sc }
           delta = delta + #ed.txt - (ed.e - ed.s)
         end
@@ -212,20 +232,52 @@ function M.confirm(files, title, encoding, on_confirm)
     vim.keymap.set("n", lhs, fn, { buffer = list_buf, nowait = true, silent = true })
   end
 
-  map("j", function() set_file(sel_file + 1) end)
-  map("k", function() set_file(sel_file - 1) end)
-  map("<C-n>", function() jump_edit(edit_idx + 1) end)
-  map("<C-p>", function() jump_edit(edit_idx - 1) end)
-  map("h", function() sel_btn = 1; draw_btn() end)
-  map("l", function() sel_btn = 2; draw_btn() end)
-  map("<Left>", function() sel_btn = 1; draw_btn() end)
-  map("<Right>", function() sel_btn = 2; draw_btn() end)
-  map("<CR>", function() done(sel_btn == 1) end)
-  map("<Space>", function() done(sel_btn == 1) end)
-  map("y", function() done(true) end)
-  map("n", function() done(false) end)
-  map("q", function() done(false) end)
-  map("<Esc>", function() done(false) end)
+  map("j", function()
+    set_file(sel_file + 1)
+  end)
+  map("k", function()
+    set_file(sel_file - 1)
+  end)
+  map("<C-n>", function()
+    jump_edit(edit_idx + 1)
+  end)
+  map("<C-p>", function()
+    jump_edit(edit_idx - 1)
+  end)
+  map("h", function()
+    sel_btn = 1
+    draw_btn()
+  end)
+  map("l", function()
+    sel_btn = 2
+    draw_btn()
+  end)
+  map("<Left>", function()
+    sel_btn = 1
+    draw_btn()
+  end)
+  map("<Right>", function()
+    sel_btn = 2
+    draw_btn()
+  end)
+  map("<CR>", function()
+    done(sel_btn == 1)
+  end)
+  map("<Space>", function()
+    done(sel_btn == 1)
+  end)
+  map("y", function()
+    done(true)
+  end)
+  map("n", function()
+    done(false)
+  end)
+  map("q", function()
+    done(false)
+  end)
+  map("<Esc>", function()
+    done(false)
+  end)
 end
 
 -- Guarda a disco un buffer de archivo normal (válido, con nombre y buftype vacío).
@@ -291,7 +343,11 @@ function M.rename()
     client:request("textDocument/rename", params, function(err, result)
       vim.schedule(function()
         if err or not result then
-          vim.notify(err and err.message or "El servidor no devolvió cambios", vim.log.levels.WARN, { title = "Rename" })
+          vim.notify(
+            err and err.message or "El servidor no devolvió cambios",
+            vim.log.levels.WARN,
+            { title = "Rename" }
+          )
           return
         end
         local files = M.edit_files(result)

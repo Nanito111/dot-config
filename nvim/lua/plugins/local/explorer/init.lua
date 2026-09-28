@@ -64,9 +64,17 @@ local FOCUSED_WINHL = "CursorLine:ExplorerCursorLine"
 local DIMMED_WINHL
 do
   local groups = {
-    "ExplorerDir", "ExplorerFile", "ExplorerRoot", "ExplorerGitNew",
-    "GitSignAdd", "GitSignChange", "GitSignDelete", "GitSignChangedelete",
-    "GitSignStagedAdd", "GitSignStagedChange", "GitSignStagedDelete",
+    "ExplorerDir",
+    "ExplorerFile",
+    "ExplorerRoot",
+    "ExplorerGitNew",
+    "GitSignAdd",
+    "GitSignChange",
+    "GitSignDelete",
+    "GitSignChangedelete",
+    "GitSignStagedAdd",
+    "GitSignStagedChange",
+    "GitSignStagedDelete",
   }
   local parts = {}
   for _, g in ipairs(groups) do

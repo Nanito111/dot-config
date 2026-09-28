@@ -19,7 +19,7 @@ local function set_hl()
   hl(0, "ExplorerFile", { fg = palette.fg })
   hl(0, "ExplorerRoot", { fg = palette.yellow, bold = true })
   -- archivo actual: fondo de línea sutil (acento mezclado hacia el fondo), sin tocar el texto
-  hl(0, "ExplorerCurrentLine", { bg = palette.blue, fg = palette.bg})
+  hl(0, "ExplorerCurrentLine", { bg = palette.blue, fg = palette.bg })
   hl(0, "ExplorerGitNew", { fg = palette.cyan }) -- sin trackear (distinto del verde de añadido)
 end
 

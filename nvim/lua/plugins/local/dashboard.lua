@@ -64,9 +64,7 @@ local function is_normal_win(win)
     return false
   end
   local buf = api.nvim_win_get_buf(win)
-  return vim.bo[buf].filetype ~= "netrw"
-    and vim.bo[buf].filetype ~= "explorer"
-    and vim.bo[buf].buftype ~= "terminal"
+  return vim.bo[buf].filetype ~= "netrw" and vim.bo[buf].filetype ~= "explorer" and vim.bo[buf].buftype ~= "terminal"
 end
 
 -- Buffer del dashboard (se crea una vez y se reutiliza)

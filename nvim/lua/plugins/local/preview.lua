@@ -46,9 +46,7 @@ function M.load(buf, lines, opts)
 
   local ft = ""
   if api.nvim_buf_line_count(buf) <= M.HIGHLIGHT_MAX then
-    ft = opts.filetype
-      or (opts.path and opts.path ~= "" and vim.filetype.match({ filename = opts.path }))
-      or ""
+    ft = opts.filetype or (opts.path and opts.path ~= "" and vim.filetype.match({ filename = opts.path })) or ""
   end
   pcall(function()
     vim.bo[buf].filetype = ft

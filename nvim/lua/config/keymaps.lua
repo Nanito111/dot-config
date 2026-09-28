@@ -40,8 +40,8 @@ map("n", "n", "nzzzv", { desc = "Siguiente coincidencia y centrar" })
 map("n", "N", "Nzzzv", { desc = "Coincidencia anterior y centrar" })
 
 -- Pegar sin perder el registro
-map("v", "p", 'P', { desc = "Pegar sin sobrescribir el registro" })
-map("v", "P", 'p', { desc = "Pegar sobrescribiendo el registro" })
+map("v", "p", "P", { desc = "Pegar sin sobrescribir el registro" })
+map("v", "P", "p", { desc = "Pegar sobrescribiendo el registro" })
 
 -- Buffer control
 map("n", "<Tab>", function()
@@ -337,4 +337,3 @@ end, { silent = true, desc = "Alternar el minimapa" })
 map("n", "<leader>e", function()
   require("plugins.local.sidebar").focus()
 end, { silent = true, desc = "Alternar foco sidebar/editor" })
-

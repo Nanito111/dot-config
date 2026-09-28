@@ -94,9 +94,13 @@ function M.schedule_git(s)
     s.git_timer:close()
   end
   s.git_timer = uv.new_timer()
-  s.git_timer:start(120, 0, vim.schedule_wrap(function()
-    M.update_git(s)
-  end))
+  s.git_timer:start(
+    120,
+    0,
+    vim.schedule_wrap(function()
+      M.update_git(s)
+    end)
+  )
 end
 
 return M

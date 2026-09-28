@@ -115,8 +115,8 @@ function M.open(opts)
   end
 
   -- neutralizar el ciclado de buffers global: es un flotante modal, Tab no debe cambiar de buffer
-  vim.keymap.set("n", "<Tab>", function () end, { buffer = buf, nowait = true, silent = true })
-  vim.keymap.set("n", "<S-Tab>", function () end, { buffer = buf, nowait = true, silent = true })
+  vim.keymap.set("n", "<Tab>", function() end, { buffer = buf, nowait = true, silent = true })
+  vim.keymap.set("n", "<S-Tab>", function() end, { buffer = buf, nowait = true, silent = true })
 
   return { win = win, buf = buf, close = close }
 end

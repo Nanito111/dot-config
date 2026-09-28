@@ -5,7 +5,8 @@ local M = {}
 -- ventana. netrw (`:Lexplore`) deja uno colgando cada vez que abre el panel.
 function M.wipe_orphan_buffers()
   for _, b in ipairs(api.nvim_list_bufs()) do
-    if api.nvim_buf_is_valid(b)
+    if
+      api.nvim_buf_is_valid(b)
       and vim.bo[b].buflisted
       and vim.bo[b].buftype == ""
       and api.nvim_buf_get_name(b) == ""

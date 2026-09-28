@@ -40,11 +40,7 @@ end
 -- Ancho VISIBLE de un contenido de statusline: descuenta los códigos de resaltado
 -- (%#grupo#), de click (%@fn@ … %X) y desescapa el %% -> % antes de medir.
 local function visible_width(s)
-  local plain = s
-    :gsub("%%#[^#]*#", "")
-    :gsub("%%@[^@]*@", "")
-    :gsub("%%X", "")
-    :gsub("%%%%", "%%")
+  local plain = s:gsub("%%#[^#]*#", ""):gsub("%%@[^@]*@", ""):gsub("%%X", ""):gsub("%%%%", "%%")
   return vim.fn.strdisplaywidth(plain)
 end
 

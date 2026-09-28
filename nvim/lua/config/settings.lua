@@ -150,7 +150,13 @@ local vim_defaults = {}
 -- leyendo un global ya modificado, y el prune guardaría claves redundantes.
 -- Mantener en sync con las entradas `vimopt(...)` de build().
 local PANEL_VIM_OPTS = {
-  "wrap", "number", "relativenumber", "cursorline", "scrolloff", "ignorecase", "smartcase",
+  "wrap",
+  "number",
+  "relativenumber",
+  "cursorline",
+  "scrolloff",
+  "ignorecase",
+  "smartcase",
 }
 
 -- Fuente FIABLE del valor deseado para una opción del panel: el override persistido o el
@@ -483,7 +489,15 @@ local function build()
         vimopt({ opt = "number", label = "Números de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "relativenumber", label = "Números relativos", type = "bool", scope = "win" }),
         vimopt({ opt = "cursorline", label = "Resaltar línea del cursor", type = "bool", scope = "win" }),
-        vimopt({ opt = "scrolloff", label = "Margen de scroll", type = "number", scope = nil, min = 0, max = 30, step = 1 }),
+        vimopt({
+          opt = "scrolloff",
+          label = "Margen de scroll",
+          type = "number",
+          scope = nil,
+          min = 0,
+          max = 30,
+          step = 1,
+        }),
         vimopt({ opt = "ignorecase", label = "Ignorar mayúsculas al buscar", type = "bool", scope = nil }),
         vimopt({ opt = "smartcase", label = "…salvo si escribes mayúsculas", type = "bool", scope = nil }),
       },

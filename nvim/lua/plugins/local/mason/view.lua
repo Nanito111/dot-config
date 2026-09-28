@@ -95,7 +95,7 @@ local function render(buf)
         line = line .. "   " .. right
         push(line, e)
         local row = #lines - 1
-        marks[#marks + 1] = { row, 2, { end_col = 2 + #("⟳"), hl_group = "MasonProgress" } }
+        marks[#marks + 1] = { row, 2, { end_col = 2 + #"⟳", hl_group = "MasonProgress" } }
         marks[#marks + 1] = { row, name_hl_end - #e.name, { end_col = name_hl_end, hl_group = "MasonName" } }
         marks[#marks + 1] = { row, name_hl_end, { end_col = #line, hl_group = "MasonProgress" } }
         -- 2.ª línea (no seleccionable): comando/última salida del instalador, como en mason
@@ -117,7 +117,8 @@ local function render(buf)
         local nstart = mstart + #marker
         marks[#marks + 1] = { row, nstart, { end_col = nstart + #e.name, hl_group = "MasonName" } }
         if ver ~= "" then
-          marks[#marks + 1] = { row, nstart + #e.name, { end_col = nstart + #e.name + #ver, hl_group = "MasonVersion" } }
+          marks[#marks + 1] =
+            { row, nstart + #e.name, { end_col = nstart + #e.name + #ver, hl_group = "MasonVersion" } }
         end
         if up ~= "" then
           marks[#marks + 1] = { row, #line - #up, { end_col = #line, hl_group = "MasonOutdated" } }
@@ -171,12 +172,8 @@ local function do_uninstall(buf)
   if not (e and e.pkg) then
     return
   end
-  local ans = require("plugins.local.confirm").confirm(
-    "¿Desinstalar «" .. e.name .. "»?",
-    "&Si\n&No",
-    2,
-    { backdrop = true }
-  )
+  local ans =
+    require("plugins.local.confirm").confirm("¿Desinstalar «" .. e.name .. "»?", "&Si\n&No", 2, { backdrop = true })
   if ans == 1 then
     actions.uninstall(e.pkg)
   end
@@ -259,11 +256,7 @@ local function install_new()
   end
 
   local function footer_text()
-    return string.format(
-      "[Cat: %s]  [Lang: %s]   <C-g> categoría · <C-l> lenguaje",
-      cats[ci],
-      langs[li]
-    )
+    return string.format("[Cat: %s]  [Lang: %s]   <C-g> categoría · <C-l> lenguaje", cats[ci], langs[li])
   end
 
   local function apply(ctx)
@@ -309,7 +302,7 @@ local function install_new()
     display_hl = function(name)
       local text, rstart = render_row(name)
       return {
-        { group = "MasonInstalled", col = 0, end_col = #("●") },
+        { group = "MasonInstalled", col = 0, end_col = #"●" },
         { group = "Comment", col = rstart, end_col = #text },
       }
     end,

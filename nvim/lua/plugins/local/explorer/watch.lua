@@ -23,11 +23,15 @@ function M.schedule_render(s)
     s.timer:close()
   end
   s.timer = uv.new_timer()
-  s.timer:start(50, 0, vim.schedule_wrap(function()
-    if s.win and api.nvim_win_is_valid(s.win) then
-      render.render(s)
-    end
-  end))
+  s.timer:start(
+    50,
+    0,
+    vim.schedule_wrap(function()
+      if s.win and api.nvim_win_is_valid(s.win) then
+        render.render(s)
+      end
+    end)
+  )
 end
 
 -- Detiene y cierra un handle de fs_event con seguridad

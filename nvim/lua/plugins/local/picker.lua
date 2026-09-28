@@ -159,7 +159,11 @@ local function preview_set(s, seq, path, lines)
   if not preview_current(s, seq) then
     return false
   end
-  require("plugins.local.preview").load(s.preview_buf, lines, { path = path, win = s.preview_win, wrap = s.preview_wrap })
+  require("plugins.local.preview").load(
+    s.preview_buf,
+    lines,
+    { path = path, win = s.preview_win, wrap = s.preview_wrap }
+  )
   s.preview_loaded = { path = path, count = #lines }
   return true
 end
@@ -541,10 +545,18 @@ function M.pick(opts)
   -- teclas de navegación/confirmación/cierre (compartidas por ambos modos)
   local function nav(kmap)
     kmap("<CR>", confirm)
-    kmap("<C-n>", function() move(1) end)
-    kmap("<C-p>", function() move(-1) end)
-    kmap("<Down>", function() move(1) end)
-    kmap("<Up>", function() move(-1) end)
+    kmap("<C-n>", function()
+      move(1)
+    end)
+    kmap("<C-p>", function()
+      move(-1)
+    end)
+    kmap("<Down>", function()
+      move(1)
+    end)
+    kmap("<Up>", function()
+      move(-1)
+    end)
     kmap("<Esc>", close)
     kmap("<C-c>", close)
   end
@@ -567,8 +579,12 @@ function M.pick(opts)
     nav(function(lhs, fn)
       vim.keymap.set("n", lhs, fn, { buffer = res_buf, nowait = true, silent = true })
     end)
-    vim.keymap.set("n", "j", function() move(1) end, { buffer = res_buf, nowait = true, silent = true })
-    vim.keymap.set("n", "k", function() move(-1) end, { buffer = res_buf, nowait = true, silent = true })
+    vim.keymap.set("n", "j", function()
+      move(1)
+    end, { buffer = res_buf, nowait = true, silent = true })
+    vim.keymap.set("n", "k", function()
+      move(-1)
+    end, { buffer = res_buf, nowait = true, silent = true })
     vim.keymap.set("n", "q", close, { buffer = res_buf, nowait = true, silent = true })
     set_results(opts.items or {}) -- volcar la lista tal cual (sin filtrar)
     pcall(api.nvim_set_current_win, res_win)
@@ -579,15 +595,29 @@ function M.pick(opts)
   -- de rename que use <C-n>/<C-p> para saltar entre cambios en vez de mover items).
   if opts.keymaps then
     local ctx = {
-      item = function() return state and state.count > 0 and state.shown[state.idx] or nil end,
-      index = function() return state and state.idx or 0 end,
-      count = function() return state and state.count or 0 end,
+      item = function()
+        return state and state.count > 0 and state.shown[state.idx] or nil
+      end,
+      index = function()
+        return state and state.idx or 0
+      end,
+      count = function()
+        return state and state.count or 0
+      end,
       list_win = res_win,
       list_buf = res_buf,
       preview_win = preview_win,
       preview_buf = preview_buf,
-      move = function(d) if state then move(d) end end,
-      confirm = function() if state then confirm() end end,
+      move = function(d)
+        if state then
+          move(d)
+        end
+      end,
+      confirm = function()
+        if state then
+          confirm()
+        end
+      end,
       close = close,
       -- Rehace la lista sin cerrar el picker (borrar un item y seguir). refilter() deja el
       -- cursor en la 1.ª fila, así que se repone donde estaba (acotado al nuevo total).
@@ -608,7 +638,9 @@ function M.pick(opts)
     local target = input and prompt_buf or res_buf
     local modes = input and { "i", "n" } or { "n" }
     for lhs, fn in pairs(opts.keymaps) do
-      vim.keymap.set(modes, lhs, function() fn(ctx) end, { buffer = target, nowait = true, silent = true })
+      vim.keymap.set(modes, lhs, function()
+        fn(ctx)
+      end, { buffer = target, nowait = true, silent = true })
     end
   end
 end
@@ -618,8 +650,7 @@ local pick = M.pick -- alias para los buscadores de abajo
 -- Enfoca una ventana normal (evita netrw y terminales)
 local function goto_normal_win(origin)
   local win = origin
-  if not (win and api.nvim_win_is_valid(win))
-    or vim.bo[api.nvim_win_get_buf(win)].filetype == "netrw" then
+  if not (win and api.nvim_win_is_valid(win)) or vim.bo[api.nvim_win_get_buf(win)].filetype == "netrw" then
     win = nil
     for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
       local b = api.nvim_win_get_buf(w)

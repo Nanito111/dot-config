@@ -165,9 +165,7 @@ end
 
 -- ¿es un terminal cicleable (no flotante de claude/lazygit)?
 local function is_tab_term(buf)
-  return api.nvim_buf_is_valid(buf)
-    and vim.bo[buf].buftype == "terminal"
-    and not vim.b[buf].term_label
+  return api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "terminal" and not vim.b[buf].term_label
 end
 
 -- ¿`path` está dentro del directorio `dir`? (ambos normalizados)

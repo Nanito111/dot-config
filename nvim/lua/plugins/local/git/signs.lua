@@ -28,9 +28,7 @@ local SIGNS = {
 
 -- ¿es un buffer de archivo normal en disco?
 local function is_file(buf)
-  return api.nvim_buf_is_valid(buf)
-    and vim.bo[buf].buftype == ""
-    and api.nvim_buf_get_name(buf) ~= ""
+  return api.nvim_buf_is_valid(buf) and vim.bo[buf].buftype == "" and api.nvim_buf_get_name(buf) ~= ""
 end
 M.is_file = is_file
 
@@ -164,9 +162,13 @@ local function debounced_refresh(buf)
   end
   t = vim.uv.new_timer()
   timers[buf] = t
-  t:start(80, 0, vim.schedule_wrap(function()
-    refresh(buf)
-  end))
+  t:start(
+    80,
+    0,
+    vim.schedule_wrap(function()
+      refresh(buf)
+    end)
+  )
 end
 
 -- Trae una versión del archivo (async) y la cachea; refresca al terminar
@@ -209,9 +211,13 @@ local function schedule_head(buf)
     head_timers[buf] = t
   end
   t:stop()
-  t:start(40, 0, vim.schedule_wrap(function()
-    update_head(buf)
-  end))
+  t:start(
+    40,
+    0,
+    vim.schedule_wrap(function()
+      update_head(buf)
+    end)
+  )
 end
 
 -- ── Navegación entre hunks ─────────────────────────────────────────
