@@ -4,32 +4,48 @@
 -- con :Mason la activa sola, sin anotarla aquí. Se reconstruye al instalar/quitar en Mason.
 local M = {}
 
--- Único mapeo que hay que mantener: etiqueta de lenguaje de Mason -> filetypes de Neovim.
-local LANG2FT = {
-  Lua = { "lua" },
+-- Etiqueta de lenguaje de Mason -> filetypes de Neovim. Solo se listan las EXCEPCIONES: las
+-- que difieren del nombre en minúsculas o mapean a varios filetypes. Para el resto (la mayoría:
+-- Rust->rust, Python->python, Go->go, …) se usa el nombre en minúsculas (ver fts_for), así que
+-- cualquier lenguaje de Mason queda cubierto sin listarlo, incluidos los que agreguen a futuro.
+local FT = {
   JavaScript = { "javascript", "javascriptreact" },
   TypeScript = { "typescript", "typescriptreact" },
+  JSX = { "javascriptreact" },
   JSON = { "json", "jsonc" },
-  YAML = { "yaml" },
-  CSS = { "css", "scss", "less" },
-  SCSS = { "scss" },
-  LESS = { "less" },
-  HTML = { "html" },
-  Markdown = { "markdown" },
-  Python = { "python" },
   Shell = { "sh", "bash" },
   Bash = { "sh", "bash" },
-  Go = { "go" },
-  Rust = { "rust" },
   ["C++"] = { "cpp" },
-  C = { "c" },
   ["C#"] = { "cs" },
-  TOML = { "toml" },
-  XML = { "xml" },
-  SQL = { "sql" },
+  ["F#"] = { "fsharp" },
   Docker = { "dockerfile" },
-  Vim = { "vim" },
+  Dockerfile = { "dockerfile" },
+  Makefile = { "make" },
+  Protobuf = { "proto" },
+  VimScript = { "vim" },
+  reStructuredText = { "rst" },
+  LaTeX = { "tex" },
+  PowerShell = { "ps1" },
+  Assembly = { "asm" },
+  ["R Markdown"] = { "rmd" },
+  MDX = { "markdown.mdx", "mdx" },
 }
+
+-- Etiquetas genéricas de Mason que NO son un lenguaje concreto: se ignoran (si no, un
+-- formatter/linter etiquetado así se aplicaría a demasiados buffers).
+local SKIP = { Text = true, Plain = true, Spec = true, Query = true, Generic = true, ["*"] = true }
+
+-- Filetypes de Neovim para una etiqueta de Mason: excepción de FT, o el nombre en minúsculas
+-- (sin espacios/puntos/guiones). Si el filetype no existe en Neovim, simplemente nunca dispara.
+local function fts_for(lang)
+  if SKIP[lang] then
+    return {}
+  end
+  if FT[lang] then
+    return FT[lang]
+  end
+  return { (lang:lower():gsub("[%s%.%-]", "")) }
+end
 
 -- Excepciones: nombre de paquete Mason -> nombre en conform/nvim-lint (si difiere),
 -- o false para ignorar un paquete concreto. Vacío: para las herramientas comunes coincide.
@@ -71,7 +87,7 @@ local function collect()
       end
       if is_fmt or is_lint then
         for _, lang in ipairs(spec.languages or {}) do
-          for _, ft in ipairs(LANG2FT[lang] or {}) do
+          for _, ft in ipairs(fts_for(lang)) do
             if is_fmt then
               add(fmt, ft, tool)
             end
