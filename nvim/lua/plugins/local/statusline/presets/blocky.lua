@@ -5,7 +5,7 @@ return {
   layout = {
     left = { "git", "gitdiff", "label", "diagnostics" },
     center = { "mode" },
-    right = { "lsp", "indent", "filetype", "position", "percent" },
+    right = { "lsp", "linter", "indent", "filetype", "position", "percent" },
   },
   colors = function(pair, p)
     pair("StGit", p.bg, p.cyan, { bold = true }) -- rama sobre cian

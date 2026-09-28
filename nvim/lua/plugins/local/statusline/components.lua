@@ -177,6 +177,20 @@ M.components = {
     return { text = cfg.icons.lsp .. " " .. table.concat(names, ","), hl = "StInfo", align = "l", min_width = 10 }
   end,
 
+  -- linter(s) de nvim-lint para el filetype del buffer; se oculta si nvim-lint no está
+  -- cargado o si no hay ninguno configurado/instalado para ese filetype
+  linter = function()
+    if not package.loaded["lint"] then
+      return nil
+    end
+    local by_ft = require("lint").linters_by_ft
+    local names = by_ft and by_ft[vim.bo.filetype]
+    if not names or #names == 0 then
+      return nil
+    end
+    return { text = cfg.icons.linter .. " " .. table.concat(names, ","), hl = "StInfo", align = "l", min_width = 8 }
+  end,
+
   -- conteo de diagnósticos del buffer (errores/avisos/info/pistas). Siempre visible
   -- (aunque sean 0). Una sola píldora con cada conteo en el color de su severidad.
   diagnostics = function()
