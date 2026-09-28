@@ -33,6 +33,7 @@ local DEFAULTS = {
   ["ui.minimap_symbols"] = "dot",
   ["editor.format_on_save"] = true,
   ["ui.dashboard_effect"] = "shimmer",
+  ["ui.dashboard_color"] = "auto",
   ["ui.breadcrumb_symbol"] = "◂",
 }
 M.DEFAULTS = DEFAULTS
@@ -383,6 +384,18 @@ local function build()
           get = dashboard.get_effect,
           apply = dashboard.set_effect,
           set = dashboard.set_effect,
+        }),
+        provider({
+          id = "ui.dashboard_color",
+          label = "Color del logo (dashboard)",
+          type = "enum",
+          default = DEFAULTS["ui.dashboard_color"],
+          choices = function()
+            return { "auto", "blue", "cyan", "green", "yellow", "orange", "red", "purple", "fg" }
+          end,
+          get = dashboard.get_color,
+          apply = dashboard.set_color,
+          set = dashboard.set_color,
         }),
         provider({
           id = "ui.breadcrumb_symbol",

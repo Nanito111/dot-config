@@ -126,10 +126,31 @@ local function blend(a, b, t)
   return string.format("#%02x%02x%02x", mix(2), mix(4), mix(6))
 end
 
--- grupos de brillo, del color base del tema al brillante (se rehacen en cada ColorScheme)
-local function define_shades()
+-- Color base del logo: elegido en ui.dashboard_color ("auto" = acento del tema). Se toma de
+-- la paleta del tema, así respeta el colorscheme.
+local function base_color()
   local p = require("config.palette")
-  local base, bright = hexok(p.blue) or "#5aa0ff", hexok(p.fg) or "#ffffff"
+  local key = require("config.settings").value("ui.dashboard_color", "auto")
+  local map = {
+    auto = p.blue,
+    blue = p.blue,
+    cyan = p.cyan,
+    green = p.green,
+    yellow = p.yellow,
+    orange = p.orange,
+    red = p.red,
+    purple = p.purple,
+    fg = p.fg,
+  }
+  return hexok(map[key]) or hexok(p.blue) or "#5aa0ff"
+end
+
+-- grupos de brillo, del color base (config) al brillante (se rehacen en cada ColorScheme y al
+-- cambiar el color). El brillante siempre aclara hacia el blanco para que el shimmer contraste
+-- sea cual sea el color base.
+local function define_shades()
+  local base = base_color()
+  local bright = blend(base, "#ffffff", 0.65)
   for i = 0, SHADES do
     api.nvim_set_hl(0, "DashFx" .. i, { fg = blend(base, bright, i / SHADES), bold = true })
   end
@@ -160,24 +181,28 @@ end
 
 local function apply_fx(buf)
   api.nvim_buf_clear_namespace(buf, fx_ns, 0, -1)
-  local effect = effect_name()
-  if effect == "off" or not header_info then
+  if not header_info then
     return
   end
-  local left, span = header_info.left, header_info.span
+  local effect, left, span = effect_name(), header_info.left, header_info.span
   for i = 0, header_info.count - 1 do
     local lnum = header_info.first + i
     local line = api.nvim_buf_get_lines(buf, lnum, lnum + 1, false)[1]
     if line then
-      local j = 0
-      each_char(line:sub(left + 1), function(coff, clen)
-        local sh = shade_for(effect, j, span)
-        pcall(api.nvim_buf_set_extmark, buf, fx_ns, lnum, left + coff, {
-          end_col = left + coff + clen,
-          hl_group = "DashFx" .. sh,
-        })
-        j = j + 1
-      end)
+      if effect == "off" then
+        -- sin animación: color sólido (base) en todo el logo, de una sola marca por línea
+        pcall(api.nvim_buf_set_extmark, buf, fx_ns, lnum, left, { end_col = #line, hl_group = "DashFx0" })
+      else
+        local j = 0
+        each_char(line:sub(left + 1), function(coff, clen)
+          local sh = shade_for(effect, j, span)
+          pcall(api.nvim_buf_set_extmark, buf, fx_ns, lnum, left + coff, {
+            end_col = left + coff + clen,
+            hl_group = "DashFx" .. sh,
+          })
+          j = j + 1
+        end)
+      end
     end
   end
 end
@@ -296,6 +321,16 @@ function M.get_effect()
 end
 function M.set_effect(v)
   require("config.settings").record("ui.dashboard_effect", v, "shimmer")
+  refresh_fx()
+end
+
+-- Color del logo: get/set para el panel (set rehace los tonos y reaplica en vivo).
+function M.get_color()
+  return require("config.settings").value("ui.dashboard_color", "auto")
+end
+function M.set_color(v)
+  require("config.settings").record("ui.dashboard_color", v, "auto")
+  define_shades()
   refresh_fx()
 end
 
