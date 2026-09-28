@@ -32,6 +32,7 @@ local DEFAULTS = {
   ["ui.minimap_side"] = "auto",
   ["ui.minimap_symbols"] = "dot",
   ["editor.format_on_save"] = true,
+  ["ui.dashboard_effect"] = "shimmer",
 }
 M.DEFAULTS = DEFAULTS
 
@@ -270,6 +271,7 @@ local function build()
   local picker = require("plugins.local.picker")
   local minimap = require("plugins.local.minimap")
   local format = require("config.format")
+  local dashboard = require("plugins.local.dashboard")
 
   -- adaptador para settings respaldados por un proveedor (apply puro + set que persiste)
   local function provider(spec)
@@ -364,6 +366,21 @@ local function build()
           end,
           apply = picker.set_icons, -- set_icons ya persiste (bool: no hay preview/cancel)
           set = picker.set_icons,
+        }),
+        provider({
+          id = "ui.dashboard_effect",
+          label = "Efecto del título (dashboard)",
+          type = "enum",
+          default = DEFAULTS["ui.dashboard_effect"],
+          choices = function()
+            return { "off", "shimmer", "gradient" }
+          end,
+          display = function(v)
+            return ({ off = "ninguno", shimmer = "brillo", gradient = "degradado" })[v] or v
+          end,
+          get = dashboard.get_effect,
+          apply = dashboard.set_effect,
+          set = dashboard.set_effect,
         }),
         provider({
           id = "ui.sidebar_width",

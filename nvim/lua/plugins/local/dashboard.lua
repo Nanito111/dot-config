@@ -102,21 +102,142 @@ local function get_buf()
   return dash_buf
 end
 
+-- ── Efecto del título (shimmer / degradado) ────────────────────────
+-- Colorea el logo con extmarks por carácter. "shimmer" mueve una banda brillante con un
+-- timer (solo mientras el dashboard está visible); "gradient" es un degradado estático;
+-- "off" lo deja sin color. El nivel de brillo son grupos DashFx0..N interpolados del tema.
+local fx_ns = api.nvim_create_namespace("dashboard_fx")
+local fx_timer, fx_frame = nil, 0
+local header_info = nil -- { first = línea 0-based, count, left = bytes, span = celdas }
+local SHADES, BAND = 12, 7
+
+local function hexok(c)
+  return (type(c) == "string" and c:match("^#%x%x%x%x%x%x$")) and c or nil
+end
+
+-- mezcla dos colores hex (#rrggbb) con factor t (0..1)
+local function blend(a, b, t)
+  local function ch(s, i)
+    return tonumber(s:sub(i, i + 1), 16)
+  end
+  local function mix(i)
+    return math.floor(ch(a, i) + (ch(b, i) - ch(a, i)) * t + 0.5)
+  end
+  return string.format("#%02x%02x%02x", mix(2), mix(4), mix(6))
+end
+
+-- grupos de brillo, del color base del tema al brillante (se rehacen en cada ColorScheme)
+local function define_shades()
+  local p = require("config.palette")
+  local base, bright = hexok(p.blue) or "#5aa0ff", hexok(p.fg) or "#ffffff"
+  for i = 0, SHADES do
+    api.nvim_set_hl(0, "DashFx" .. i, { fg = blend(base, bright, i / SHADES), bold = true })
+  end
+end
+
+local function effect_name()
+  return require("config.settings").value("ui.dashboard_effect", "shimmer")
+end
+
+-- índice de brillo (0..SHADES) de la celda j según el efecto
+local function shade_for(effect, j, span)
+  if effect == "gradient" then
+    return math.floor((span > 1 and j / (span - 1) or 0) * SHADES + 0.5)
+  end
+  local center = (fx_frame % (span + 2 * BAND)) - BAND -- barre de izq a der
+  local d = math.abs(j - center)
+  return (d >= BAND) and 0 or math.floor((1 - d / BAND) * SHADES + 0.5)
+end
+
+-- recorre los caracteres UTF-8 de s pasando (offset_byte 0-based, nº de bytes)
+local function each_char(s, cb)
+  local off = 0
+  for c in s:gmatch("[\1-\127\194-\244][\128-\191]*") do
+    cb(off, #c)
+    off = off + #c
+  end
+end
+
+local function apply_fx(buf)
+  api.nvim_buf_clear_namespace(buf, fx_ns, 0, -1)
+  local effect = effect_name()
+  if effect == "off" or not header_info then
+    return
+  end
+  local left, span = header_info.left, header_info.span
+  for i = 0, header_info.count - 1 do
+    local lnum = header_info.first + i
+    local line = api.nvim_buf_get_lines(buf, lnum, lnum + 1, false)[1]
+    if line then
+      local j = 0
+      each_char(line:sub(left + 1), function(coff, clen)
+        local sh = shade_for(effect, j, span)
+        pcall(api.nvim_buf_set_extmark, buf, fx_ns, lnum, left + coff, {
+          end_col = left + coff + clen,
+          hl_group = "DashFx" .. sh,
+        })
+        j = j + 1
+      end)
+    end
+  end
+end
+
+local function dash_visible()
+  for _, w in ipairs(api.nvim_list_wins()) do
+    if api.nvim_win_is_valid(w) and dash_buf and api.nvim_win_get_buf(w) == dash_buf then
+      return true
+    end
+  end
+  return false
+end
+
+local function tick()
+  if not (dash_buf and api.nvim_buf_is_valid(dash_buf) and dash_visible()) then
+    if fx_timer then
+      fx_timer:stop()
+    end
+    return
+  end
+  fx_frame = fx_frame + 1
+  apply_fx(dash_buf)
+end
+
+-- (re)aplica el efecto; anima con un timer solo si es "shimmer" y el dashboard está visible
+local function refresh_fx()
+  if not (dash_buf and api.nvim_buf_is_valid(dash_buf)) then
+    return
+  end
+  apply_fx(dash_buf)
+  if effect_name() == "shimmer" and dash_visible() then
+    if not fx_timer then
+      fx_timer = vim.uv.new_timer()
+    end
+    fx_timer:stop()
+    fx_timer:start(90, 90, vim.schedule_wrap(tick))
+  elseif fx_timer then
+    fx_timer:stop()
+  end
+end
+
 -- Dibuja el contenido centrado en la ventana
 local function render(buf, win)
   local width = api.nvim_win_get_width(win)
   local height = api.nvim_win_get_height(win)
 
+  local header = get_header()
   local block = {}
-  vim.list_extend(block, get_header())
+  vim.list_extend(block, header)
   block[#block + 1] = ""
   block[#block + 1] = ""
   vim.list_extend(block, buttons)
 
   -- ancho máximo para centrar todo el bloque con un solo margen izquierdo
-  local maxw = 0
+  local maxw, span = 0, 0
   for _, l in ipairs(block) do
     maxw = math.max(maxw, vim.fn.strdisplaywidth(l))
+  end
+  for _, l in ipairs(header) do
+    span = math.max(span, vim.fn.strdisplaywidth(l))
   end
   local left = string.rep(" ", math.max(0, math.floor((width - maxw) / 2)))
 
@@ -132,6 +253,10 @@ local function render(buf, win)
   vim.bo[buf].modifiable = true
   api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.bo[buf].modifiable = false
+
+  -- región del logo (para el efecto): líneas [top .. top+#header-1], tras el margen
+  header_info = { first = top, count = #header, left = #left, span = span }
+  refresh_fx()
 end
 
 -- Muestra el dashboard en una ventana normal si no hay buffers reales
@@ -164,6 +289,18 @@ function M.open()
   -- y el que netrw deja al abrir el panel)
   require("config.util").wipe_orphan_buffers()
 end
+
+-- Efecto del título: get/set para el panel de configuración (set reaplica en vivo).
+function M.get_effect()
+  return effect_name()
+end
+function M.set_effect(v)
+  require("config.settings").record("ui.dashboard_effect", v, "shimmer")
+  refresh_fx()
+end
+
+-- Colores del efecto: definirlos ya y en cada cambio de tema.
+require("config.theme").register(define_shades)
 
 local group = api.nvim_create_augroup("Dashboard", { clear = true })
 
