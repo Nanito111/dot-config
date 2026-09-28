@@ -33,6 +33,7 @@ local DEFAULTS = {
   ["ui.minimap_symbols"] = "dot",
   ["editor.format_on_save"] = true,
   ["ui.dashboard_effect"] = "shimmer",
+  ["ui.breadcrumb_symbol"] = "◂",
 }
 M.DEFAULTS = DEFAULTS
 
@@ -272,6 +273,7 @@ local function build()
   local minimap = require("plugins.local.minimap")
   local format = require("config.format")
   local dashboard = require("plugins.local.dashboard")
+  local winbar = require("plugins.local.winbar")
 
   -- adaptador para settings respaldados por un proveedor (apply puro + set que persiste)
   local function provider(spec)
@@ -381,6 +383,18 @@ local function build()
           get = dashboard.get_effect,
           apply = dashboard.set_effect,
           set = dashboard.set_effect,
+        }),
+        provider({
+          id = "ui.breadcrumb_symbol",
+          label = "Símbolo del breadcrumb",
+          type = "enum",
+          default = DEFAULTS["ui.breadcrumb_symbol"],
+          choices = function()
+            return { "◂", "←", "‹", "«", "⟵", "»" }
+          end,
+          get = winbar.get_symbol,
+          apply = winbar.set_symbol,
+          set = winbar.set_symbol,
         }),
         provider({
           id = "ui.sidebar_width",

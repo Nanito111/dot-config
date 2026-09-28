@@ -16,9 +16,19 @@ theme.register(set_hl)
 
 local icon_for = require("config.icons").icon
 
+-- Separador de los breadcrumbs (configurable en el panel: ui.breadcrumb_symbol).
+local SYMBOL_DEFAULT = "◂"
+function M.get_symbol()
+  return require("config.settings").value("ui.breadcrumb_symbol", SYMBOL_DEFAULT)
+end
+function M.set_symbol(v)
+  require("config.settings").record("ui.breadcrumb_symbol", v, SYMBOL_DEFAULT)
+end
+
 -- Breadcrumbs de la ruta (relativa al cwd): carpeta ▸ carpeta ▸ archivo
 function _G.breadcrumbs()
   local win = vim.g.statusline_winid
+  local breadcrumb_symbol = M.get_symbol()
   if not (win and win ~= 0 and api.nvim_win_is_valid(win)) then
     win = api.nvim_get_current_win()
   end
@@ -41,7 +51,7 @@ function _G.breadcrumbs()
     out[#out + 1] = " %#WinBarDeleted#[deleted]"
   end
   for i = n - 1, 1, -1 do
-    out[#out + 1] = "%#WinBarSep# ◂ "
+    out[#out + 1] = "%#WinBarSep# " .. breadcrumb_symbol .. " "
     out[#out + 1] = "%#WinBarPath#" .. parts[i]:gsub("%%", "%%%%")
   end
   return table.concat(out)
