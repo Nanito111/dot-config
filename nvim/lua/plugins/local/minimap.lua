@@ -478,11 +478,31 @@ local function reconcile()
   end
 end
 
--- Re-crea la ventana con los ajustes actuales (ancho/lado) si está abierta.
+-- Re-crea la ventana con los ajustes actuales (ancho/lado) si está abierta. Reabre adjunto a
+-- una ventana de código aunque el foco esté en otra (p. ej. el panel de configuración, al
+-- cambiar el lado en vivo) y luego devuelve el foco donde estaba.
 local function reopen()
-  if enabled and mm_win and api.nvim_win_is_valid(mm_win) then
-    close()
-    reconcile()
+  if not (enabled and mm_win and api.nvim_win_is_valid(mm_win)) then
+    return
+  end
+  local prev = api.nvim_get_current_win()
+  close()
+  local code = is_code_win(src_win) and src_win or nil
+  if not code then
+    for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
+      if is_code_win(w) then
+        code = w
+        break
+      end
+    end
+  end
+  if not code then
+    return
+  end
+  api.nvim_set_current_win(code)
+  open() -- open() usa la ventana actual (= code) para el split
+  if api.nvim_win_is_valid(prev) then
+    api.nvim_set_current_win(prev)
   end
 end
 
