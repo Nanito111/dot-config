@@ -626,6 +626,12 @@ function M.set_side(v)
   reopen()
 end
 
+-- Reabre para reflejar un cambio externo que afecta al lado (p. ej. cambió el lado del
+-- sidebar y el minimapa está en "auto" = opuesto). No-op si no está abierto.
+function M.refresh()
+  reopen()
+end
+
 -- Símbolos: cambiar re-encodea.
 function M.get_symbols()
   return symbols()
