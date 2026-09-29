@@ -199,7 +199,9 @@ local function set_cursor_hl()
   local p = require("config.palette")
   local ok, cursor = pcall(require, "plugins.local.cursor")
   local c = (ok and cursor.mode_color and cursor.mode_color()) or p.blue
-  api.nvim_set_hl(0, "MinimapCursor", { bg = c, fg = p.bg })
+  -- fg (no fondo): resalta los PUNTOS braille de la fila del cursor con el color del modo,
+  -- para que destaque sobre la banda del viewport en vez de confundirse con ella.
+  api.nvim_set_hl(0, "MinimapCursor", { fg = c, bold = true })
 end
 
 local function set_hl()
@@ -250,11 +252,23 @@ local function update_view()
   for r = line_to_row(top), line_to_row(bot) do
     pcall(api.nvim_buf_set_extmark, mm_buf, ns, r, 0, { line_hl_group = "MinimapView", hl_eol = true })
   end
-  pcall(api.nvim_buf_set_extmark, mm_buf, ns, line_to_row(cur), 0, {
-    line_hl_group = "MinimapCursor",
-    hl_eol = true,
-    priority = 200,
-  })
+  local crow = line_to_row(cur)
+  local cline = api.nvim_buf_get_lines(mm_buf, crow, crow + 1, false)[1] or ""
+  if #cline > 0 then
+    -- colorea los caracteres braille de esa fila (los puntos toman el color del modo)
+    pcall(api.nvim_buf_set_extmark, mm_buf, ns, crow, 0, {
+      end_col = #cline,
+      hl_group = "MinimapCursor",
+      priority = 200,
+    })
+  else
+    -- fila vacía (sin puntos): al menos una banda de fondo para no perder el cursor
+    pcall(api.nvim_buf_set_extmark, mm_buf, ns, crow, 0, {
+      line_hl_group = "MinimapCursor",
+      hl_eol = true,
+      priority = 200,
+    })
+  end
 end
 
 -- Marca en la 1.ª celda de cada fila el estado de git de las líneas que representa
