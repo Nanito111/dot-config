@@ -1,3 +1,9 @@
+-- Cache de módulos Lua (precompila a bytecode y lo cachea, invalidando al cambiar el
+-- archivo): acelera un poco la carga. Lo antes posible, para que cubra todo lo que sigue.
+if vim.loader then
+  vim.loader.enable()
+end
+
 -- Desactivar netrw por completo: usamos nuestro explorador propio
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
