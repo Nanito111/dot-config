@@ -172,7 +172,7 @@ local function render(buf)
     if indent == false then
       indent = math.min(prev[idx], nxt[idx])
     end
-    local c = 0
+    local c = sw -- empezar en sw: no dibujar la guía del nivel 0 (columna 0)
     while c < indent do
       local wincol = c - leftcol
       if wincol >= 0 then
