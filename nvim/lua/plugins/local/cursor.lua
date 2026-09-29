@@ -102,4 +102,4 @@ api.nvim_create_autocmd("ModeChanged", {
   end,
 })
 
-return {}
+return { mode_color = mode_color } -- lo usa el minimapa para la línea del cursor

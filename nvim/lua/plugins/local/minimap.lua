@@ -193,11 +193,20 @@ local function encode(lines, H, w)
 end
 
 -- ── Resaltados desde la paleta ─────────────────────────────────────
+-- Línea del cursor en el minimapa: color del MODO actual (igual que la línea del cursor del
+-- editor). Se re-aplica en ColorScheme y en ModeChanged.
+local function set_cursor_hl()
+  local p = require("config.palette")
+  local ok, cursor = pcall(require, "plugins.local.cursor")
+  local c = (ok and cursor.mode_color and cursor.mode_color()) or p.blue
+  api.nvim_set_hl(0, "MinimapCursor", { bg = c, fg = p.bg })
+end
+
 local function set_hl()
   local p = require("config.palette")
   api.nvim_set_hl(0, "MinimapNormal", { fg = p.comment, bg = p.bg })
   api.nvim_set_hl(0, "MinimapView", { bg = p.bg_highlight })
-  api.nvim_set_hl(0, "MinimapCursor", { bg = p.blue, fg = p.bg })
+  set_cursor_hl()
   api.nvim_set_hl(0, "MinimapGitAdd", { fg = p.green })
   api.nvim_set_hl(0, "MinimapGitChange", { fg = p.yellow })
   api.nvim_set_hl(0, "MinimapGitDelete", { fg = p.red })
@@ -529,6 +538,15 @@ local function ensure_autocmds()
       if enabled and is_code_win(api.nvim_get_current_win()) then
         src_win = api.nvim_get_current_win()
         update_view()
+      end
+    end,
+  })
+  -- recolorear la línea del cursor del minimapa según el modo actual
+  api.nvim_create_autocmd("ModeChanged", {
+    group = grp,
+    callback = function()
+      if enabled and mm_win and api.nvim_win_is_valid(mm_win) then
+        set_cursor_hl()
       end
     end,
   })
