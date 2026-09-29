@@ -546,6 +546,17 @@ local function build()
           apply = winopts.set_md_spell,
           set = winopts.set_md_spell,
         }),
+        {
+          id = "spell.dicts",
+          label = "Diccionarios de ortografía…",
+          type = "action",
+          overridden = function()
+            return false
+          end,
+          run = function()
+            require("config.spell").pick()
+          end,
+        },
         vimopt({ opt = "wrap", label = "Ajuste de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "number", label = "Números de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "relativenumber", label = "Números relativos", type = "bool", scope = "win" }),
