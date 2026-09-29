@@ -37,26 +37,10 @@ local function load_prefs()
   end
 end
 
-local function hexok(c)
-  return (type(c) == "string" and c:match("^#%x%x%x%x%x%x$")) and c or nil
-end
-local function blend(a, b, t)
-  local function ch(s, i)
-    return tonumber(s:sub(i, i + 1), 16)
-  end
-  local function mix(i)
-    return math.floor(ch(a, i) + (ch(b, i) - ch(a, i)) * t + 0.5)
-  end
-  return string.format("#%02x%02x%02x", mix(2), mix(4), mix(6))
-end
-
 local function set_hl()
-  api.nvim_set_hl(0, "IndentLine", { fg = palette.bg_highlight }) -- línea tenue
-  -- gris brillante: mezcla del tenue hacia el fg del tema (más claro que la guía, sin llegar
-  -- al color del texto), así el nivel del cursor resalta sin usar un color de acento.
-  local dim = hexok(palette.bg_highlight) or "#3b4048"
-  local fg = hexok(palette.fg) or "#c8ccd4"
-  api.nvim_set_hl(0, "IndentLineScope", { fg = blend(dim, fg, 0.7) })
+  api.nvim_set_hl(0, "IndentLine", { fg = palette.bg_highlight }) -- guías tenues
+  -- nivel del cursor (destacado): mismo color que el borde de ventana (WinSeparator)
+  api.nvim_set_hl(0, "IndentLineScope", { fg = palette.comment })
 end
 theme.register(set_hl)
 set_hl()
