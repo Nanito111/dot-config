@@ -39,6 +39,7 @@ end
 
 local function set_hl()
   api.nvim_set_hl(0, "IndentLine", { fg = palette.bg_highlight }) -- línea tenue
+  api.nvim_set_hl(0, "IndentLineScope", { fg = palette.blue }) -- nivel del cursor (resaltado)
 end
 theme.register(set_hl)
 set_hl()
@@ -163,6 +164,34 @@ local function render(buf)
     nxt[i] = nlast
   end
 
+  -- Scope del cursor: colorear la guía del nivel donde está el cursor. scope_col = la guía
+  -- (múltiplo de sw) más interna a la izquierda del contenido del cursor; el bloque son las
+  -- líneas contiguas cuyo sangrado supera esa columna (las que tienen guía ahí).
+  local scope_col, scope_top, scope_bot = -1, 0, 0
+  do
+    local function eff(i)
+      local r = raw[i]
+      return (r ~= false) and r or math.min(prev[i], nxt[i])
+    end
+    local ok, cur = pcall(api.nvim_win_get_cursor, win)
+    local clnum = ok and cur[1] or 0
+    if clnum >= b_first and clnum <= b_last then
+      local ci = clnum - b_first + 1
+      local sc = math.floor((eff(ci) - 1) / sw) * sw
+      if sc >= sw then
+        scope_col = sc
+        local s, e = ci, ci
+        while s > 1 and eff(s - 1) > scope_col do
+          s = s - 1
+        end
+        while e < m and eff(e + 1) > scope_col do
+          e = e + 1
+        end
+        scope_top, scope_bot = b_first + s - 1, b_first + e - 1
+      end
+    end
+  end
+
   -- Dibujar SOLO las líneas visibles [top, bot]. La guía de la columna c va en la columna
   -- de ventana (c - leftcol): acompaña el scroll horizontal y, si queda fuera por la
   -- izquierda, se omite. Como caen en el sangrado (espacios), no tapan contenido.
@@ -176,11 +205,12 @@ local function render(buf)
     while c < indent do
       local wincol = c - leftcol
       if wincol >= 0 then
+        local hl = (c == scope_col and bl >= scope_top and bl <= scope_bot) and "IndentLineScope" or "IndentLine"
         pcall(api.nvim_buf_set_extmark, buf, ns, bl - 1, 0, {
-          virt_text = { { char, "IndentLine" } },
+          virt_text = { { char, hl } },
           virt_text_win_col = wincol,
           hl_mode = "combine",
-          priority = 1,
+          priority = (hl == "IndentLineScope") and 2 or 1,
         })
       end
       c = c + sw
@@ -303,9 +333,9 @@ end
 
 local group = api.nvim_create_augroup("IndentLine", { clear = true })
 
-api.nvim_create_autocmd({ "BufWinEnter", "FileType", "TextChanged", "TextChangedI" }, {
+api.nvim_create_autocmd({ "BufWinEnter", "FileType", "TextChanged", "TextChangedI", "CursorMoved", "CursorMovedI" }, {
   group = group,
-  desc = "Redibujar las guías de indentación",
+  desc = "Redibujar las guías de indentación (CursorMoved: seguir el scope del cursor)",
   callback = function(a)
     schedule(a.buf)
   end,
