@@ -85,13 +85,22 @@ local function install(code, on_done)
   )
 end
 
--- Construye las líneas del selector (nombre, código y estado) + el mapa display -> código.
+-- Construye las líneas del selector (nombre, código, estado y si está activo en markdown)
+-- + el mapa display -> código.
 local function build()
+  local active = tostring(require("config.winopts").get_md_spell())
+  local act = {}
+  for c in active:gmatch("[^,]+") do -- "es,en" -> {es, en}
+    act[c] = true
+  end
   local items, map = {}, {}
   for _, l in ipairs(LANGS) do
     local code, name = l[1], l[2]
-    local mark = installed(code) and "\u{f00c} instalado" or "\u{f0159} instalar"
-    local disp = string.format("%-22s  %s", name .. " (" .. code .. ")", mark)
+    local state = installed(code) and "\u{f00c} instalado" or "\u{f019} instalar"
+    local disp = string.format("%-24s %s", name .. " (" .. code .. ")", state)
+    if act[code] then
+      disp = disp .. "  \u{2190} activo en Markdown"
+    end
     items[#items + 1] = disp
     map[disp] = code
   end
@@ -105,7 +114,7 @@ function M.pick()
     title = "Diccionarios de ortografía",
     items = items,
     backdrop = true,
-    footer = "⏎ instalar · Esc cerrar",
+    footer = "⏎ instalar · C-a aplicar en Markdown · Esc cerrar",
     keymaps = {
       ["<CR>"] = function(ctx)
         local code = map[ctx.item() or ""]
@@ -122,6 +131,30 @@ function M.pick()
           map = new_map
           ctx.set_items(new_items) -- refresca el estado sin cerrar el selector
         end)
+      end,
+      -- aplicar como corrector de Markdown (instala antes si hace falta)
+      ["<C-a>"] = function(ctx)
+        local code = map[ctx.item() or ""]
+        if not code then
+          return
+        end
+        local function apply()
+          require("config.winopts").set_md_spell(code)
+          vim.notify("Corrector de Markdown: " .. code, vim.log.levels.INFO, { title = "Spell" })
+          local ni, nm = build()
+          map = nm
+          ctx.set_items(ni)
+        end
+        if installed(code) then
+          apply()
+        else
+          vim.notify("Instalando '" .. code .. "' para aplicarlo…", vim.log.levels.INFO, { title = "Spell" })
+          install(code, function(ok)
+            if ok then
+              apply()
+            end
+          end)
+        end
       end,
     },
   })
