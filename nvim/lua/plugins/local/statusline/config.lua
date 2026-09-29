@@ -71,6 +71,7 @@ return {
     files = "\u{f07b}", --  explorador de archivos
     lsp = "\u{f085}", --  servidor(es) LSP activos
     linter = "\u{f188}", --  linter(s) del buffer (nvim-lint)
+    formatter = "\u{f0d0}", --  formatter(s) del buffer (conform)
     indent = "\u{f036}", --  tipo de indentación (espacios/tabs)
     diag_error = "\u{f057}", --  diagnóstico: error
     diag_warn = "\u{f071}", --  diagnóstico: aviso

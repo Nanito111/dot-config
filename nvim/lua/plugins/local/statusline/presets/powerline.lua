@@ -4,7 +4,7 @@ return {
   layout = {
     left = { "mode", "git", "gitdiff", "label", "diagnostics" },
     center = {},
-    right = { "lsp", "linter", "indent", "filetype", "position", "percent" },
+    right = { "lsp", "linter", "formatter", "format_mode", "indent", "filetype", "position", "percent" },
   },
   colors = function(pair, p)
     pair("StGit", p.bg, p.green, { bold = true }) -- rama sobre verde

@@ -191,6 +191,34 @@ M.components = {
     return { text = cfg.icons.linter .. " " .. table.concat(names, ","), hl = "StInfo", align = "l", min_width = 8 }
   end,
 
+  -- formatter(s) de conform para el filetype del buffer; oculto si no hay ninguno
+  formatter = function()
+    if not package.loaded["conform"] then
+      return nil
+    end
+    local by_ft = require("conform").formatters_by_ft
+    local names = by_ft and by_ft[vim.bo.filetype]
+    if type(names) ~= "table" or #names == 0 then
+      return nil
+    end
+    return { text = cfg.icons.formatter .. " " .. table.concat(names, ","), hl = "StInfo", align = "l", min_width = 8 }
+  end,
+
+  -- modo de formateo: [A] al guardar (automático) o [M] manual. Solo se muestra junto al
+  -- indicador de formatter (si hay formatter para el filetype).
+  format_mode = function()
+    if not package.loaded["conform"] then
+      return nil
+    end
+    local by_ft = require("conform").formatters_by_ft
+    local names = by_ft and by_ft[vim.bo.filetype]
+    if type(names) ~= "table" or #names == 0 then
+      return nil
+    end
+    local auto = require("config.format").on_save_enabled()
+    return { text = auto and "[A]" or "[M]", hl = "StInfo", align = "l", width = 3 }
+  end,
+
   -- conteo de diagnósticos del buffer (errores/avisos/info/pistas). Siempre visible
   -- (aunque sean 0). Una sola píldora con cada conteo en el color de su severidad.
   diagnostics = function()

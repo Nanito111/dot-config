@@ -6,7 +6,7 @@
 return {
   {
     "stevearc/conform.nvim",
-    event = { "BufWritePre" },
+    event = { "BufReadPost", "BufWritePre" }, -- BufReadPost: que el indicador del statusline aparezca ya
     cmd = { "ConformInfo" },
     keys = {
       {
