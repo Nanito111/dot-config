@@ -20,7 +20,8 @@ local CLEAN = {
 -- VENTANA: puestas desde el ftplugin se quedan pegadas al siguiente buffer que se abra
 -- en esa ventana (un .ts heredaba el corrector del markdown anterior).
 local PROSE = {
-  markdown = { spell = true, wrap = true, linebreak = true, breakindent = true, conceallevel = 2 },
+  -- el corrector de markdown lo maneja aparte (ui.markdown_spell): off / es / en / ambos
+  markdown = { wrap = true, linebreak = true, breakindent = true, conceallevel = 2 },
   gitcommit = { spell = true, colorcolumn = "73" },
 }
 
@@ -108,6 +109,31 @@ function M.apply(win)
     end
     api.nvim_set_option_value(name, value, { win = win, scope = "local" })
   end
+
+  -- Corrector de markdown, configurable (ui.markdown_spell): off / es / en / "es,en".
+  if vim.bo[buf].filetype == "markdown" then
+    local md = require("config.settings").value("ui.markdown_spell", "en")
+    api.nvim_set_option_value("spell", md ~= "off", { win = win, scope = "local" })
+    if md ~= "off" then
+      vim.bo[buf].spelllang = md -- spelllang es local al buffer
+    end
+  end
+end
+
+-- Reaplica la regla a todas las ventanas (p. ej. al cambiar el corrector desde el panel).
+function M.refresh_all()
+  for _, win in ipairs(api.nvim_list_wins()) do
+    M.apply(win)
+  end
+end
+
+-- Corrector de markdown: get/set para el panel de configuración.
+function M.get_md_spell()
+  return require("config.settings").value("ui.markdown_spell", "en")
+end
+function M.set_md_spell(v)
+  require("config.settings").record("ui.markdown_spell", v, "en")
+  M.refresh_all()
 end
 
 local group = api.nvim_create_augroup("WinOpts", { clear = true })

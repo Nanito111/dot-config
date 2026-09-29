@@ -32,6 +32,7 @@ local DEFAULTS = {
   ["ui.minimap_side"] = "auto",
   ["ui.minimap_symbols"] = "dot",
   ["editor.format_on_save"] = true,
+  ["ui.markdown_spell"] = "en",
   ["ui.dashboard_effect"] = "shimmer",
   ["ui.dashboard_color"] = "auto",
   ["ui.breadcrumb_symbol"] = "◂",
@@ -275,6 +276,7 @@ local function build()
   local format = require("config.format")
   local dashboard = require("plugins.local.dashboard")
   local winbar = require("plugins.local.winbar")
+  local winopts = require("config.winopts")
 
   -- adaptador para settings respaldados por un proveedor (apply puro + set que persiste)
   local function provider(spec)
@@ -528,6 +530,21 @@ local function build()
           get = format.get,
           apply = format.set,
           set = format.set,
+        }),
+        provider({
+          id = "ui.markdown_spell",
+          label = "Corrector en Markdown",
+          type = "enum",
+          default = DEFAULTS["ui.markdown_spell"],
+          choices = function()
+            return { "off", "es", "en", "es,en" }
+          end,
+          display = function(v)
+            return ({ off = "desactivado", es = "español", en = "inglés", ["es,en"] = "español + inglés" })[v] or v
+          end,
+          get = winopts.get_md_spell,
+          apply = winopts.set_md_spell,
+          set = winopts.set_md_spell,
         }),
         vimopt({ opt = "wrap", label = "Ajuste de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "number", label = "Números de línea", type = "bool", scope = "win" }),
