@@ -4,6 +4,6 @@ return {
   layout = {
     left = { "git", "gitdiff", "label", "diagnostics" },
     center = { "mode" },
-    right = { "lsp", "linter", "formatter", "format_mode", "indent", "filetype", "position", "percent" },
+    right = { "lsp", "linter", "formatter", "indent", "filetype", "position", "percent" },
   },
 }

@@ -4,7 +4,7 @@ return {
   layout = {
     left = { "label", "diagnostics" },
     center = { "mode" },
-    right = { "lsp", "linter", "formatter", "format_mode", "indent", "position", "percent" },
+    right = { "lsp", "linter", "formatter", "indent", "position", "percent" },
   },
   colors = function(pair, p)
     -- modo: solo texto del color del modo, sin fondo

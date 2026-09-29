@@ -11,7 +11,7 @@ return {
   layout = {
     left = { "git", "gitdiff", "diagnostics", "mode" },
     center = {},
-    right = { "lsp", "linter", "formatter", "format_mode", "indent", "position_lncol", "filetype" },
+    right = { "lsp", "linter", "formatter", "indent", "position_lncol", "filetype" },
   },
   colors = function(pair, p)
     local bg, fg = p.statusline_bg, p.statusline_fg -- colores de statusline del tema
