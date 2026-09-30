@@ -173,7 +173,9 @@ end
 
 -- Trae una versión del archivo (async) y la cachea; refresca al terminar
 local function fetch(buf, rev, store, dir, file)
-  vim.system({ "git", "show", rev .. ":./" .. file }, { cwd = dir, text = true }, function(res)
+  -- Si el directorio ya no existe (archivo eliminado), vim.system aborta al hacer
+  -- spawn por el cwd inválido; el pcall evita que el error suba al scheduler.
+  local ok = pcall(vim.system, { "git", "show", rev .. ":./" .. file }, { cwd = dir, text = true }, function(res)
     vim.schedule(function()
       if not api.nvim_buf_is_valid(buf) then
         return
@@ -184,6 +186,9 @@ local function fetch(buf, rev, store, dir, file)
       refresh(buf)
     end)
   end)
+  if not ok then
+    store[buf] = nil
+  end
 end
 
 -- Trae las versiones del índice y de HEAD (async) y refresca
@@ -197,6 +202,9 @@ local function update_head(buf)
   local name = api.nvim_buf_get_name(buf)
   local dir = vim.fn.fnamemodify(name, ":h")
   local file = vim.fn.fnamemodify(name, ":t")
+  if vim.fn.isdirectory(dir) == 0 then
+    return -- el directorio ya no existe (p. ej. el archivo fue eliminado)
+  end
   fetch(buf, "", index_cache, dir, file) -- índice  (git show :./archivo)
   fetch(buf, "HEAD", committed_cache, dir, file) -- HEAD (git show HEAD:./archivo)
 end
