@@ -223,6 +223,21 @@ map("x", "<leader>rr", function()
   end)
 end, { silent = true, desc = "Buscar y reemplazar la selección" })
 
+-- Buscar y reemplazar en todo el workspace (ripgrep + preview + undo)
+map("n", "<leader>rw", function()
+  require("plugins.local.wreplace").open(vim.fn.expand("<cword>"))
+end, { silent = true, desc = "Buscar y reemplazar (workspace)" })
+map("x", "<leader>rw", function()
+  local sel = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = vim.fn.mode() })[1] or ""
+  vim.cmd("normal! \27")
+  vim.schedule(function()
+    require("plugins.local.wreplace").open(sel)
+  end)
+end, { silent = true, desc = "Buscar y reemplazar la selección (workspace)" })
+map("n", "<leader>ru", function()
+  require("plugins.local.wreplace").undo()
+end, { silent = true, desc = "Revertir el último reemplazo (workspace)" })
+
 -- Terminales flotantes
 map({ "n", "t" }, "<M-g>", "<cmd>Lazygit<CR>", { silent = true, desc = "Lazygit (flotante)" })
 map({ "n", "t" }, "<M-c>", "<cmd>Claude<CR>", { silent = true, desc = "Claude (flotante)" })
