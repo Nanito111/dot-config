@@ -26,6 +26,18 @@ local function mix(base, accent, amount)
   return string.format("#%02x%02x%02x", m(br, ar), m(bg, ag), m(bb, ab))
 end
 
+local function luminance(hex)
+  local r, g, b = rgb(hex)
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255
+end
+
+-- Contraste WCAG entre dos colores (1 = igual, 21 = negro/blanco)
+local function contrast(a, b)
+  local la, lb = luminance(a), luminance(b)
+  local hi, lo = math.max(la, lb), math.min(la, lb)
+  return (hi + 0.05) / (lo + 0.05)
+end
+
 -- Color del modo (usa el modo dado o el actual). Toma la 1ª letra del modo.
 local function mode_color(mode)
   local m = (mode or api.nvim_get_mode().mode):sub(1, 1)
@@ -52,14 +64,33 @@ local LINE_TINT = 0.15
 local SEL_TINT = 0.30
 
 -- ── Cursor: un grupo de highlight por modo (color = bg del grupo) ───
+-- En temas claros los colores de modo quedan cerca del fondo y el cursor "desaparece"
+-- (sobre todo las barras finas de insert/replace y el amarillo del modo comando), y el
+-- carácter (fg = fondo) es ilegible sobre el bloque. Se garantiza un contraste mínimo del
+-- bloque contra el fondo oscureciéndolo/aclarándolo hacia el extremo opuesto (manteniendo el
+-- tono del modo) y se elige negro o blanco para el carácter según cuál contraste más.
+local function cursor_pair(color)
+  local base = palette.bg or "#1a1b26"
+  local toward = luminance(base) > 0.5 and "#000000" or "#ffffff"
+  local block = color
+  for _ = 1, 12 do
+    if contrast(block, base) >= 3 then
+      break
+    end
+    block = mix(block, toward, 0.12)
+  end
+  local fg = contrast(block, "#ffffff") >= contrast(block, "#000000") and "#ffffff" or "#000000"
+  return { bg = block, fg = fg }
+end
+
 local function set_cursor_hl()
   local hl = api.nvim_set_hl
-  hl(0, "CursorNormal", { bg = palette.blue, fg = palette.bg })
-  hl(0, "CursorInsert", { bg = palette.green, fg = palette.bg })
-  hl(0, "CursorVisual", { bg = palette.purple, fg = palette.bg })
-  hl(0, "CursorReplace", { bg = palette.red, fg = palette.bg })
-  hl(0, "CursorCommand", { bg = palette.yellow, fg = palette.bg })
-  hl(0, "CursorTerminal", { bg = palette.cyan, fg = palette.bg })
+  hl(0, "CursorNormal", cursor_pair(palette.blue))
+  hl(0, "CursorInsert", cursor_pair(palette.green))
+  hl(0, "CursorVisual", cursor_pair(palette.purple))
+  hl(0, "CursorReplace", cursor_pair(palette.red))
+  hl(0, "CursorCommand", cursor_pair(palette.yellow))
+  hl(0, "CursorTerminal", cursor_pair(palette.cyan))
 end
 
 -- Forma + grupo de color del cursor por modo (bloque, barra en insert, raya en replace)
