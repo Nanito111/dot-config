@@ -234,13 +234,12 @@ function M.refresh()
   M.statusline_bg = bg("StatusLine", "StatusLineNC") or M.bg_dark
   M.statusline_fg = fg("StatusLine", "StatusLineNC") or M.fg
 
-  -- Colores SEMÁNTICOS de diagnósticos: tomados de los grupos Diagnostic* del tema (no
-  -- de la sintaxis), para que la statusline coincida con el gutter y el virtual text.
-  -- Fallback a los colores generales del palette si el tema no los define.
-  M.diag_error = fg("DiagnosticError", "Error", "ErrorMsg") or M.red
-  M.diag_warn = fg("DiagnosticWarn", "WarningMsg") or M.yellow
-  M.diag_info = fg("DiagnosticInfo") or M.blue
-  M.diag_hint = fg("DiagnosticHint") or M.cyan
+  -- Colores de diagnósticos: usan los colores base de la paleta (error=red, warn=orange,
+  -- info=blue, hint=cyan).
+  M.diag_error = M.red
+  M.diag_warn = M.orange
+  M.diag_info = M.blue
+  M.diag_hint = M.cyan
   M.bg_highlight = bg("CursorLine", "Visual")
     or (light and blend(base_bg, "#000000", 0.08) or blend(base_bg, "#ffffff", 0.10))
 

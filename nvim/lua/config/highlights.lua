@@ -27,15 +27,26 @@ local function set_hl()
     "LineNrBelow",
     "SignColumn",
     "FoldColumn",
-    "DiagnosticSignError",
-    "DiagnosticSignWarn",
-    "DiagnosticSignInfo",
-    "DiagnosticSignHint",
     "DiagnosticSignOk",
   }) do
     local h = api.nvim_get_hl(0, { name = name, link = false })
     h.bg = bg
     api.nvim_set_hl(0, name, h)
+  end
+
+  -- Diagnósticos en el buffer (signos, texto virtual, subrayado) con los colores diag_* de
+  -- la paleta, para que coincidan con la statusline y el minimapa.
+  for sev, col in pairs({
+    Error = palette.diag_error,
+    Warn = palette.diag_warn,
+    Info = palette.diag_info,
+    Hint = palette.diag_hint,
+  }) do
+    api.nvim_set_hl(0, "Diagnostic" .. sev, { fg = col })
+    api.nvim_set_hl(0, "DiagnosticSign" .. sev, { fg = col, bg = bg })
+    api.nvim_set_hl(0, "DiagnosticVirtualText" .. sev, { fg = col })
+    api.nvim_set_hl(0, "DiagnosticUnderline" .. sev, { undercurl = true, sp = col })
+    api.nvim_set_hl(0, "DiagnosticFloating" .. sev, { fg = col })
   end
 
   -- Línea de comandos y área de mensajes (MsgArea): con el color que el tema define

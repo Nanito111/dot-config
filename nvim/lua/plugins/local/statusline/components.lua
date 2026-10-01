@@ -111,7 +111,7 @@ M.components = {
   end,
 
   -- contador de cambios sin stagear del archivo actual: +añadidas ~cambiadas -quitadas,
-  -- cada una con su color (verde/azul/rojo sobre el fondo de la píldora de git). Siempre
+  -- cada una con su color (verde/amarillo/rojo sobre el fondo de la píldora de git). Siempre
   -- visible (aunque sea 0); solo se oculta si el archivo no está rastreado por git.
   gitdiff = function()
     local s = require("plugins.local.git").summary(0)

@@ -101,7 +101,7 @@ local function apply_colors()
       hl(0, name, { fg = current.mono and mono_fg or fg, bg = bg })
     end
   end
-  tint("StGit", { StGitAdd = palette.green, StGitChange = palette.blue, StGitDelete = palette.red })
+  tint("StGit", { StGitAdd = palette.green, StGitChange = palette.yellow, StGitDelete = palette.red })
   tint("StInfo", {
     StDiagError = palette.diag_error,
     StDiagWarn = palette.diag_warn,
