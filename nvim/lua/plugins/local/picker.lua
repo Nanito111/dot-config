@@ -666,18 +666,25 @@ local function goto_normal_win(origin)
 end
 
 -- ── Buscador de archivos (rg --files) ──────────────────────────────
-function M.files()
+-- opts.path acota el listado a esa carpeta (se pasa como argumento a rg); sin él lista el
+-- cwd. opts.title cambia el título del picker.
+function M.files(opts)
+  opts = opts or {}
   if vim.fn.executable("rg") == 0 then
     vim.notify("ripgrep (rg) no está en el PATH", vim.log.levels.ERROR)
     return
   end
-  local files = vim.fn.systemlist({ "rg", "--files", "--path-separator", "/" })
+  local cmd = { "rg", "--files", "--path-separator", "/" }
+  if opts.path then
+    cmd[#cmd + 1] = opts.path -- acotar a una carpeta concreta
+  end
+  local files = vim.fn.systemlist(cmd)
   if vim.v.shell_error ~= 0 then
     vim.notify("rg --files falló", vim.log.levels.ERROR)
     return
   end
   pick({
-    title = "Archivos",
+    title = opts.title or "Archivos",
     items = files,
     backdrop = true,
     icon_path = function(f)
@@ -755,7 +762,10 @@ end
 -- ── Búsqueda de contenido en el cwd (live grep con rg) ──────────────
 -- Se usa `rg --json` (y no --vimgrep) porque trae los offsets de inicio Y FIN de cada
 -- coincidencia: con eso el preview resalta el match exacto, no la línea entera.
-function M.grep()
+-- opts.path acota la búsqueda a esa carpeta o archivo (se pasa como argumento a rg); sin
+-- él se busca en el cwd. opts.title cambia el título del picker.
+function M.grep(opts)
+  opts = opts or {}
   if vim.fn.executable("rg") == 0 then
     vim.notify("ripgrep (rg) no está en el PATH", vim.log.levels.ERROR)
     return
@@ -788,7 +798,7 @@ function M.grep()
     return head .. "   " .. dir, path, #head + 3 -- columna byte donde empieza la carpeta
   end
   pick({
-    title = "Contenido (cwd)",
+    title = opts.title or "Contenido (cwd)",
     backdrop = true,
     display = function(item)
       return (row(item))
@@ -815,7 +825,11 @@ function M.grep()
         cb({})
         return
       end
-      vim.system({ "rg", "--json", "--smart-case", "--path-separator", "/", query }, { text = true }, function(res)
+      local cmd = { "rg", "--json", "--smart-case", "--path-separator", "/", query }
+      if opts.path then
+        cmd[#cmd + 1] = opts.path -- acotar a una carpeta o archivo concreto
+      end
+      vim.system(cmd, { text = true }, function(res)
         local lines, seen = {}, {}
         for line in (res.stdout or ""):gmatch("[^\r\n]+") do
           local ok, ev = pcall(vim.json.decode, line)

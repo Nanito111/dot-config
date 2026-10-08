@@ -233,6 +233,34 @@ local function ex_create()
   map("x", actions.cut, "Cortar")
   map("y", actions.copy, "Copiar archivo/carpeta")
   map("p", actions.paste, "Pegar")
+  -- ff: buscar archivos por nombre dentro de la carpeta bajo el cursor (si es un archivo,
+  -- se usa su carpeta). fw: buscar contenido (grep) dentro de la carpeta o archivo bajo el cursor.
+  map("ff", function()
+    local s = cur()
+    local node = s and render.node_at_cursor(s)
+    local dir = node and (node.is_dir and node.path or vim.fn.fnamemodify(node.path, ":h")) or (s and s.root)
+    if not dir then
+      return
+    end
+    require("plugins.local.picker").files({
+      path = dir,
+      title = "Archivos en " .. vim.fn.fnamemodify(dir, ":t") .. "/",
+    })
+  end, "Buscar archivos por nombre en la carpeta")
+  map("fw", function()
+    local s = cur()
+    local node = s and render.node_at_cursor(s)
+    local path = node and node.path or (s and s.root)
+    if not path then
+      return
+    end
+    local name = vim.fn.fnamemodify(path, ":t")
+    local is_dir = node and node.is_dir or path == (s and s.root)
+    require("plugins.local.picker").grep({
+      path = path,
+      title = "Buscar en " .. name .. (is_dir and "/" or ""),
+    })
+  end, "Buscar contenido dentro (grep)")
   -- c abre el which-key con las opciones de copiar; ca/cr/cn siguen funcionando como chord
   map("c", function()
     require("plugins.local.whichkey").show("c")
