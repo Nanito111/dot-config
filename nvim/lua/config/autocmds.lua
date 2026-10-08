@@ -2,15 +2,6 @@ local autocmd = vim.api.nvim_create_autocmd
 -- augroup propio con clear: evita autocomandos duplicados al recargar la config
 local group = vim.api.nvim_create_augroup("UserAutocmds", { clear = true })
 
--- Resaltar brevemente el texto al copiarlo (yank)
-autocmd("TextYankPost", {
-  group = group,
-  desc = "Resaltar al hacer yank",
-  callback = function()
-    vim.highlight.on_yank({ timeout = 200 })
-  end,
-})
-
 -- En las ventanas FLOTANTES con markdown (hover del LSP, docs), ocultar también la
 -- sintaxis markdown en la línea del cursor. Neovim abre el hover con conceallevel=2
 -- pero concealcursor="" (muestra el markup crudo donde está el cursor); aquí lo
