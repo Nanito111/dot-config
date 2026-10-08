@@ -21,6 +21,7 @@ local function set_hl()
   -- archivo actual: fondo de línea sutil (acento mezclado hacia el fondo), sin tocar el texto
   hl(0, "ExplorerCurrentLine", { bg = palette.blue, fg = palette.bg })
   hl(0, "ExplorerGitNew", { fg = palette.cyan }) -- sin trackear (distinto del verde de añadido)
+  hl(0, "ExplorerIgnored", { fg = palette.comment }) -- ignorado por git: gris apagado
 end
 
 -- Define los grupos ahora y los reaplica en ColorScheme.
@@ -59,6 +60,22 @@ local function git_mark(code, is_dir)
     return "\u{2192}", "GitSignStagedChange" -- → renombrado (staged)
   end
   return "~", "GitSignStagedChange" -- M u otros (staged)
+end
+
+-- ¿`path` está ignorado por git? Lo está si él o alguna de sus carpetas ancestro aparece
+-- en el set de ignorados (git colapsa las carpetas, p. ej. solo marca "node_modules/").
+local function path_ignored(ignored, path)
+  if not ignored then
+    return false
+  end
+  local p = path
+  while p do
+    if ignored[p] then
+      return true
+    end
+    p = p:match("(.+)/[^/]+$")
+  end
+  return false
 end
 
 -- Construye la lista de nodos visibles (recursivo según lo expandido). Con s.dirs_only solo
@@ -105,10 +122,14 @@ function M.render(s, reuse)
     local prefix = indent .. icon .. " " -- indentación + icono de tipo + espacio
     local name = n.name .. (n.is_dir and "/" or "")
 
+    local ignored = path_ignored(s.git_ignored, normpath(n.path))
     local type_hl = n.is_dir and "ExplorerDir" or "ExplorerFile"
     local is_current = not n.is_dir and current and normpath(n.path) == current
     local icon_hl = type_hl
-    if colored and not n.is_dir then
+    if ignored then
+      type_hl = "ExplorerIgnored" -- ignorado por git: todo gris, sin color de tipo ni de icono
+      icon_hl = "ExplorerIgnored"
+    elseif colored and not n.is_dir then
       local col = icons.color(n.name)
       if col then
         icon_hl = icon_color_group(col)

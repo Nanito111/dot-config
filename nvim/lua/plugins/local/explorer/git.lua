@@ -36,6 +36,7 @@ function M.update_git(s)
           return -- resultado obsoleto
         end
         s.git = {}
+        s.git_ignored = {}
         if s.win and api.nvim_win_is_valid(s.win) then
           render.render(s)
         end
@@ -43,44 +44,56 @@ function M.update_git(s)
       return
     end
     local top = vim.trim(r1.stdout or "")
-    vim.system({ "git", "-C", root, "status", "--porcelain", "-uall" }, { text = true, cwd = cwd }, function(r2)
-      local map = {}
-      if r2.code == 0 then
-        local ntop = normpath(top)
-        for line in (r2.stdout or ""):gmatch("[^\r\n]+") do
-          local xy = line:sub(1, 2)
-          local p = line:sub(4)
-          local arrow = p:find(" %-> ")
-          if arrow then
-            p = p:sub(arrow + 4)
-          end
-          p = p:gsub('^"', ""):gsub('"$', "")
-          local abs = normpath(top .. "/" .. p)
-          map[abs] = xy
-          -- ¿el archivo tiene algo sin stagear? (untracked o Y != espacio)
-          local unstaged = (xy == "??") or (xy:sub(2, 2) ~= " ")
-          local dircode = unstaged and "DU" or "DS"
-          -- marcar las carpetas ancestro; "DU" (sin stagear) gana sobre "DS"
-          local d = abs:match("(.+)/[^/]+$")
-          while d and #d > #ntop do
-            local prev = map[d]
-            if prev ~= "DU" and (prev == nil or dircode == "DU") then
-              map[d] = dircode
+    -- --ignored=matching: colapsa las carpetas ignoradas en una sola entrada (p. ej.
+    -- "node_modules/") en vez de listar cada archivo; -uall sigue dando los untracked uno a uno.
+    vim.system(
+      { "git", "-C", root, "status", "--porcelain", "--ignored=matching", "-uall" },
+      { text = true, cwd = cwd },
+      function(r2)
+        local map = {}
+        local ignored = {}
+        if r2.code == 0 then
+          local ntop = normpath(top)
+          for line in (r2.stdout or ""):gmatch("[^\r\n]+") do
+            local xy = line:sub(1, 2)
+            local p = line:sub(4)
+            local arrow = p:find(" %-> ")
+            if arrow then
+              p = p:sub(arrow + 4)
             end
-            d = d:match("(.+)/[^/]+$")
+            p = p:gsub('^"', ""):gsub('"$', ""):gsub("/$", "")
+            local abs = normpath(top .. "/" .. p)
+            if xy == "!!" then
+              ignored[abs] = true -- ignorado por git: se pinta gris (no es un cambio)
+            else
+              map[abs] = xy
+              -- ¿el archivo tiene algo sin stagear? (untracked o Y != espacio)
+              local unstaged = (xy == "??") or (xy:sub(2, 2) ~= " ")
+              local dircode = unstaged and "DU" or "DS"
+              -- marcar las carpetas ancestro; "DU" (sin stagear) gana sobre "DS"
+              local d = abs:match("(.+)/[^/]+$")
+              while d and #d > #ntop do
+                local prev = map[d]
+                if prev ~= "DU" and (prev == nil or dircode == "DU") then
+                  map[d] = dircode
+                end
+                d = d:match("(.+)/[^/]+$")
+              end
+            end
           end
         end
+        vim.schedule(function()
+          if s.git_gen ~= gen then
+            return -- resultado obsoleto (llegó un refresco más nuevo)
+          end
+          s.git = map
+          s.git_ignored = ignored
+          if s.win and api.nvim_win_is_valid(s.win) then
+            render.render(s)
+          end
+        end)
       end
-      vim.schedule(function()
-        if s.git_gen ~= gen then
-          return -- resultado obsoleto (llegó un refresco más nuevo)
-        end
-        s.git = map
-        if s.win and api.nvim_win_is_valid(s.win) then
-          render.render(s)
-        end
-      end)
-    end)
+    )
   end)
 end
 
