@@ -32,6 +32,7 @@ local DEFAULTS = {
   ["ui.minimap_side"] = "auto",
   ["ui.minimap_symbols"] = "dot",
   ["editor.format_on_save"] = true,
+  ["editor.trailing_whitespace"] = false,
   ["ui.markdown_spell"] = "en",
   ["ui.dashboard_effect"] = "shimmer",
   ["ui.dashboard_color"] = "auto",
@@ -277,6 +278,7 @@ local function build()
   local dashboard = require("plugins.local.dashboard")
   local winbar = require("plugins.local.winbar")
   local winopts = require("config.winopts")
+  local trailing = require("plugins.local.trailing")
 
   -- adaptador para settings respaldados por un proveedor (apply puro + set que persiste)
   local function provider(spec)
@@ -531,6 +533,26 @@ local function build()
           apply = format.set,
           set = format.set,
         }),
+        provider({
+          id = "editor.trailing_whitespace",
+          label = "Resaltar espacios finales",
+          type = "bool",
+          default = DEFAULTS["editor.trailing_whitespace"],
+          get = trailing.is_enabled,
+          apply = trailing.set,
+          set = trailing.set,
+        }),
+        {
+          id = "editor.trailing_trim",
+          label = "Quitar espacios finales ahora",
+          type = "action",
+          overridden = function()
+            return false
+          end,
+          run = function()
+            require("plugins.local.trailing").trim()
+          end,
+        },
         provider({
           id = "ui.markdown_spell",
           label = "Corrector en Markdown",

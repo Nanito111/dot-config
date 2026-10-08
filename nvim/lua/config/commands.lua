@@ -191,3 +191,8 @@ end, { desc = "Git blame de la línea actual (popup)" })
 usr_cmd("TrailingSpaces", function()
   require("plugins.local.trailing").toggle()
 end, { desc = "Alternar resaltado de espacios al final" })
+
+-- Quitar los espacios al final del buffer actual
+usr_cmd("TrailingTrim", function()
+  require("plugins.local.trailing").trim()
+end, { desc = "Quitar los espacios al final del buffer actual" })
