@@ -50,6 +50,23 @@ end
 local SWITCH_ON = "\u{f205}" --
 local SWITCH_OFF = "\u{f204}" --
 
+-- Icono por sección (nerd-font), indexado por el título del registro. Si falta, no se dibuja.
+local SECTION_ICONS = {
+  ["Tema y colores"] = "\u{f1fc}", --
+  ["Statusline"] = "\u{f0c9}", --
+  ["Interfaz"] = "\u{f108}", --
+  ["Dashboard"] = "\u{f0e4}", --
+  ["Winbar"] = "\u{f2d0}", --
+  ["Panel lateral"] = "\u{f0db}", --
+  ["Minimapa"] = "\u{f279}", --
+  ["Herramientas por lenguaje"] = "\u{f0ad}", --
+  ["Edición"] = "\u{f044}", --
+  ["Ortografía"] = "\u{f02d}", --
+  ["Vista del buffer"] = "\u{f06e}", --
+  ["Búsqueda"] = "\u{f002}", --
+  ["Diagnósticos"] = "\u{f188}", --
+}
+
 -- Columnas libres entre el valor y el borde derecho de la ventana (las etiquetas llevan 2
 -- de sangrado a la izquierda; a la derecha va algo más porque el separador de ventana
 -- "come" espacio visualmente y los valores quedaban pegados).
@@ -94,13 +111,19 @@ local function render(buf)
     end
     local col = is_collapsed(section.title)
     local chev = col and CHEV_CLOSED or CHEV_OPEN
-    local header = "  " .. chev .. " " .. section.title
+    local icon = SECTION_ICONS[section.title]
+    local header = "  " .. chev .. " "
+    if icon then
+      header = header .. icon .. "  "
+    end
+    header = header .. section.title
+    local title_end = #header
     if col then
       header = header .. "  (" .. #section.items .. ")"
     end
     push(header, { header = true, title = section.title })
     do
-      local hrow, title_end = #lines - 1, 2 + #chev + 1 + #section.title
+      local hrow = #lines - 1
       marks[#marks + 1] = { hrow, 0, { end_col = title_end, hl_group = "SettingsSection" } }
       if col then
         marks[#marks + 1] = { hrow, title_end, { end_col = #header, hl_group = "SettingsDefault" } }
