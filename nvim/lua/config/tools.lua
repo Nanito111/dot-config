@@ -318,15 +318,31 @@ local function collect()
   return fmt, lint
 end
 
--- Aplica las tablas a conform / nvim-lint (a los que estén cargados).
-function M.rebuild()
+-- Aplica las tablas recolectadas a conform / nvim-lint (a los que estén cargados) y vuelve a
+-- lintar el buffer actual, porque la primera pasada pudo correr con las tablas aún vacías.
+local function apply()
   local fmt, lint = collect()
   if package.loaded["conform"] then
     require("conform").formatters_by_ft = fmt
   end
   if package.loaded["lint"] then
     require("lint").linters_by_ft = lint
+    pcall(function()
+      require("lint").try_lint()
+    end)
   end
+end
+
+-- Reconstruye las tablas desde Mason. El spec de cada paquete (sus categorías y lenguajes)
+-- sale del índice de fuentes del registro, que carga de forma ASÍNCRONA; si se recolecta antes
+-- de que esté listo, los spec vienen vacíos y no se mapea nada. Por eso se recolecta dentro de
+-- refresh(), que garantiza las fuentes cargadas (usa caché; no descarga si está fresca).
+function M.rebuild()
+  local ok, registry = pcall(require, "mason-registry")
+  if not ok then
+    return
+  end
+  registry.refresh(vim.schedule_wrap(apply))
 end
 
 -- Reconstruye cuando Mason instala o quita un paquete (una sola vez).

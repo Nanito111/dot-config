@@ -196,3 +196,8 @@ end, { desc = "Alternar resaltado de espacios al final" })
 usr_cmd("TrailingTrim", function()
   require("plugins.local.trailing").trim()
 end, { desc = "Quitar los espacios al final del buffer actual" })
+
+-- Info de los linters del buffer (como :LspInfo pero para nvim-lint)
+usr_cmd("LintInfo", function()
+  require("config.lintinfo").show()
+end, { desc = "Linters del buffer: comando, disponibilidad y estado" })

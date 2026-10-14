@@ -363,6 +363,48 @@ autocmd({ "DirChanged", "TabEnter", "FocusGained", "BufWritePost", "TermLeave", 
 })
 update_git() -- rama inicial de la tab actual
 
+-- Indicador de linter: mientras nvim-lint analiza el buffer, anima el spinner y redibuja.
+-- Un solo timer; se autodetiene cuando no queda ningún linter en marcha, con un pequeño
+-- margen para cubrir el hueco entre el evento y el arranque del proceso.
+local lint_spin_timer
+local lint_spin_deadline = 0
+local function drive_lint_spinner()
+  if not package.loaded["lint"] then
+    return
+  end
+  lint_spin_deadline = vim.uv.now() + 400
+  if lint_spin_timer then
+    return -- ya girando
+  end
+  lint_spin_timer = vim.uv.new_timer()
+  lint_spin_timer:start(
+    0,
+    90,
+    vim.schedule_wrap(function()
+      local lint = require("lint")
+      local running = (lint.get_running and lint.get_running(0)) or {}
+      if #running > 0 then
+        lint_spin_deadline = vim.uv.now() + 400
+        C.spinner_index = C.spinner_index + 1
+        vim.cmd("redrawstatus")
+      elseif vim.uv.now() >= lint_spin_deadline then
+        lint_spin_timer:stop()
+        lint_spin_timer:close()
+        lint_spin_timer = nil
+        vim.cmd("redrawstatus") -- repintar el estado en reposo
+      end
+    end)
+  )
+end
+
+autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
+  group = group,
+  desc = "Animar el indicador de linter mientras nvim-lint analiza",
+  callback = function()
+    vim.schedule(drive_lint_spinner)
+  end,
+})
+
 autocmd("DiagnosticChanged", {
   group = group,
   desc = "Redibujar la statusline al cambiar los diagnósticos",

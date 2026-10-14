@@ -78,4 +78,7 @@ return {
     diag_info = "\u{f05a}", --  diagnóstico: info
     diag_hint = "\u{f0eb}", --  diagnóstico: pista
   },
+
+  -- Frames del spinner del indicador de linter (mismos que la vista de Mason)
+  spinner = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
 }

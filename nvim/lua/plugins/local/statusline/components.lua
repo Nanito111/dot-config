@@ -86,6 +86,14 @@ function _G.statusline_indent_amount_click(_, _, button)
 end
 
 -- ── Componentes ────────────────────────────────────────────────────
+-- Frame actual del spinner del linter. El índice lo avanza un timer en init.lua mientras
+-- nvim-lint esté analizando; aquí solo se lee para pintar el frame vigente.
+M.spinner_index = 1
+function M.spinner_frame()
+  local s = cfg.spinner
+  return s[(M.spinner_index - 1) % #s + 1]
+end
+
 M.components = {
   -- cuadro de modo (centro), coloreado según el modo
   mode = function(ctx)
@@ -177,14 +185,24 @@ M.components = {
     return { text = cfg.icons.lsp .. " " .. table.concat(names, ","), hl = "StInfo", align = "l", min_width = 10 }
   end,
 
-  -- linter(s) de nvim-lint para el filetype del buffer; se oculta si nvim-lint no está
-  -- cargado o si no hay ninguno configurado/instalado para ese filetype
+  -- Indicador del linter (nvim-lint): mientras analiza el buffer muestra un spinner con los
+  -- linters en marcha (en azul, "en progreso"); en reposo, el icono + los linters del
+  -- filetype. Se oculta si nvim-lint no está cargado o no hay linter para ese filetype.
   linter = function()
     if not package.loaded["lint"] then
       return nil
     end
-    local by_ft = require("lint").linters_by_ft
-    local names = by_ft and by_ft[vim.bo.filetype]
+    local lint = require("lint")
+    local running = lint.get_running and lint.get_running(0) or {}
+    if #running > 0 then
+      return {
+        text = M.spinner_frame() .. " " .. table.concat(running, ","),
+        hl = "StDiagInfo",
+        align = "l",
+        min_width = 8,
+      }
+    end
+    local names = lint.linters_by_ft and lint.linters_by_ft[vim.bo.filetype]
     if not names or #names == 0 then
       return nil
     end
