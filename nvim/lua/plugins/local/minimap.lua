@@ -380,58 +380,62 @@ local function schedule_render()
 end
 
 -- ── Ciclo de vida de la ventana ────────────────────────────────────
--- Cierra ventanas/buffers de minimapa HUÉRFANOS (los que no son los actuales). Tras
--- :ReloadConfig el módulo se recrea con estado nuevo (mm_win=nil) pero la ventana anterior
--- sigue en pantalla; sin esto quedaría muerta y al alternar aparecería una segunda.
-local function close_orphans()
+-- ¿alguna ventana (de cualquier tab) muestra este buffer?
+local function buf_in_use(buf)
   for _, w in ipairs(api.nvim_list_wins()) do
+    if api.nvim_win_is_valid(w) and api.nvim_win_get_buf(w) == buf then
+      return true
+    end
+  end
+  return false
+end
+
+-- Cierra ventanas de minimapa DUPLICADAS de la TAB ACTUAL (deja solo mm_win) y borra buffers
+-- de minimapa que ya no muestre ninguna ventana. Se limita a la tab actual a propósito: otros
+-- workspaces (tabs) conservan su propio minimapa. La readopción tras :ReloadConfig la hace
+-- M.setup().
+local function close_orphans()
+  for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
     if w ~= mm_win and api.nvim_win_is_valid(w) and vim.bo[api.nvim_win_get_buf(w)].filetype == "minimap" then
       pcall(api.nvim_win_close, w, true)
     end
   end
   for _, b in ipairs(api.nvim_list_bufs()) do
-    if b ~= mm_buf and api.nvim_buf_is_valid(b) and vim.bo[b].filetype == "minimap" then
+    if b ~= mm_buf and api.nvim_buf_is_valid(b) and vim.bo[b].filetype == "minimap" and not buf_in_use(b) then
       pcall(api.nvim_buf_delete, b, { force = true })
     end
   end
 end
 
-local function open()
-  if mm_win and api.nvim_win_is_valid(mm_win) then
+-- Crea el buffer del minimapa (una sola vez) con sus opciones y keymaps (solo clickeable).
+local function ensure_buf()
+  if mm_buf and api.nvim_buf_is_valid(mm_buf) then
     return
   end
-  close_orphans() -- por si quedó uno de una recarga previa
-  local code = api.nvim_get_current_win()
-  if not is_code_win(code) then
-    return
+  mm_buf = api.nvim_create_buf(false, true)
+  vim.bo[mm_buf].buftype = "nofile"
+  vim.bo[mm_buf].bufhidden = "hide"
+  vim.bo[mm_buf].swapfile = false
+  vim.bo[mm_buf].filetype = "minimap"
+  -- Solo clickeable: el clic salta a esa zona y devuelve el foco al código.
+  for _, k in ipairs({ "<LeftMouse>", "<2-LeftMouse>" }) do
+    vim.keymap.set("n", k, function()
+      M.jump()
+    end, { buffer = mm_buf, silent = true, nowait = true })
   end
-  src_win = code
-  if not (mm_buf and api.nvim_buf_is_valid(mm_buf)) then
-    mm_buf = api.nvim_create_buf(false, true)
-    vim.bo[mm_buf].buftype = "nofile"
-    vim.bo[mm_buf].bufhidden = "hide"
-    vim.bo[mm_buf].swapfile = false
-    vim.bo[mm_buf].filetype = "minimap"
-    -- Solo clickeable: el clic salta a esa zona y devuelve el foco al código.
-    for _, k in ipairs({ "<LeftMouse>", "<2-LeftMouse>" }) do
-      vim.keymap.set("n", k, function()
-        M.jump()
-      end, { buffer = mm_buf, silent = true, nowait = true })
-    end
-    for _, k in ipairs({ "<Tab>", "<S-Tab>", "<leader>x" }) do
-      vim.keymap.set("n", k, "<Nop>", { buffer = mm_buf, silent = true, nowait = true })
-    end
-    -- sin scroll: el mapa muestra TODO el archivo escalado a la ventana, no hay a dónde
-    -- desplazarse. Neutralizar la rueda del ratón (dejaría ver espacio vacío al scrollear).
-    for _, k in ipairs({ "<ScrollWheelUp>", "<ScrollWheelDown>", "<ScrollWheelLeft>", "<ScrollWheelRight>" }) do
-      vim.keymap.set("n", k, "<Nop>", { buffer = mm_buf, silent = true, nowait = true })
-    end
+  for _, k in ipairs({ "<Tab>", "<S-Tab>", "<leader>x" }) do
+    vim.keymap.set("n", k, "<Nop>", { buffer = mm_buf, silent = true, nowait = true })
   end
-  vim.cmd(side() == "left" and "noautocmd topleft vsplit" or "noautocmd botright vsplit")
-  mm_win = api.nvim_get_current_win()
-  api.nvim_win_set_buf(mm_win, mm_buf)
-  api.nvim_win_set_width(mm_win, width())
-  require("plugins.local.ui.win").set_opts(mm_win, {
+  -- sin scroll: el mapa muestra TODO el archivo escalado a la ventana, no hay a dónde
+  -- desplazarse. Neutralizar la rueda del ratón (dejaría ver espacio vacío al scrollear).
+  for _, k in ipairs({ "<ScrollWheelUp>", "<ScrollWheelDown>", "<ScrollWheelLeft>", "<ScrollWheelRight>" }) do
+    vim.keymap.set("n", k, "<Nop>", { buffer = mm_buf, silent = true, nowait = true })
+  end
+end
+
+-- Opciones window-local de una ventana de minimapa.
+local function apply_win_opts(win)
+  require("plugins.local.ui.win").set_opts(win, {
     winfixwidth = true,
     number = false,
     relativenumber = false,
@@ -444,6 +448,24 @@ local function open()
     winhighlight = "Normal:MinimapNormal,NormalNC:MinimapNormal,EndOfBuffer:MinimapNormal",
     statuscolumn = "",
   })
+end
+
+local function open()
+  if mm_win and api.nvim_win_is_valid(mm_win) then
+    return
+  end
+  close_orphans() -- por si quedó uno de una recarga previa
+  local code = api.nvim_get_current_win()
+  if not is_code_win(code) then
+    return
+  end
+  src_win = code
+  ensure_buf()
+  vim.cmd(side() == "left" and "noautocmd topleft vsplit" or "noautocmd botright vsplit")
+  mm_win = api.nvim_get_current_win()
+  api.nvim_win_set_buf(mm_win, mm_buf)
+  api.nvim_win_set_width(mm_win, width())
+  apply_win_opts(mm_win)
   api.nvim_set_current_win(code)
   render()
 end
@@ -678,15 +700,63 @@ function M.set_symbols(v)
   render()
 end
 
--- Arranque / :ReloadConfig: limpiar cualquier minimapa huérfano de la sesión anterior y,
--- si quedó activado, re-engancharlo (se abrirá al entrar a una ventana de código).
+-- Arranque / :ReloadConfig. Tras recargar, el módulo se recrea con estado nuevo (mm_win/mm_buf
+-- = nil) pero las ventanas de minimapa de la sesión anterior siguen en pantalla, posiblemente
+-- en VARIAS tabs (workspaces). En vez de destruirlas (lo que hacía desaparecer el minimapa de
+-- los otros workspaces), se re-adoptan: se re-apuntan todas a un buffer nuevo (con keymaps del
+-- módulo recargado) y se adopta la de la tab actual como mm_win.
 function M.setup()
-  close_orphans()
-  if require("config.settings").value("ui.minimap", false) then
-    enabled = true
-    ensure_autocmds()
-    vim.schedule(reconcile)
+  -- ventanas de minimapa que dejó la sesión anterior (en cualquier tab)
+  local prev, prev_bufs = {}, {}
+  for _, w in ipairs(api.nvim_list_wins()) do
+    if api.nvim_win_is_valid(w) and vim.bo[api.nvim_win_get_buf(w)].filetype == "minimap" then
+      prev[#prev + 1] = w
+      prev_bufs[api.nvim_win_get_buf(w)] = true
+    end
   end
+
+  if not require("config.settings").value("ui.minimap", false) then
+    -- desactivado: cerrar todo lo que quedara (todas las tabs) y borrar sus buffers
+    for _, w in ipairs(prev) do
+      pcall(api.nvim_win_close, w, true)
+    end
+    for b in pairs(prev_bufs) do
+      if api.nvim_buf_is_valid(b) then
+        pcall(api.nvim_buf_delete, b, { force = true })
+      end
+    end
+    return
+  end
+
+  enabled = true
+  ensure_autocmds()
+
+  if #prev > 0 then
+    ensure_buf() -- buffer nuevo (keymaps frescos del módulo recargado)
+    for _, w in ipairs(prev) do
+      pcall(api.nvim_win_set_buf, w, mm_buf)
+      apply_win_opts(w)
+    end
+    -- adoptar la ventana de la tab actual como mm_win (cerrando duplicados en ella)
+    mm_win = nil
+    for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
+      if api.nvim_win_is_valid(w) and vim.bo[api.nvim_win_get_buf(w)].filetype == "minimap" then
+        if mm_win then
+          pcall(api.nvim_win_close, w, true)
+        else
+          mm_win = w
+        end
+      end
+    end
+    -- borrar los buffers viejos, ya sin ninguna ventana que los muestre
+    for b in pairs(prev_bufs) do
+      if b ~= mm_buf and api.nvim_buf_is_valid(b) and not buf_in_use(b) then
+        pcall(api.nvim_buf_delete, b, { force = true })
+      end
+    end
+  end
+
+  vim.schedule(reconcile)
 end
 
 return M
