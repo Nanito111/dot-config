@@ -313,7 +313,7 @@ local function build()
 
   return {
     {
-      title = "Apariencia",
+      title = "Tema y colores",
       items = {
         provider({
           id = "ui.theme",
@@ -338,6 +338,11 @@ local function build()
           apply = borders.apply,
           set = borders.set,
         }),
+      },
+    },
+    {
+      title = "Statusline",
+      items = {
         provider({
           id = "ui.statusline_preset",
           label = "Preset de statusline",
@@ -352,6 +357,11 @@ local function build()
             statusline.set_preset(v, true)
           end,
         }),
+      },
+    },
+    {
+      title = "Interfaz",
+      items = {
         provider({
           id = "ui.indentline",
           label = "Guías de indentación",
@@ -374,6 +384,11 @@ local function build()
           apply = picker.set_icons, -- set_icons ya persiste (bool: no hay preview/cancel)
           set = picker.set_icons,
         }),
+      },
+    },
+    {
+      title = "Dashboard",
+      items = {
         provider({
           id = "ui.dashboard_effect",
           label = "Efecto del título (dashboard)",
@@ -401,6 +416,11 @@ local function build()
           apply = dashboard.set_color,
           set = dashboard.set_color,
         }),
+      },
+    },
+    {
+      title = "Winbar",
+      items = {
         provider({
           id = "ui.breadcrumb_symbol",
           label = "Símbolo del breadcrumb",
@@ -413,6 +433,11 @@ local function build()
           apply = winbar.set_symbol,
           set = winbar.set_symbol,
         }),
+      },
+    },
+    {
+      title = "Panel lateral",
+      items = {
         provider({
           id = "ui.sidebar_width",
           label = "Ancho del panel lateral",
@@ -511,7 +536,7 @@ local function build()
       },
     },
     {
-      title = "Editor",
+      title = "Herramientas por lenguaje",
       items = {
         {
           id = "indent.per_ft",
@@ -535,6 +560,11 @@ local function build()
             require("plugins.local.settings.lsp_table").open()
           end,
         },
+      },
+    },
+    {
+      title = "Edición",
+      items = {
         provider({
           id = "editor.format_on_save",
           label = "Formatear al guardar",
@@ -564,6 +594,11 @@ local function build()
             require("plugins.local.trailing").trim()
           end,
         },
+      },
+    },
+    {
+      title = "Ortografía",
+      items = {
         provider({
           id = "ui.markdown_spell",
           label = "Corrector en Markdown",
@@ -590,6 +625,11 @@ local function build()
             require("config.spell").pick()
           end,
         },
+      },
+    },
+    {
+      title = "Vista del buffer",
+      items = {
         vimopt({ opt = "wrap", label = "Ajuste de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "number", label = "Números de línea", type = "bool", scope = "win" }),
         vimopt({ opt = "relativenumber", label = "Números relativos", type = "bool", scope = "win" }),
@@ -603,6 +643,11 @@ local function build()
           max = 30,
           step = 1,
         }),
+      },
+    },
+    {
+      title = "Búsqueda",
+      items = {
         vimopt({ opt = "ignorecase", label = "Ignorar mayúsculas al buscar", type = "bool", scope = nil }),
         vimopt({ opt = "smartcase", label = "…salvo si escribes mayúsculas", type = "bool", scope = nil }),
       },

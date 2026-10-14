@@ -19,10 +19,32 @@ local function set_hl()
   api.nvim_set_hl(0, "SettingsDefault", { fg = palette.comment })
   api.nvim_set_hl(0, "SettingsChanged", { fg = palette.green, bold = true })
   api.nvim_set_hl(0, "SettingsMarker", { fg = palette.blue, bold = true })
+  api.nvim_set_hl(0, "SettingsSeparator", { fg = palette.comment })
   api.nvim_set_hl(0, "SettingsCursorLine", { bg = palette.bg_highlight, bold = true })
 end
 theme.register(set_hl)
 set_hl()
+
+-- Cheurón de la cabecera de sección (colapsable). El estado colapsado se guarda en
+-- config.settings (solo lo colapsado; por defecto todo expandido) y persiste entre sesiones.
+local CHEV_OPEN = "▾"
+local CHEV_CLOSED = "▸"
+
+local collapsed = nil -- cache; nil = aún no cargado
+local function collapsed_tbl()
+  if collapsed == nil then
+    collapsed = vim.deepcopy(settings.value("panel.collapsed", {}))
+  end
+  return collapsed
+end
+local function is_collapsed(title)
+  return collapsed_tbl()[title] == true
+end
+local function set_collapsed(title, val)
+  local c = collapsed_tbl()
+  c[title] = val or nil
+  settings.record("panel.collapsed", c, {})
+end
 
 -- Iconos de switch (FontAwesome toggle-on/off) para los booleanos
 local SWITCH_ON = "\u{f205}" --
@@ -66,13 +88,27 @@ local function render(buf)
 
   for si, section in ipairs(settings.registry()) do
     if si > 1 then
-      push("", nil)
+      local sep = string.rep("─", math.max(width, 1))
+      push(sep, nil)
+      marks[#marks + 1] = { #lines - 1, 0, { end_col = #sep, hl_group = "SettingsSeparator" } }
     end
-    local header = "  " .. section.title
-    push(header, nil)
-    marks[#marks + 1] = { #lines - 1, 0, { end_col = #header, hl_group = "SettingsSection" } }
+    local col = is_collapsed(section.title)
+    local chev = col and CHEV_CLOSED or CHEV_OPEN
+    local header = "  " .. chev .. " " .. section.title
+    if col then
+      header = header .. "  (" .. #section.items .. ")"
+    end
+    push(header, { header = true, title = section.title })
+    do
+      local hrow, title_end = #lines - 1, 2 + #chev + 1 + #section.title
+      marks[#marks + 1] = { hrow, 0, { end_col = title_end, hl_group = "SettingsSection" } }
+      if col then
+        marks[#marks + 1] = { hrow, title_end, { end_col = #header, hl_group = "SettingsDefault" } }
+      end
+    end
 
-    for _, spec in ipairs(section.items) do
+    local items = col and {} or section.items
+    for _, spec in ipairs(items) do
       local label = "  " .. spec.label
       local marker = spec.overridden() and "● " or ""
       local val = marker .. value_text(spec)
@@ -118,9 +154,34 @@ function M.on_cursor(buf)
   end
 end
 
-local function current_spec(buf)
+local function current_value(buf)
   local v = views[buf]
   return v and v.menu and v.menu.current()
+end
+
+-- La opción bajo el cursor, o nil si es una cabecera de sección (las cabeceras son
+-- seleccionables para poder colapsarlas, pero no son "settings" sobre los que operar).
+local function current_spec(buf)
+  local val = current_value(buf)
+  if val and not val.header and val.type then
+    return val
+  end
+  return nil
+end
+
+-- Lleva el cursor a la cabecera `title` tras colapsar/expandir (el layout cambió de líneas).
+local function focus_header(buf, title)
+  local v = views[buf]
+  if not (v and v.win and api.nvim_win_is_valid(v.win)) then
+    return
+  end
+  for lnum, r in ipairs(v.rows) do
+    if type(r) == "table" and r.header and r.title == title then
+      api.nvim_win_set_cursor(v.win, { lnum, 0 })
+      break
+    end
+  end
+  M.on_cursor(buf)
 end
 
 -- ── Edición ────────────────────────────────────────────────────────
@@ -129,6 +190,13 @@ local function clamp(x, lo, hi)
 end
 
 local function adjust(buf, dir)
+  local val = current_value(buf)
+  if val and val.header then
+    set_collapsed(val.title, dir < 0) -- h (dir<0) colapsa, l (dir>0) expande
+    render(buf)
+    focus_header(buf, val.title)
+    return
+  end
   local spec = current_spec(buf)
   if not spec then
     return
@@ -192,6 +260,13 @@ local function open_enum_picker(buf)
 end
 
 local function activate(buf)
+  local val = current_value(buf)
+  if val and val.header then
+    set_collapsed(val.title, not is_collapsed(val.title))
+    render(buf)
+    focus_header(buf, val.title)
+    return
+  end
   local spec = current_spec(buf)
   if not spec then
     return
@@ -248,6 +323,7 @@ function M.create()
     adjust(b, -1)
   end)
   map("<CR>", activate)
+  map("za", activate) -- colapsar/expandir la sección bajo el cursor (estilo fold de vim)
   -- OJO: no mapear <Space> aquí — es el leader; hacerlo impediría <leader>e y demás atajos
   map("r", reset)
   map("<Tab>", function()
