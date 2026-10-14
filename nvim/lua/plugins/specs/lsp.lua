@@ -28,6 +28,10 @@ return {
         automatic_enable = true, -- activa (vim.lsp.enable) los servidores instalados
       })
 
+      -- Overrides de "qué servidor corre en qué lenguaje" (panel → Servidores LSP por
+      -- lenguaje): recortan los filetypes de cada servidor. Tras enable, antes del attach.
+      require("config.lsp").apply()
+
       -- :LspLog — abrir el log del cliente LSP en una pestaña nueva (al final)
       vim.api.nvim_create_user_command("LspLog", function()
         vim.cmd("tabedit " .. vim.fn.fnameescape(vim.lsp.log.get_filename()))

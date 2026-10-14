@@ -524,6 +524,17 @@ local function build()
             require("plugins.local.settings.indent_table").open()
           end,
         },
+        {
+          id = "lsp.per_ft",
+          label = "Servidores LSP por lenguaje",
+          type = "action",
+          overridden = function()
+            return false
+          end,
+          run = function()
+            require("plugins.local.settings.lsp_table").open()
+          end,
+        },
         provider({
           id = "editor.format_on_save",
           label = "Formatear al guardar",

@@ -76,6 +76,7 @@ require("config.commands")
 require("config.autocmds")
 require("config.updates") -- avisos de actualización (lazy + mason) al iniciar
 require("config.lspkeys") -- diagnósticos + keymaps del LSP (recargables con :ReloadConfig)
+require("config.lsp").apply() -- overrides de servidores LSP por lenguaje (reaplica en :ReloadConfig)
 require("config.treesitter") -- resaltado nativo (parsers/queries bundled de Neovim)
 require("plugins.local.dashboard")
 require("plugins.local.statusline")
