@@ -2,6 +2,7 @@
 -- mira sus metadatos (categoría Formatter/Linter y lenguajes) y arma las tablas por filetype
 -- de conform (formatters_by_ft) y nvim-lint (linters_by_ft). Así, instalar una herramienta
 -- con :Mason la activa sola, sin anotarla aquí. Se reconstruye al instalar/quitar en Mason.
+local api = vim.api
 local M = {}
 
 -- Etiqueta de lenguaje de Mason -> filetypes de Neovim. Lista TODAS las etiquetas de Mason
@@ -318,19 +319,191 @@ local function collect()
   return fmt, lint
 end
 
--- Aplica las tablas recolectadas a conform / nvim-lint (a los que estén cargados) y vuelve a
+-- ── Overrides por (herramienta, filetype) ──────────────────────────
+-- Igual que los servidores LSP: se deja elegir, por lenguaje, qué formateadores (conform) y
+-- linters (nvim-lint) corren de los que Mason ofrece. Solo se persiste lo DESHABILITADO, en
+-- dos claves (una por tipo); lo demás corre. La tabla del panel (settings.tools_table) edita
+-- esto en vivo y config.tools filtra las tablas por filetype antes de empujarlas a cada plugin.
+local KEYS = { fmt = "format.disabled", lint = "lint.disabled" } -- { [tool] = { [ft] = true } }
+local disabled = { fmt = nil, lint = nil } -- cache por tipo; nil = sin cargar
+
+local function dis(kind)
+  if disabled[kind] == nil then
+    disabled[kind] = vim.deepcopy(require("config.settings").value(KEYS[kind], {}))
+  end
+  return disabled[kind]
+end
+
+local function persist(kind)
+  local d = disabled[kind]
+  for tool, fts in pairs(d) do
+    if next(fts) == nil then
+      d[tool] = nil -- no dejar herramientas sin nada deshabilitado
+    end
+  end
+  require("config.settings").record(KEYS[kind], d, {})
+end
+
+-- Candidatos "de fábrica" (lo que ofrece Mason, sin filtrar). Se recolectan de nuevo cada vez
+-- que hace falta; collect() lee el registro de Mason de forma sincrónica una vez cargado.
+local full = { fmt = nil, lint = nil }
+local function full_tables()
+  if not full.fmt then
+    full.fmt, full.lint = collect()
+  end
+  return full
+end
+
+-- Tabla efectiva de un tipo: candidatos menos lo deshabilitado por (herramienta, filetype).
+local function effective(kind)
+  local src = full_tables()[kind]
+  local d = dis(kind)
+  local out = {}
+  for ft, tools in pairs(src) do
+    local keep = {}
+    for _, t in ipairs(tools) do
+      if not (d[t] and d[t][ft]) then
+        keep[#keep + 1] = t
+      end
+    end
+    out[ft] = keep
+  end
+  return out
+end
+
+-- Limpia los diagnósticos de un linter en los buffers de un filetype (al desactivarlo en vivo),
+-- ya que nvim-lint no los retira solo hasta el próximo lintado.
+local function clear_lint(tool, ft)
+  local ok, lint = pcall(require, "lint")
+  local ns = ok and lint.get_namespace and lint.get_namespace(tool)
+  if not ns then
+    return
+  end
+  for _, buf in ipairs(api.nvim_list_bufs()) do
+    if api.nvim_buf_is_loaded(buf) and vim.bo[buf].filetype == ft then
+      pcall(vim.diagnostic.reset, ns, buf)
+    end
+  end
+end
+
+-- Empuja la tabla efectiva de un tipo al plugin correspondiente (si está cargado).
+local function push(kind)
+  if kind == "fmt" then
+    if package.loaded["conform"] then
+      require("conform").formatters_by_ft = effective("fmt")
+    end
+  else
+    if package.loaded["lint"] then
+      require("lint").linters_by_ft = effective("lint")
+    end
+  end
+end
+
+-- Aplica las tablas recolectadas (ya filtradas por overrides) a conform / nvim-lint y vuelve a
 -- lintar el buffer actual, porque la primera pasada pudo correr con las tablas aún vacías.
 local function apply()
-  local fmt, lint = collect()
+  full.fmt, full.lint = collect()
   if package.loaded["conform"] then
-    require("conform").formatters_by_ft = fmt
+    require("conform").formatters_by_ft = effective("fmt")
   end
   if package.loaded["lint"] then
-    require("lint").linters_by_ft = lint
+    require("lint").linters_by_ft = effective("lint")
     pcall(function()
       require("lint").try_lint()
     end)
   end
+end
+
+-- Fuerza la carga de conform/nvim-lint (lazy: cargan al abrir un archivo) y refresca los
+-- candidatos desde Mason. Se llama desde los puntos de entrada de la tabla del panel.
+function M.ensure()
+  if not package.loaded["conform"] or not package.loaded["lint"] then
+    pcall(function()
+      require("lazy").load({ plugins = { "conform.nvim", "nvim-lint" } })
+    end)
+  end
+  -- nvim-lint no se auto-requiere al cargar su spec (solo registra autocomandos); forzarlo para
+  -- que push() vea package.loaded["lint"] y pueda actualizar linters_by_ft en vivo.
+  pcall(require, "conform")
+  pcall(require, "lint")
+  full.fmt, full.lint = collect()
+end
+
+-- ── Consulta / edición para la tabla del panel ─────────────────────
+function M.is_enabled(kind, tool, ft)
+  local d = dis(kind)[tool]
+  return not (d and d[ft])
+end
+
+function M.set_enabled(kind, tool, ft, enabled)
+  local d = dis(kind)
+  if enabled then
+    if d[tool] then
+      d[tool][ft] = nil
+    end
+  else
+    d[tool] = d[tool] or {}
+    d[tool][ft] = true
+  end
+  persist(kind)
+  push(kind)
+  if kind == "lint" and not enabled then
+    clear_lint(tool, ft)
+  end
+end
+
+function M.toggle(kind, tool, ft)
+  M.set_enabled(kind, tool, ft, not M.is_enabled(kind, tool, ft))
+end
+
+-- Reactiva todas las herramientas de un filetype (quita sus deshabilitados).
+function M.reset_ft(kind, ft)
+  local d = dis(kind)
+  for _, fts in pairs(d) do
+    fts[ft] = nil
+  end
+  persist(kind)
+  push(kind)
+end
+
+-- Herramientas candidatas a un filetype, con su estado: { { name, enabled }, ... } (orden alfab.)
+function M.tools_for_ft(kind, ft)
+  M.ensure()
+  local list = vim.deepcopy(full_tables()[kind][ft] or {})
+  table.sort(list)
+  local out = {}
+  for _, t in ipairs(list) do
+    out[#out + 1] = { name = t, enabled = M.is_enabled(kind, t, ft) }
+  end
+  return out
+end
+
+-- Filas del nivel 1 (lenguajes) de un tipo: un filetype por fila, con cuántas herramientas
+-- corren de las candidatas y si tiene algo deshabilitado. Orden: varias herramientas primero.
+function M.rows(kind)
+  M.ensure()
+  local src = full_tables()[kind]
+  local rows = {}
+  for ft, tools in pairs(src) do
+    local list = vim.deepcopy(tools)
+    table.sort(list)
+    local on, overridden = 0, false
+    for _, t in ipairs(list) do
+      if M.is_enabled(kind, t, ft) then
+        on = on + 1
+      else
+        overridden = true
+      end
+    end
+    rows[#rows + 1] = { ft = ft, tools = list, total = #list, enabled = on, overridden = overridden }
+  end
+  table.sort(rows, function(a, b)
+    if a.total ~= b.total then
+      return a.total > b.total
+    end
+    return a.ft < b.ft
+  end)
+  return rows
 end
 
 -- Reconstruye las tablas desde Mason. El spec de cada paquete (sus categorías y lenguajes)

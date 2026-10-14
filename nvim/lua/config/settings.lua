@@ -560,6 +560,28 @@ local function build()
             require("plugins.local.settings.lsp_table").open()
           end,
         },
+        {
+          id = "format.per_ft",
+          label = "Formateadores por lenguaje",
+          type = "action",
+          overridden = function()
+            return false
+          end,
+          run = function()
+            require("plugins.local.settings.tools_table").open("fmt")
+          end,
+        },
+        {
+          id = "lint.per_ft",
+          label = "Linters por lenguaje",
+          type = "action",
+          overridden = function()
+            return false
+          end,
+          run = function()
+            require("plugins.local.settings.tools_table").open("lint")
+          end,
+        },
       },
     },
     {
