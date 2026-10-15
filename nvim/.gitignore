@@ -1,2 +1,5 @@
 logo.txt
 lazy-lock.json
+formatter-config/
+linter-config/
+lsp-config/

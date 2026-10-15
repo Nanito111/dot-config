@@ -25,13 +25,7 @@ return {
       },
     },
     opts = {
-      formatters = {
-        -- Config global de sql-formatter: sin -c solo la autodetecta subiendo desde el cwd,
-        -- que no alcanza el home en proyectos de /mnt/c.
-        sql_formatter = {
-          prepend_args = { "-c", vim.fn.expand("~/.config/sql-formatter/.sql-formatter.json") },
-        },
-      },
+      formatters = require("config.formatters"), -- config por formateador (comando, args, …)
       -- formatters_by_ft lo arma config.tools según lo instalado en Mason (no se lista aquí)
       -- al guardar solo si el ajuste está activo; si no hay formateador propio, usa el del LSP
       format_on_save = function()
@@ -57,6 +51,7 @@ return {
       local tools = require("config.tools")
       tools.rebuild()
       tools.watch()
+      require("config.linters").apply() -- inyecta la config propia de cada linter (linter-config/)
       local grp = vim.api.nvim_create_augroup("NvimLint", { clear = true })
       vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
         group = grp,

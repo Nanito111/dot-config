@@ -74,6 +74,10 @@ return {
         },
       })
 
+      -- Ajustes locales por servidor (lsp-config/<servidor>.lua, ignorado por git): se fusionan
+      -- al final para que ganen sobre los de arriba.
+      require("config.lsp_local").apply()
+
       -- Diagnósticos (UI) y keymaps del LspAttach viven en config.lspkeys, que SÍ es
       -- recargable con :ReloadConfig (este spec está en SKIP_RELOAD).
     end,
