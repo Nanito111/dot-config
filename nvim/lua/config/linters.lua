@@ -1,13 +1,13 @@
 -- Configuración por linter de nvim-lint. A diferencia de conform (que tiene `formatters` y
 -- `prepend_args`), nvim-lint no expone una tabla de opciones: hay que inyectar el flag de
 -- config en los `args` del linter. apply() lo hace para cada linter que tenga su fichero en
--- nvim/linter-config/ (ignorado por git; un fichero por nombre de linter). Es idempotente y
+-- nvim/lua/config/tools-settings/linter/ (ignorado por git; un fichero por nombre). Es idempotente y
 -- no hace nada si el fichero no existe, para que un clon nuevo siga lintando con los defaults.
 -- Lo llama el spec de nvim-lint tras cargar. Ver también config.tools (qué linter corre en
 -- cada filetype) y config.formatters (equivalente para conform).
 local M = {}
 
-local dir = vim.fn.stdpath("config") .. "/linter-config/"
+local dir = vim.fn.stdpath("config") .. "/lua/config/tools-settings/linter/"
 
 -- name = nombre del linter en nvim-lint; file = fichero esperado en linter-config/;
 -- flag = cómo se le pasa su config.

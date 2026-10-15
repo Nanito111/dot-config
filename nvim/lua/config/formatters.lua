@@ -5,10 +5,11 @@
 --   • config.tools  -> qué formateador corre en cada filetype (derivado de Mason).
 --   • config.format -> fachada de "formatear al guardar" / format() / estado del panel.
 --
--- Los ficheros de configuración propios de cada herramienta viven en nvim/formatter-config/
--- (ignorado por git; un fichero por nombre de formateador). Se le pasan con el flag que use
--- cada una SOLO si existen, para que un clon nuevo sin ellos siga formateando con los defaults.
-local dir = vim.fn.stdpath("config") .. "/formatter-config/"
+-- Los ficheros de configuración propios de cada herramienta viven en
+-- nvim/lua/config/tools-settings/fmt/ (ignorado por git; un fichero por nombre de formateador).
+-- Se le pasan con el flag que use cada una SOLO si existen, para que un clon nuevo sin ellos siga
+-- formateando con los defaults.
+local dir = vim.fn.stdpath("config") .. "/lua/config/tools-settings/fmt/"
 
 -- Ruta a un fichero de formatter-config/ si existe, o nil.
 local function cfg(file)
