@@ -1,5 +1,10 @@
 logo.txt
 lazy-lock.json
-formatter-config/
-linter-config/
-lsp-config/
+# Config local por herramienta: se ignora el contenido, pero se versiona el README
+# para conservar la carpeta en el repo.
+formatter-config/*
+!formatter-config/README.md
+linter-config/*
+!linter-config/README.md
+lsp-config/*
+!lsp-config/README.md
