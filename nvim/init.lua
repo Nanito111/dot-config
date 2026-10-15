@@ -94,3 +94,9 @@ require("plugins.local.todo") -- resaltar TODO/FIXME + picker de proyecto (:Todo
 require("plugins.local.settings.panel") -- panel de configuración (:Settings, <leader>uu)
 require("plugins.local.mason") -- gestor de herramientas como vista del sidebar (:Mason)
 require("config.highlights")
+
+-- El colorscheme se aplica antes (línea ~73) para evitar un frame con colores por defecto,
+-- pero esa primera pasada puede derivar la paleta de un tema aún a medias (p. ej. el primer
+-- arranque tras invalidar la caché de un tema que compila, como monokai-pro). Con todo ya
+-- cargado, reafirmarlo deja el arranque en el mismo estado que :ReloadConfig.
+require("config.themes").setup()
