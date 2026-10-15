@@ -88,8 +88,13 @@ function M.open_file(s, path)
     end
   end
   if target then
+    -- nvim_win_set_buf en vez de :edit: no recarga el archivo si ya está abierto (preserva
+    -- cambios sin guardar; :edit daba E37) y, al cambiar de archivo, oculta el buffer actual.
+    local bufnr = vim.fn.bufadd(vim.fn.fnamemodify(path, ":p"))
+    vim.fn.bufload(bufnr)
+    vim.bo[bufnr].buflisted = true
     api.nvim_set_current_win(target)
-    vim.cmd("edit " .. vim.fn.fnameescape(path))
+    api.nvim_win_set_buf(target, bufnr)
   else
     api.nvim_set_current_win(s.win)
     vim.cmd("rightbelow vsplit " .. vim.fn.fnameescape(path))
