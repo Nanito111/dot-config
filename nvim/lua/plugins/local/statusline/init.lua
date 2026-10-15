@@ -381,6 +381,11 @@ local function drive_lint_spinner()
     0,
     90,
     vim.schedule_wrap(function()
+      -- schedule_wrap aplaza al siguiente tick: pueden encolarse varios disparos antes de
+      -- que el timer se detenga. Si otro ya lo anuló, salir (si no, :stop sobre nil peta).
+      if not lint_spin_timer then
+        return
+      end
       local lint = require("lint")
       local running = (lint.get_running and lint.get_running(0)) or {}
       if #running > 0 then
