@@ -440,6 +440,24 @@ local function activate(buf)
   end
 end
 
+-- ? : which-key con los atajos del buffer (igual que en el explorador). Lista los maps que
+-- tienen `desc`; si se elige una tecla en el popup, se reenvía para ejecutar su acción.
+local function mason_help(buf)
+  local entries = {}
+  for _, m in ipairs(api.nvim_buf_get_keymap(buf, "n")) do
+    if m.desc and m.desc ~= "" and m.lhs ~= "?" then
+      entries[#entries + 1] = { key = m.lhsraw or m.lhs, label = m.desc }
+    end
+  end
+  table.sort(entries, function(a, b)
+    return a.key:lower() < b.key:lower()
+  end)
+  local ch = require("plugins.local.whichkey.popup").read_key("Mason", entries, true)
+  if ch and ch ~= "" and ch ~= "\27" then
+    api.nvim_feedkeys(ch, "m", false)
+  end
+end
+
 -- ── Ciclo de vida (vista del sidebar) ──────────────────────────────
 function M.create()
   local buf = api.nvim_create_buf(false, true)
@@ -464,30 +482,33 @@ function M.create()
       fn(buf)
     end, { buffer = buf, silent = true, nowait = true, desc = desc })
   end
-  map("u", do_update)
-  map("x", do_uninstall)
-  map("U", update_all)
+  map("u", do_update, "Actualizar paquete")
+  map("x", do_uninstall, "Desinstalar paquete")
+  map("U", update_all, "Actualizar lo desactualizado")
   map("a", function()
     install_new()
-  end)
+  end, "Instalar herramienta")
   map("e", open_config, "Abrir su configuración")
-  map("K", activate)
+  map("K", activate, "Ver detalles")
   map("r", function(b)
     render(b)
-  end)
+  end, "Refrescar la vista")
   map("R", function(b)
     render(b)
   end)
-  map("<CR>", activate)
+  map("<CR>", activate, "Ver detalles")
   map("<Tab>", function()
     require("plugins.local.sidebar").next()
-  end)
+  end, "Siguiente panel del sidebar")
   map("<S-Tab>", function()
     require("plugins.local.sidebar").prev()
-  end)
+  end, "Panel anterior del sidebar")
   map("q", function()
     require("plugins.local.sidebar").close()
-  end)
+  end, "Cerrar el panel")
+  map("?", function(b)
+    mason_help(b)
+  end, "Atajos de Mason")
 
   api.nvim_create_autocmd("CursorMoved", {
     buffer = buf,
