@@ -8,6 +8,53 @@ local theme = require("config.theme")
 local ui = require("plugins.local.ui")
 local actions = require("plugins.local.mason.actions")
 
+-- Carpetas de config local por herramienta (config.tools-settings). Una herramienta "tiene
+-- config" si existe un fichero con su nombre ahí: los formatters/linters usan el nombre del
+-- paquete de Mason (p. ej. sql-formatter.json, sqlfluff), los LSP el nombre del servidor en
+-- lspconfig (p. ej. lua_ls.lua), no el del paquete.
+local cfg_dir = vim.fn.stdpath("config") .. "/lua/config/tools-settings/"
+local CFG_ICON = "\u{f013}" -- engranaje
+
+-- Conjunto de nombres (con y sin extensión) de los ficheros de config que existen ahora.
+local function config_names()
+  local set = {}
+  for _, sub in ipairs({ "fmt", "linter", "lsp" }) do
+    for _, path in ipairs(vim.fn.glob(cfg_dir .. sub .. "/*", false, true)) do
+      local base = vim.fn.fnamemodify(path, ":t")
+      if base ~= "README.md" then
+        set[base] = true
+        set[vim.fn.fnamemodify(base, ":r")] = true
+      end
+    end
+  end
+  return set
+end
+
+-- Mapa nombre-de-paquete-Mason -> nombre-de-servidor-lspconfig (para resolver el fichero de los LSP).
+local function pkg_to_server()
+  local okm, mappings = pcall(require, "mason-lspconfig.mappings")
+  return okm and mappings.get_mason_map().package_to_lspconfig or {}
+end
+
+-- Ruta del fichero de config de una herramienta (o nil): su nombre es el del paquete (formatters/
+-- linters) o el del servidor en lspconfig (LSP), con o sin extensión.
+local function config_path(name)
+  local want = { [name] = true }
+  local server = pkg_to_server()[name]
+  if server then
+    want[server] = true
+  end
+  for _, sub in ipairs({ "fmt", "linter", "lsp" }) do
+    for _, path in ipairs(vim.fn.glob(cfg_dir .. sub .. "/*", false, true)) do
+      local base = vim.fn.fnamemodify(path, ":t")
+      if base ~= "README.md" and (want[base] or want[vim.fn.fnamemodify(base, ":r")]) then
+        return path
+      end
+    end
+  end
+  return nil
+end
+
 local M = {}
 local ns = api.nvim_create_namespace("mason_view")
 local views = {} -- [buf] = { win, rows, menu }
@@ -18,6 +65,7 @@ local function set_hl()
   api.nvim_set_hl(0, "MasonInstalled", { fg = palette.green, bold = true }) -- ●
   api.nvim_set_hl(0, "MasonVersion", { fg = palette.comment })
   api.nvim_set_hl(0, "MasonOutdated", { fg = palette.yellow, bold = true }) -- ↑
+  api.nvim_set_hl(0, "MasonConfigured", { fg = palette.cyan }) -- herramienta con config propia
   api.nvim_set_hl(0, "MasonProgress", { fg = palette.blue, bold = true }) -- spinner
   api.nvim_set_hl(0, "MasonInfo", { fg = palette.comment }) -- línea de salida del instalador
   api.nvim_set_hl(0, "MasonMarker", { fg = palette.blue, bold = true }) -- ▸
@@ -78,6 +126,14 @@ local function render(buf)
   local cats = vim.tbl_keys(by_cat)
   table.sort(cats)
 
+  -- ¿qué herramientas tienen config propia? (una pasada por carpeta, no por fila)
+  local cfgset = config_names()
+  local okm, mappings = pcall(require, "mason-lspconfig.mappings")
+  local pkg2srv = okm and mappings.get_mason_map().package_to_lspconfig or {}
+  local function has_config(name)
+    return cfgset[name] or (pkg2srv[name] and cfgset[pkg2srv[name]]) or false
+  end
+
   for _, cat in ipairs(cats) do
     push("", nil)
     local header = "  " .. cat
@@ -109,7 +165,8 @@ local function render(buf)
         local marker = "● "
         local ver = e.version and ("  " .. e.version) or ""
         local up = e.outdated and "  ↑" or ""
-        line = "  " .. marker .. e.name .. ver .. up
+        local cfg = has_config(e.name) and ("  " .. CFG_ICON) or ""
+        line = "  " .. marker .. e.name .. ver .. up .. cfg
         push(line, e)
         local row = #lines - 1
         local mstart = 2
@@ -121,7 +178,10 @@ local function render(buf)
             { row, nstart + #e.name, { end_col = nstart + #e.name + #ver, hl_group = "MasonVersion" } }
         end
         if up ~= "" then
-          marks[#marks + 1] = { row, #line - #up, { end_col = #line, hl_group = "MasonOutdated" } }
+          marks[#marks + 1] = { row, nstart + #e.name + #ver, { end_col = nstart + #e.name + #ver + #up, hl_group = "MasonOutdated" } }
+        end
+        if cfg ~= "" then
+          marks[#marks + 1] = { row, #line - #CFG_ICON, { end_col = #line, hl_group = "MasonConfigured" } }
         end
       end
     end
@@ -176,6 +236,43 @@ local function do_uninstall(buf)
     require("plugins.local.confirm").confirm("¿Desinstalar «" .. e.name .. "»?", "&Si\n&No", 2, { backdrop = true })
   if ans == 1 then
     actions.uninstall(e.pkg)
+  end
+end
+
+-- Abre el fichero de config de la herramienta bajo el cursor en una ventana de edición (evita el
+-- sidebar y las flotantes). bufadd+win_set_buf en vez de :edit para no dar E37 si ya está abierto.
+local function open_config(buf)
+  local e = current(buf)
+  if not (e and e.name) then
+    return
+  end
+  local path = config_path(e.name)
+  if not path then
+    vim.notify("«" .. e.name .. "» no tiene config propia en tools-settings", vim.log.levels.INFO, { title = "Mason" })
+    return
+  end
+  local target
+  for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
+    local ft = vim.bo[api.nvim_win_get_buf(w)].filetype
+    if
+      api.nvim_win_get_config(w).relative == ""
+      and not vim.wo[w].winfixwidth
+      and ft ~= "explorer"
+      and ft ~= "settings"
+      and ft ~= "mason"
+    then
+      target = w
+      break
+    end
+  end
+  if target then
+    local bufnr = vim.fn.bufadd(vim.fn.fnamemodify(path, ":p"))
+    vim.fn.bufload(bufnr)
+    vim.bo[bufnr].buflisted = true
+    api.nvim_set_current_win(target)
+    api.nvim_win_set_buf(target, bufnr)
+  else
+    vim.cmd("rightbelow vsplit " .. vim.fn.fnameescape(path))
   end
 end
 
@@ -362,10 +459,10 @@ function M.create()
   actions.set_on_change(M.render_all) -- progreso/eventos -> re-render
   actions.subscribe()
 
-  local function map(lhs, fn)
+  local function map(lhs, fn, desc)
     vim.keymap.set("n", lhs, function()
       fn(buf)
-    end, { buffer = buf, silent = true, nowait = true })
+    end, { buffer = buf, silent = true, nowait = true, desc = desc })
   end
   map("u", do_update)
   map("x", do_uninstall)
@@ -373,6 +470,7 @@ function M.create()
   map("a", function()
     install_new()
   end)
+  map("e", open_config, "Abrir su configuración")
   map("K", activate)
   map("r", function(b)
     render(b)
