@@ -114,6 +114,39 @@ function M.apply(only)
   end
 end
 
+-- Al desinstalar un servidor con :Mason, mason-lspconfig solo auto-activa al INSTALAR
+-- (package:install:success); al desinstalar no detiene el cliente, que seguía adjunto hasta
+-- :ReloadConfig. watch() lo detiene y lo deshabilita en caliente. Se engancha una sola vez por
+-- sesión con vim.g (no una variable de módulo: el registro de Mason persiste entre recargas, pero
+-- este módulo se recrea en cada :ReloadConfig).
+function M.watch()
+  if vim.g.lsp_mason_uninstall_watch then
+    return
+  end
+  local ok, registry = pcall(require, "mason-registry")
+  if not ok then
+    return
+  end
+  vim.g.lsp_mason_uninstall_watch = true
+  registry:on(
+    "package:uninstall:success",
+    vim.schedule_wrap(function(pkg)
+      local pkgname = type(pkg) == "table" and pkg.name or pkg
+      local okm, mappings = pcall(require, "mason-lspconfig.mappings")
+      local server = okm and mappings.get_mason_map().package_to_lspconfig[pkgname]
+      if not server then
+        return -- no era un servidor LSP (los formatters/linters los maneja config.tools)
+      end
+      pcall(vim.lsp.enable, server, false) -- que no vuelva a autostart
+      for _, client in ipairs(vim.lsp.get_clients({ name = server })) do
+        pcall(function()
+          client:stop(true)
+        end)
+      end
+    end)
+  )
+end
+
 -- Reajusta en caliente un servidor tras cambiar sus filetypes: si ya no sirve `ft`, lo
 -- desadjunta de los buffers de ese tipo; luego deja que el autostart nativo re-evalúe los
 -- buffers abiertos (vim.lsp.enable -> doautoall solo del grupo nvim.lsp.enable, sin tocar
