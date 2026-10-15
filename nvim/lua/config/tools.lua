@@ -266,7 +266,9 @@ end
 
 -- Excepciones: nombre de paquete Mason -> nombre en conform/nvim-lint (si difiere),
 -- o false para ignorar un paquete concreto. Vacío: para las herramientas comunes coincide.
-local OVERRIDES = {}
+local OVERRIDES = {
+  ["sql-formatter"] = "sql_formatter", -- conform lo registra con guion bajo
+}
 
 -- Agrega `tool` a tbl[ft] sin repetir (varias etiquetas de lenguaje pueden mapear al mismo ft).
 local function add(tbl, ft, tool)

@@ -25,6 +25,13 @@ return {
       },
     },
     opts = {
+      formatters = {
+        -- Config global de sql-formatter: sin -c solo la autodetecta subiendo desde el cwd,
+        -- que no alcanza el home en proyectos de /mnt/c.
+        sql_formatter = {
+          prepend_args = { "-c", vim.fn.expand("~/.config/sql-formatter/.sql-formatter.json") },
+        },
+      },
       -- formatters_by_ft lo arma config.tools según lo instalado en Mason (no se lista aquí)
       -- al guardar solo si el ajuste está activo; si no hay formateador propio, usa el del LSP
       format_on_save = function()
