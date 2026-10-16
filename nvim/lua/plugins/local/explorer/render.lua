@@ -11,6 +11,8 @@ local ns = state.ns
 local FOLDER_CLOSED, FOLDER_OPEN = state.FOLDER_CLOSED, state.FOLDER_OPEN
 local normpath, read_dir = util.normpath, util.read_dir
 
+local LINK_ICON = "\u{f0c1}" --  symlink (fa-link)
+
 local M = {}
 
 local function set_hl()
@@ -84,7 +86,7 @@ local function build(s, path, depth, out)
   for _, e in ipairs(read_dir(path)) do
     if e.is_dir or not s.dirs_only then
       local full = path .. "/" .. e.name
-      out[#out + 1] = { path = full, name = e.name, is_dir = e.is_dir, depth = depth }
+      out[#out + 1] = { path = full, name = e.name, is_dir = e.is_dir, is_link = e.is_link, depth = depth }
       if e.is_dir and s.expanded[full] then
         build(s, full, depth + 1, out)
       end
@@ -120,7 +122,7 @@ function M.render(s, reuse)
     local indent = string.rep("  ", n.depth + 1)
     local icon = n.is_dir and (s.expanded[n.path] and FOLDER_OPEN or FOLDER_CLOSED) or icons.icon(n.name)
     local prefix = indent .. icon .. " " -- indentación + icono de tipo + espacio
-    local name = n.name .. (n.is_dir and "/" or "")
+    local name = n.name .. (n.is_dir and "/" or "") .. (n.is_link and ("  " .. LINK_ICON) or "")
 
     local ignored = path_ignored(s.git_ignored, normpath(n.path))
     local type_hl = n.is_dir and "ExplorerDir" or "ExplorerFile"

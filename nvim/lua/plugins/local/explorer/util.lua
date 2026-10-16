@@ -17,7 +17,16 @@ function M.read_dir(path)
       if not name then
         break
       end
-      entries[#entries + 1] = { name = name, is_dir = (t == "directory") }
+      local is_link = (t == "link")
+      local is_dir = (t == "directory")
+      if is_link then
+        -- fs_scandir_next reporta "link" sin resolver; fs_stat SÍ sigue el enlace, así un
+        -- symlink a una carpeta se trata (icono/expandir/navegar) como carpeta. Si está roto
+        -- (destino inexistente), fs_stat devuelve nil y queda como archivo.
+        local st = uv.fs_stat(path .. "/" .. name)
+        is_dir = st ~= nil and st.type == "directory"
+      end
+      entries[#entries + 1] = { name = name, is_dir = is_dir, is_link = is_link }
     end
   end
   table.sort(entries, function(a, b)
