@@ -101,11 +101,15 @@ M.components = {
   end,
 
   -- rama de git del workspace (cwd de la tab; la cachea init en vim.t.gitbranch);
-  -- muestra ahead/behind vs upstream; se oculta si el cwd no es un repo
+  -- muestra ahead/behind vs upstream. vim.t.gitbranch: nil = aún sin calcular (se oculta),
+  -- "" = el cwd no es un repo (icono atenuado), "<rama>" = repo.
   git = function()
     local b = vim.t.gitbranch
-    if not b or b == "" then
+    if b == nil then
       return nil
+    end
+    if b == "" then
+      return { raw = "%#StGitOff#" .. cfg.icons.no_repo .. " not found", hl = "StGit", align = "l" }
     end
     local text = cfg.icons.branch .. " " .. b
     local ahead, behind = vim.t.gitahead or 0, vim.t.gitbehind or 0

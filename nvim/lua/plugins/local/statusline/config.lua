@@ -64,7 +64,8 @@ return {
 
   -- ── Glifos (Nerd Font) ────────────────────────────────────────────
   icons = {
-    branch = "\u{e0a0}", --  rama de git
+    branch = "\u{e702}", --  rama de git (nf-dev-git)
+    no_repo = "\u{e702}", --  cwd sin repo git (nf-dev-git); se muestra con "not found"
     ahead = "\u{2191}", -- ↑ commits por delante del upstream
     behind = "\u{2193}", -- ↓ commits por detrás del upstream
     terminal = "\u{f489}", --  buffer de terminal
