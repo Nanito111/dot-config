@@ -26,7 +26,7 @@ usr_cmd("ReloadConfig", function(o)
   --    introducido), avisar con el error y NO seguir (evita dejar todo a medias).
   local ok, err = pcall(dofile, vim.env.MYVIMRC)
   if not ok then
-    vim.notify("Error al recargar:\n" .. tostring(err), vim.log.levels.ERROR, { title = "ReloadConfig" })
+    vim.notify("Error reloading:\n" .. tostring(err), vim.log.levels.ERROR, { title = "ReloadConfig" })
     return
   end
 
@@ -95,12 +95,12 @@ usr_cmd("ReloadConfig", function(o)
   end
 
   local ms = math.floor((uv.hrtime() - t0) / 1e6)
-  local msg = o.bang and string.format("Config recargada (solo config) · %d ms", ms)
-    or string.format("Config recargada · %d plugins · %d ms", reloaded, ms)
+  local msg = o.bang and string.format("Config reloaded (config only) · %d ms", ms)
+    or string.format("Config reloaded · %d plugins · %d ms", reloaded, ms)
   vim.notify(msg, vim.log.levels.INFO, { title = "ReloadConfig", ephemeral = true })
 end, {
   bang = true,
-  desc = "Recargar la config (con ! solo config, sin recargar plugins)",
+  desc = "Reload config (with ! config only, no plugins)",
 })
 
 -- Terminales flotantes
@@ -108,53 +108,53 @@ local floatterm = require("plugins.local.floatterm")
 
 usr_cmd("Claude", function()
   floatterm.toggle("Claude 󰚩", { "claude" })
-end, { desc = "Abrir Claude en una ventana flotante" })
+end, { desc = "Open Claude in a floating window" })
 
 usr_cmd("Lazygit", function()
   floatterm.toggle("LazyGit 󰊢", { "lazygit" })
-end, { desc = "Abrir lazygit en una ventana flotante" })
+end, { desc = "Open lazygit in a floating window" })
 
 -- Pickers (ripgrep + matchfuzzy)
 usr_cmd("Files", function()
   require("plugins.local.picker").files()
-end, { desc = "Buscar archivos (fuzzy)" })
+end, { desc = "Find files (fuzzy)" })
 
 usr_cmd("Buffers", function()
   require("plugins.local.picker").buffers()
-end, { desc = "Seleccionar buffer (fuzzy)" })
+end, { desc = "Select buffer (fuzzy)" })
 
 usr_cmd("Grep", function()
   require("plugins.local.picker").grep()
-end, { desc = "Buscar contenido en el cwd (live grep)" })
+end, { desc = "Search content in cwd (live grep)" })
 
 usr_cmd("Terminals", function()
   require("plugins.local.picker").terminals()
-end, { desc = "Terminales del workspace (excepto claude/lazygit)" })
+end, { desc = "Workspace terminals (except claude/lazygit)" })
 
 usr_cmd("PickerIcons", function()
   require("plugins.local.picker").toggle_icons()
-end, { desc = "Alternar los iconos de archivo en los pickers" })
+end, { desc = "Toggle file icons in pickers" })
 
 usr_cmd("TermNew", function(o)
   require("config.terminal").new(o.args)
-end, { nargs = "?", desc = "Nueva terminal (con nombre opcional)" })
+end, { nargs = "?", desc = "New terminal (optional name)" })
 
 usr_cmd("TermRename", function(o)
   require("config.terminal").rename(o.args)
-end, { nargs = 1, desc = "Renombrar la terminal actual" })
+end, { nargs = 1, desc = "Rename current terminal" })
 
 -- Workspaces (tabs con su propio cwd y nombre)
 usr_cmd("Workspace", function(o)
   require("plugins.local.workspace").new(o.args)
-end, { nargs = "?", complete = "dir", desc = "Nuevo workspace (tab con cwd propio)" })
+end, { nargs = "?", complete = "dir", desc = "New workspace (tab with own cwd)" })
 
 usr_cmd("WorkspaceRename", function(o)
   require("plugins.local.workspace").rename(o.args)
-end, { nargs = 1, desc = "Renombrar el workspace actual" })
+end, { nargs = 1, desc = "Rename current workspace" })
 
 usr_cmd("Workspaces", function()
   require("plugins.local.workspace").pick()
-end, { desc = "Listar workspaces (selector)" })
+end, { desc = "List workspaces (picker)" })
 
 -- Cerrar buffer respetando el workspace (misma lógica que <leader>x): al cerrar el
 -- actual se muestra otro del MISMO workspace, no uno global de otra tab. Con argumento
@@ -165,7 +165,7 @@ usr_cmd("Bdelete", function(o)
   else
     require("config.bufclose").close({ force = o.bang })
   end
-end, { bang = true, nargs = "?", complete = "buffer", desc = "Cerrar buffer respetando el workspace" })
+end, { bang = true, nargs = "?", complete = "buffer", desc = "Close buffer respecting the workspace" })
 
 -- Redirigir :bd / :bdelete a :Bdelete, pero SOLO cuando son el comando en sí (no
 -- cuando "bd" aparece como argumento de otro comando). Conserva bang y argumentos.
@@ -180,24 +180,24 @@ bd_abbrev("bdelete")
 -- Barrer manualmente los buffers [No Name] vacíos huérfanos
 usr_cmd("WipeNoName", function()
   require("config.util").wipe_orphan_buffers()
-end, { desc = "Eliminar buffers [No Name] vacíos huérfanos" })
+end, { desc = "Delete orphan empty [No Name] buffers" })
 
 -- Git blame de la línea actual (popup)
 usr_cmd("GitBlame", function()
   require("plugins.local.git").blame()
-end, { desc = "Git blame de la línea actual (popup)" })
+end, { desc = "Git blame current line (popup)" })
 
 -- Resaltar espacios al final (toggle)
 usr_cmd("TrailingSpaces", function()
   require("plugins.local.trailing").toggle()
-end, { desc = "Alternar resaltado de espacios al final" })
+end, { desc = "Toggle trailing whitespace highlight" })
 
 -- Quitar los espacios al final del buffer actual
 usr_cmd("TrailingTrim", function()
   require("plugins.local.trailing").trim()
-end, { desc = "Quitar los espacios al final del buffer actual" })
+end, { desc = "Trim trailing whitespace in current buffer" })
 
 -- Info de los linters del buffer (como :LspInfo pero para nvim-lint)
 usr_cmd("LintInfo", function()
   require("config.lintinfo").show()
-end, { desc = "Linters del buffer: comando, disponibilidad y estado" })
+end, { desc = "Buffer linters: command, availability and status" })

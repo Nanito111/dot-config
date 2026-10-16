@@ -20,9 +20,9 @@ function M.toggle()
   local v = not M.on_save_enabled()
   M.set(v)
   vim.notify(
-    "Formatear al guardar: " .. (v and "activado" or "desactivado"),
+    "Format on save: " .. (v and "enabled" or "disabled"),
     vim.log.levels.INFO,
-    { title = "Formato", ephemeral = true }
+    { title = "Format", ephemeral = true }
   )
 end
 

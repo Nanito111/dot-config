@@ -9,7 +9,7 @@ local group = vim.api.nvim_create_augroup("UserAutocmds", { clear = true })
 autocmd("FileType", {
   group = group,
   pattern = "markdown",
-  desc = "Conceal en la línea del cursor dentro de popups markdown (hover LSP)",
+  desc = "Conceal on the cursor line inside markdown popups (LSP hover)",
   callback = function(args)
     for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
       if vim.api.nvim_win_get_config(win).relative ~= "" then -- es flotante
@@ -27,13 +27,13 @@ autocmd("FileType", {
 -- estándar de recarga.
 autocmd("FileChangedShell", {
   group = group,
-  desc = "Archivo eliminado/cambiado fuera de Neovim: notificar en vez de E211",
+  desc = "File deleted/changed outside Neovim: notify instead of E211",
   callback = function(args)
     local name = vim.fn.fnamemodify(args.file, ":t")
     if vim.v.fcs_reason == "deleted" then
       vim.v.fcs_choice = "" -- no hacer nada: mantener el buffer en memoria
       vim.b[args.buf].file_deleted = true -- el winbar lo pinta como [deleted]
-      vim.notify(name .. " ya no existe en disco (buffer conservado)", vim.log.levels.WARN, { title = "Archivo" })
+      vim.notify(name .. " no longer exists on disk (buffer kept)", vim.log.levels.WARN, { title = "File" })
     else
       vim.v.fcs_choice = "ask" -- cambios en disco: preguntar como de costumbre
       vim.b[args.buf].file_deleted = nil -- el archivo volvió: quitar la marca
@@ -45,7 +45,7 @@ autocmd("FileChangedShell", {
 -- [deleted] del winbar si la tenía.
 autocmd({ "BufWritePost", "BufReadPost" }, {
   group = group,
-  desc = "Limpiar la marca [deleted] al recrear/releer el archivo",
+  desc = "Clear the [deleted] mark when the file is recreated/reread",
   callback = function(args)
     vim.b[args.buf].file_deleted = nil
   end,
@@ -55,7 +55,7 @@ autocmd({ "BufWritePost", "BufReadPost" }, {
 -- ventana principal vía su propio VimEnter)
 autocmd("VimEnter", {
   group = group,
-  desc = "Arrancar el sidebar al iniciar",
+  desc = "Start the sidebar on launch",
   callback = function()
     require("plugins.local.sidebar").open()
     vim.cmd("wincmd p") -- devolver el foco a la ventana de edición

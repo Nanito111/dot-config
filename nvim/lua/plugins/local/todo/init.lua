@@ -144,7 +144,7 @@ end
 
 function M.pick()
   if vim.fn.executable("rg") == 0 then
-    vim.notify("ripgrep (rg) no está en el PATH", vim.log.levels.ERROR)
+    vim.notify("ripgrep (rg) is not in PATH", vim.log.levels.ERROR)
     return
   end
   -- Una sola pasada (los tags son un conjunto fijo); luego se filtra fuzzy sobre el
@@ -173,7 +173,7 @@ function M.pick()
         end
       end
       if #items == 0 then
-        vim.notify("Sin TODOs en el proyecto", vim.log.levels.INFO, { title = "TODO" })
+        vim.notify("No TODOs in the project", vim.log.levels.INFO, { title = "TODO" })
         return
       end
       require("plugins.local.picker").pick({
@@ -207,7 +207,7 @@ function M.pick()
   )
 end
 
-api.nvim_create_user_command("Todos", M.pick, { desc = "Listar los TODO/FIXME del proyecto" })
+api.nvim_create_user_command("Todos", M.pick, { desc = "List the project's TODO/FIXME" })
 
 -- Dibujar en los buffers ya cargados (arranque / :ReloadConfig)
 for _, buf in ipairs(api.nvim_list_bufs()) do

@@ -140,7 +140,7 @@ local group = api.nvim_create_augroup("WinOpts", { clear = true })
 
 api.nvim_create_autocmd({ "BufWinEnter", "WinEnter", "TermOpen", "FileType" }, {
   group = group,
-  desc = "Aplicar opciones de ventana según el tipo de buffer",
+  desc = "Apply window options based on buffer type",
   callback = function()
     M.apply()
   end,

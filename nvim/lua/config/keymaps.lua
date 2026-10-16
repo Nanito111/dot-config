@@ -20,83 +20,83 @@ for _, p in ipairs({ "g", "z", "<C-w>" }) do
 end
 
 -- Moverse entre ventanas sin Ctrl-W
-map("n", "<C-h>", "<C-w>h", { desc = "Ir a la ventana izquierda" })
-map("n", "<C-j>", "<C-w>j", { desc = "Ir a la ventana de abajo" })
-map("n", "<C-k>", "<C-w>k", { desc = "Ir a la ventana de arriba" })
-map("n", "<C-l>", "<C-w>l", { desc = "Ir a la ventana derecha" })
+map("n", "<C-h>", "<C-w>h", { desc = "Go to left window" })
+map("n", "<C-j>", "<C-w>j", { desc = "Go to lower window" })
+map("n", "<C-k>", "<C-w>k", { desc = "Go to upper window" })
+map("n", "<C-l>", "<C-w>l", { desc = "Go to right window" })
 
 -- Mover líneas en visual mode
-map("v", "J", ":m '>+1<CR>gv=gv", { silent = true, desc = "Mover selección abajo" })
-map("v", "K", ":m '<-2<CR>gv=gv", { silent = true, desc = "Mover selección arriba" })
+map("v", "J", ":m '>+1<CR>gv=gv", { silent = true, desc = "Move selection down" })
+map("v", "K", ":m '<-2<CR>gv=gv", { silent = true, desc = "Move selection up" })
 
 -- Indentar manteniendo la selección visual (no salir a normal)
-map("v", ">", ">gv", { desc = "Indentar y mantener selección" })
-map("v", "<", "<gv", { desc = "Desindentar y mantener selección" })
+map("v", ">", ">gv", { desc = "Indent and keep selection" })
+map("v", "<", "<gv", { desc = "Unindent and keep selection" })
 
 -- Centrar la pantalla al saltar
-map("n", "<C-d>", "<C-d>zz", { desc = "Bajar media página y centrar" })
-map("n", "<C-u>", "<C-u>zz", { desc = "Subir media página y centrar" })
-map("n", "n", "nzzzv", { desc = "Siguiente coincidencia y centrar" })
-map("n", "N", "Nzzzv", { desc = "Coincidencia anterior y centrar" })
+map("n", "<C-d>", "<C-d>zz", { desc = "Half page down and center" })
+map("n", "<C-u>", "<C-u>zz", { desc = "Half page up and center" })
+map("n", "n", "nzzzv", { desc = "Next match and center" })
+map("n", "N", "Nzzzv", { desc = "Previous match and center" })
 
 -- Pegar sin perder el registro
-map("v", "p", "P", { desc = "Pegar sin sobrescribir el registro" })
-map("v", "P", "p", { desc = "Pegar sobrescribiendo el registro" })
+map("v", "p", "P", { desc = "Paste without overwriting register" })
+map("v", "P", "p", { desc = "Paste overwriting register" })
 
 -- Buffer control
 map("n", "<Tab>", function()
   require("plugins.local.workspace").cycle_buffer(1)
-end, { silent = true, desc = "Buffer siguiente (del workspace)" })
+end, { silent = true, desc = "Next buffer (workspace)" })
 map("n", "<S-Tab>", function()
   require("plugins.local.workspace").cycle_buffer(-1)
-end, { silent = true, desc = "Buffer anterior (del workspace)" })
+end, { silent = true, desc = "Previous buffer (workspace)" })
 map("n", "<leader>x", function()
   require("config.bufclose").close()
-end, { silent = true, desc = "Cerrar buffer" })
+end, { silent = true, desc = "Close buffer" })
 
 -- Quitar highlight de busqueda
-map("n", "<Esc>", ":nohlsearch<CR>", { silent = true, desc = "Quitar resaltado de búsqueda" })
+map("n", "<Esc>", ":nohlsearch<CR>", { silent = true, desc = "Clear search highlight" })
 
 -- Sacar foco de terminal
-map("t", "<C-q>", [[<C-\><C-n>]], { silent = true, desc = "Salir del modo terminal" })
+map("t", "<C-q>", [[<C-\><C-n>]], { silent = true, desc = "Exit terminal mode" })
 
 -- Ctrl+C en inserción = Esc de verdad (dispara InsertLeave, abreviaciones, etc.)
-map("i", "<C-c>", "<Esc>", { silent = true, desc = "Salir de inserción (como Esc)" })
+map("i", "<C-c>", "<Esc>", { silent = true, desc = "Exit insert mode (like Esc)" })
 
 -- Ctrl+D en inserción = borrar el carácter a la derecha (como Supr), en vez del des-sangrado
-map("i", "<C-d>", "<Del>", { silent = true, desc = "Borrar el carácter a la derecha" })
+map("i", "<C-d>", "<Del>", { silent = true, desc = "Delete character to the right" })
 
 -- Sangrar / des-sangrar la línea en inserción (Ctrl+l / Ctrl+j). Destino: los <C-t>/<C-d>
 -- nativos de inserción (noremap: el <C-d> nativo des-sangra, no el remapeado a borrar).
-map("i", "<C-l>", "<C-t>", { silent = true, desc = "Sangrar la línea" })
-map("i", "<C-j>", "<C-d>", { silent = true, desc = "Des-sangrar la línea" })
+map("i", "<C-l>", "<C-t>", { silent = true, desc = "Indent line" })
+map("i", "<C-j>", "<C-d>", { silent = true, desc = "Unindent line" })
 
 -- Marks
-map("n", "<leader>m", ":marks a-z<CR>", { silent = true, desc = "Listar marcas a-z" })
+map("n", "<leader>m", ":marks a-z<CR>", { silent = true, desc = "List marks a-z" })
 
 -- Diagnósticos (grupo <leader>d*) — son de vim.diagnostic, independientes del LSP.
 -- D: acceso rápido al flotante de la línea (reemplaza el D por defecto = d$).
 local function diag_float()
   vim.diagnostic.open_float({ scope = "line" })
 end
-map("n", "D", diag_float, { silent = true, desc = "Diagnóstico de la línea (flotante)" })
-map("n", "<leader>dd", diag_float, { silent = true, desc = "Diagnóstico de la línea (flotante)" })
+map("n", "D", diag_float, { silent = true, desc = "Line diagnostic (float)" })
+map("n", "<leader>dd", diag_float, { silent = true, desc = "Line diagnostic (float)" })
 map("n", "<leader>dq", function()
   vim.diagnostic.setloclist() -- diagnósticos del buffer en una lista
-end, { silent = true, desc = "Diagnósticos del buffer (lista)" })
+end, { silent = true, desc = "Buffer diagnostics (list)" })
 map("n", "<leader>dn", function()
   vim.diagnostic.jump({ count = 1, float = true })
-end, { silent = true, desc = "Siguiente diagnóstico" })
+end, { silent = true, desc = "Next diagnostic" })
 map("n", "<leader>dp", function()
   vim.diagnostic.jump({ count = -1, float = true })
-end, { silent = true, desc = "Diagnóstico anterior" })
+end, { silent = true, desc = "Previous diagnostic" })
 -- Todos los diagnósticos del proyecto (buffers cargados) en el picker fuzzy, ordenados
 -- por severidad; al elegir salta al archivo/línea. Nota: solo aparecen los de archivos
 -- ya abiertos/analizados por el LSP (así funcionan los diagnósticos de LSP).
 local function diag_project()
   local diags = vim.diagnostic.get(nil)
   if #diags == 0 then
-    vim.notify("Sin diagnósticos en el proyecto", vim.log.levels.INFO, { title = "Diagnósticos" })
+    vim.notify("No diagnostics in the project", vim.log.levels.INFO, { title = "Diagnostics" })
     return
   end
   table.sort(diags, function(a, b)
@@ -170,7 +170,7 @@ local function diag_project()
   end
 
   require("plugins.local.picker").pick({
-    title = "Diagnósticos del proyecto",
+    title = "Project diagnostics",
     items = items,
     backdrop = true,
     display = function(item)
@@ -208,12 +208,12 @@ local function diag_project()
     end,
   })
 end
-map("n", "<leader>dw", diag_project, { silent = true, desc = "Diagnósticos del proyecto (picker)" })
+map("n", "<leader>dw", diag_project, { silent = true, desc = "Project diagnostics (picker)" })
 
 -- Buscar y reemplazar en el archivo actual (widget flotante)
 map("n", "<leader>rr", function()
   require("plugins.local.replace").open(vim.fn.expand("<cword>"))
-end, { silent = true, desc = "Buscar y reemplazar (archivo actual)" })
+end, { silent = true, desc = "Search and replace (current file)" })
 map("x", "<leader>rr", function()
   -- la selección hay que leerla ANTES de salir del modo visual
   local sel = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = vim.fn.mode() })[1] or ""
@@ -221,137 +221,137 @@ map("x", "<leader>rr", function()
   vim.schedule(function()
     require("plugins.local.replace").open(sel)
   end)
-end, { silent = true, desc = "Buscar y reemplazar la selección" })
+end, { silent = true, desc = "Search and replace selection" })
 
 -- Buscar y reemplazar en todo el workspace (ripgrep + preview + undo)
 map("n", "<leader>rw", function()
   require("plugins.local.wreplace").open(vim.fn.expand("<cword>"))
-end, { silent = true, desc = "Buscar y reemplazar (workspace)" })
+end, { silent = true, desc = "Search and replace (workspace)" })
 map("x", "<leader>rw", function()
   local sel = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = vim.fn.mode() })[1] or ""
   vim.cmd("normal! \27")
   vim.schedule(function()
     require("plugins.local.wreplace").open(sel)
   end)
-end, { silent = true, desc = "Buscar y reemplazar la selección (workspace)" })
+end, { silent = true, desc = "Search and replace selection (workspace)" })
 map("n", "<leader>ru", function()
   require("plugins.local.wreplace").undo()
-end, { silent = true, desc = "Revertir el último reemplazo (workspace)" })
+end, { silent = true, desc = "Revert last replace (workspace)" })
 
 -- Terminales flotantes
-map({ "n", "t" }, "<M-g>", "<cmd>Lazygit<CR>", { silent = true, desc = "Lazygit (flotante)" })
-map({ "n", "t" }, "<M-c>", "<cmd>Claude<CR>", { silent = true, desc = "Claude (flotante)" })
+map({ "n", "t" }, "<M-g>", "<cmd>Lazygit<CR>", { silent = true, desc = "Lazygit (float)" })
+map({ "n", "t" }, "<M-c>", "<cmd>Claude<CR>", { silent = true, desc = "Claude (float)" })
 
 -- Git
-map("n", "<leader>gb", "<cmd>GitBlame<CR>", { silent = true, desc = "Git blame de la línea (popup)" })
+map("n", "<leader>gb", "<cmd>GitBlame<CR>", { silent = true, desc = "Git blame line (popup)" })
 map("n", "]h", function()
   require("plugins.local.git").next_hunk()
-end, { silent = true, desc = "Siguiente cambio (hunk)" })
+end, { silent = true, desc = "Next change (hunk)" })
 map("n", "[h", function()
   require("plugins.local.git").prev_hunk()
-end, { silent = true, desc = "Cambio anterior (hunk)" })
+end, { silent = true, desc = "Previous change (hunk)" })
 
 -- Pickers
-map("n", "<leader>ff", "<cmd>Files<CR>", { silent = true, desc = "Buscar archivos (fuzzy)" })
-map("n", "<leader>fb", "<cmd>Buffers<CR>", { silent = true, desc = "Seleccionar buffer" })
-map("n", "<leader>fw", "<cmd>Grep<CR>", { silent = true, desc = "Buscar contenido en el cwd" })
-map("n", "<leader>ft", "<cmd>Terminals<CR>", { silent = true, desc = "Terminales del workspace" })
-map("n", "<leader>fT", "<cmd>Todos<CR>", { silent = true, desc = "Buscar TODOs del proyecto" })
-map("n", "<leader>fs", "<cmd>Workspaces<CR>", { silent = true, desc = "Listar workspaces" })
+map("n", "<leader>ff", "<cmd>Files<CR>", { silent = true, desc = "Find files (fuzzy)" })
+map("n", "<leader>fb", "<cmd>Buffers<CR>", { silent = true, desc = "Select buffer" })
+map("n", "<leader>fw", "<cmd>Grep<CR>", { silent = true, desc = "Search content in cwd" })
+map("n", "<leader>ft", "<cmd>Terminals<CR>", { silent = true, desc = "Workspace terminals" })
+map("n", "<leader>fT", "<cmd>Todos<CR>", { silent = true, desc = "Search project TODOs" })
+map("n", "<leader>fs", "<cmd>Workspaces<CR>", { silent = true, desc = "List workspaces" })
 
 -- Terminales con nombre
 map("n", "<leader>tn", function()
-  vim.ui.input({ prompt = "Nombre de la terminal: ", relative = "editor" }, function(name)
+  vim.ui.input({ prompt = "Terminal name: ", relative = "editor" }, function(name)
     require("config.terminal").new(name)
   end)
-end, { silent = true, desc = "Nueva terminal (con nombre)" })
+end, { silent = true, desc = "New terminal (named)" })
 map("n", "<leader>tr", function()
-  vim.ui.input({ prompt = "Nuevo nombre de la terminal: ", relative = "editor" }, function(name)
+  vim.ui.input({ prompt = "New terminal name: ", relative = "editor" }, function(name)
     if name and name ~= "" then
       require("config.terminal").rename(name)
     end
   end)
-end, { silent = true, desc = "Renombrar terminal actual" })
+end, { silent = true, desc = "Rename current terminal" })
 
 -- Workspaces (tabs con cwd propio)
 map("n", "<leader>sn", function()
-  require("plugins.local.dirpicker").pick({ prompt = "Carpeta del workspace: " }, function(dir)
+  require("plugins.local.dirpicker").pick({ prompt = "Workspace folder: " }, function(dir)
     if not (dir and dir ~= "") then
       return
     end
     -- Nombre editable, precargado con el basename de la carpeta (⏎ acepta, Esc cancela)
     local base = vim.fn.fnamemodify(vim.fn.expand(dir):gsub("[\\/]$", ""), ":t")
-    vim.ui.input({ prompt = "Nombre del workspace: ", default = base, relative = "editor" }, function(name)
+    vim.ui.input({ prompt = "Workspace name: ", default = base, relative = "editor" }, function(name)
       if name == nil then
         return -- Esc: cancelar la creación
       end
       require("plugins.local.workspace").new(dir, name)
     end)
   end)
-end, { silent = true, desc = "Nuevo workspace (selector de carpetas)" })
+end, { silent = true, desc = "New workspace (folder picker)" })
 map("n", "<leader>sr", function()
-  vim.ui.input({ prompt = "Nombre del workspace: ", relative = "editor" }, function(name)
+  vim.ui.input({ prompt = "Workspace name: ", relative = "editor" }, function(name)
     if name and name ~= "" then
       require("plugins.local.workspace").rename(name)
     end
   end)
-end, { silent = true, desc = "Renombrar workspace" })
-map("n", "<leader>sx", "<cmd>tabclose<CR>", { silent = true, desc = "Cerrar workspace (tab)" })
+end, { silent = true, desc = "Rename workspace" })
+map("n", "<leader>sx", "<cmd>tabclose<CR>", { silent = true, desc = "Close workspace (tab)" })
 map("n", "<leader>sl", function()
   require("plugins.local.workspace").cycle(1)
-end, { silent = true, desc = "Workspace siguiente" })
+end, { silent = true, desc = "Next workspace" })
 map("n", "<leader>sh", function()
   require("plugins.local.workspace").cycle(-1)
-end, { silent = true, desc = "Workspace anterior" })
+end, { silent = true, desc = "Previous workspace" })
 map("n", "<leader>sL", function()
   require("plugins.local.workspace").move(1)
-end, { silent = true, desc = "Mover el workspace a la derecha" })
+end, { silent = true, desc = "Move workspace right" })
 map("n", "<leader>sH", function()
   require("plugins.local.workspace").move(-1)
-end, { silent = true, desc = "Mover el workspace a la izquierda" })
+end, { silent = true, desc = "Move workspace left" })
 -- Ir directo al workspace N (mismo número que muestra la tabline): <leader>s1 … s9
 for i = 1, 9 do
   map("n", "<leader>s" .. i, function()
     require("plugins.local.workspace").jump(i)
-  end, { silent = true, desc = "Ir al workspace " .. i })
+  end, { silent = true, desc = "Go to workspace " .. i })
 end
 
 -- Notificaciones
-map("n", "<leader>nh", "<cmd>Notifications<CR>", { silent = true, desc = "Historial de notificaciones" })
+map("n", "<leader>nh", "<cmd>Notifications<CR>", { silent = true, desc = "Notification history" })
 map("n", "<leader>nd", function()
   require("plugins.local.notify").dismiss_all()
-end, { silent = true, desc = "Descartar notificaciones visibles" })
+end, { silent = true, desc = "Dismiss visible notifications" })
 
 -- UI: pickers de la statusline (con preview en vivo)
 map("n", "<leader>us", function()
   require("plugins.local.statusline").pick_preset()
-end, { silent = true, desc = "Preset de la statusline (picker)" })
+end, { silent = true, desc = "Statusline preset (picker)" })
 map("n", "<leader>ub", function()
   require("plugins.local.statusline").pick()
-end, { silent = true, desc = "Borde de la statusline (picker)" })
+end, { silent = true, desc = "Statusline border (picker)" })
 map("n", "<leader>ut", function()
   require("config.themes").pick()
-end, { silent = true, desc = "Tema/colorscheme (picker con preview)" })
+end, { silent = true, desc = "Theme/colorscheme (picker with preview)" })
 map("n", "<leader>uv", function()
   require("plugins.local.envcloak").toggle()
-end, { silent = true, desc = "Ocultar/mostrar valores en .env" })
+end, { silent = true, desc = "Hide/show values in .env" })
 map("n", "<leader>ui", function()
   require("plugins.local.indentline").pick()
-end, { silent = true, desc = "Guías de indentación (picker)" })
+end, { silent = true, desc = "Indentation guides (picker)" })
 map("n", "<leader>uw", function()
   require("config.borders").pick()
-end, { silent = true, desc = "Borde de las ventanas flotantes (picker)" })
+end, { silent = true, desc = "Floating window border (picker)" })
 map("n", "<leader>uu", function()
   require("plugins.local.settings.panel").open()
-end, { silent = true, desc = "Panel de configuración" })
+end, { silent = true, desc = "Settings panel" })
 map("n", "<leader>um", function()
   require("plugins.local.minimap").toggle()
-end, { silent = true, desc = "Alternar el minimapa" })
+end, { silent = true, desc = "Toggle minimap" })
 map("n", "<leader>ue", function()
   require("plugins.local.trailing").toggle()
-end, { silent = true, desc = "Alternar resaltado de espacios finales" })
+end, { silent = true, desc = "Toggle trailing whitespace highlight" })
 
 -- Explorador: alternar el foco entre el panel y el editor (lo abre si no está)
 map("n", "<leader>e", function()
   require("plugins.local.sidebar").focus()
-end, { silent = true, desc = "Alternar foco sidebar/editor" })
+end, { silent = true, desc = "Toggle focus sidebar/editor" })

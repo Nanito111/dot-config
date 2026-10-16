@@ -23,11 +23,11 @@ local function set_hl()
 end
 theme.register(set_hl)
 
-local HEAD = { ft = "Tipo de archivo", type = "Indentación", amount = "Cantidad" }
+local HEAD = { ft = "File type", type = "Indentation", amount = "Amount" }
 local GAP = 22 -- separación entre columnas (más aire = ventana más ancha)
 
 local function type_text(expand)
-  return expand and "espacios" or "tabs"
+  return expand and "spaces" or "tabs"
 end
 
 -- ── Render ─────────────────────────────────────────────────────────
@@ -208,9 +208,9 @@ function M.open()
     enter = true,
     width = width,
     height = height,
-    title = " Indentación por tipo de archivo ",
+    title = " Indentation by file type ",
     title_pos = "center",
-    footer = " j/k · ␣ tipo · h/l cantidad · a añadir · x quitar · q cerrar ",
+    footer = " j/k · ␣ type · h/l amount · a add · x remove · q close ",
     footer_pos = "center",
     exclusive = true,
     wo = { cursorline = true, winhighlight = "CursorLine:IndentTblCursorLine", wrap = false },

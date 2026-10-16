@@ -15,8 +15,8 @@ local SWITCH_ON = "\u{f205}" --
 local SWITCH_OFF = "\u{f204}" --
 
 local KIND = {
-  fmt = { title = " Formateadores por lenguaje ", empty = "No hay formateadores instalados (instala alguno con :Mason)" },
-  lint = { title = " Linters por lenguaje ", empty = "No hay linters instalados (instala alguno con :Mason)" },
+  fmt = { title = " Formatters by language ", empty = "No formatters installed (install one with :Mason)" },
+  lint = { title = " Linters by language ", empty = "No linters installed (install one with :Mason)" },
 }
 
 local state = nil -- nivel 1: { buf, win, kind, rows, menu }
@@ -32,7 +32,7 @@ local function set_hl()
 end
 theme.register(set_hl)
 
-local HEAD = { ft = "Lenguaje", count = "Activas", tools = "Herramientas" }
+local HEAD = { ft = "Language", count = "Active", tools = "Tools" }
 local GAP = 6
 
 -- ── Nivel 1: tabla de lenguajes ────────────────────────────────────
@@ -193,7 +193,7 @@ local function open_tools(ft)
     height = height,
     title = " " .. ft .. " ",
     title_pos = "center",
-    footer = " j/k · ␣ activar/desactivar · q volver ",
+    footer = " j/k · ␣ toggle · q back ",
     footer_pos = "center",
     backdrop = true,
     wo = { cursorline = true, winhighlight = "CursorLine:ToolsTblCursorLine", wrap = false },
@@ -269,7 +269,7 @@ function M.open(kind)
 
   local rows = tools.rows(kind)
   if #rows == 0 then
-    vim.notify(KIND[kind].empty, vim.log.levels.INFO, { title = "Herramientas" })
+    vim.notify(KIND[kind].empty, vim.log.levels.INFO, { title = "Tools" })
     return
   end
 
@@ -289,7 +289,7 @@ function M.open(kind)
     height = height,
     title = KIND[kind].title,
     title_pos = "center",
-    footer = " j/k · Enter elegir · r reactivar todas · q cerrar ",
+    footer = " j/k · Enter choose · r re-enable all · q close ",
     footer_pos = "center",
     exclusive = true,
     wo = { cursorline = true, winhighlight = "CursorLine:ToolsTblCursorLine", wrap = false },

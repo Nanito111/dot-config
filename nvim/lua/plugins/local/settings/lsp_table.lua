@@ -27,7 +27,7 @@ local function set_hl()
 end
 theme.register(set_hl)
 
-local HEAD = { ft = "Lenguaje", count = "Activos", servers = "Servidores" }
+local HEAD = { ft = "Language", count = "Active", servers = "Servers" }
 local GAP = 6
 
 -- ── Nivel 1: tabla de lenguajes ────────────────────────────────────
@@ -187,7 +187,7 @@ local function open_servers(ft)
     height = height,
     title = " " .. ft .. " ",
     title_pos = "center",
-    footer = " j/k · ␣ activar/desactivar · q volver ",
+    footer = " j/k · ␣ toggle · q back ",
     footer_pos = "center",
     backdrop = true,
     wo = { cursorline = true, winhighlight = "CursorLine:LspTblCursorLine", wrap = false },
@@ -262,7 +262,7 @@ function M.open()
 
   local rows = lsp.rows()
   if #rows == 0 then
-    vim.notify("No hay servidores LSP instalados (instala alguno con :Mason)", vim.log.levels.INFO, { title = "LSP" })
+    vim.notify("No LSP servers installed (install one with :Mason)", vim.log.levels.INFO, { title = "LSP" })
     return
   end
 
@@ -280,9 +280,9 @@ function M.open()
     enter = true,
     width = width,
     height = height,
-    title = " Servidores LSP por lenguaje ",
+    title = " LSP servers by language ",
     title_pos = "center",
-    footer = " j/k · Enter elegir servidores · r reactivar todos · q cerrar ",
+    footer = " j/k · Enter choose servers · r re-enable all · q close ",
     footer_pos = "center",
     exclusive = true,
     wo = { cursorline = true, winhighlight = "CursorLine:LspTblCursorLine", wrap = false },

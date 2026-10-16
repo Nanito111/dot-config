@@ -37,72 +37,72 @@ function M.setup()
 
   -- ── Edición común ──────────────────────────────────────────────
   -- En normal/insert operan sobre la línea; en visual sobre la selección.
-  item("n", "500.10", "PopUp.Copiar", '"+yy')
-  item("v", "500.10", "PopUp.Copiar", '"+y')
-  item("i", "500.10", "PopUp.Copiar", '<C-\\><C-O>"+yy')
-  item("n", "500.20", "PopUp.Cortar", '"+dd')
-  item("v", "500.20", "PopUp.Cortar", '"+x')
-  item("i", "500.20", "PopUp.Cortar", '<C-\\><C-O>"+dd')
-  item("n", "500.30", "PopUp.Pegar", '"+gP')
-  item("v", "500.30", "PopUp.Pegar", '"+P')
-  item("i", "500.30", "PopUp.Pegar", "<C-R>+")
-  item("n", "500.40", "PopUp.Seleccionar todo", "ggVG")
-  item("v", "500.40", "PopUp.Seleccionar todo", "ggVG")
-  item("i", "500.40", "PopUp.Seleccionar todo", "<C-\\><C-N>ggVG")
+  item("n", "500.10", "PopUp.Copy", '"+yy')
+  item("v", "500.10", "PopUp.Copy", '"+y')
+  item("i", "500.10", "PopUp.Copy", '<C-\\><C-O>"+yy')
+  item("n", "500.20", "PopUp.Cut", '"+dd')
+  item("v", "500.20", "PopUp.Cut", '"+x')
+  item("i", "500.20", "PopUp.Cut", '<C-\\><C-O>"+dd')
+  item("n", "500.30", "PopUp.Paste", '"+gP')
+  item("v", "500.30", "PopUp.Paste", '"+P')
+  item("i", "500.30", "PopUp.Paste", "<C-R>+")
+  item("n", "500.40", "PopUp.Select all", "ggVG")
+  item("v", "500.40", "PopUp.Select all", "ggVG")
+  item("i", "500.40", "PopUp.Select all", "<C-\\><C-N>ggVG")
   sep("500.45", "PopUp.-sep1-")
 
   -- ── Código (LSP) ───────────────────────────────────────────────
-  act("500.50.10", "PopUp.Código.Ir a definición", LUA .. "vim.lsp.buf.definition()<CR>")
-  act("500.50.20", "PopUp.Código.Referencias", LUA .. "vim.lsp.buf.references()<CR>")
-  act("500.50.30", "PopUp.Código.Documentación", LUA .. "vim.lsp.buf.hover()<CR>")
-  act("500.50.40", "PopUp.Código.Renombrar", LUA .. "require('plugins.local.lsprename').rename()<CR>")
-  act("500.50.50", "PopUp.Código.Acción de código", LUA .. "vim.lsp.buf.code_action()<CR>")
-  act("500.50.60", "PopUp.Código.Formatear", LUA .. "require('config.format').format()<CR>")
+  act("500.50.10", "PopUp.Code.Go to definition", LUA .. "vim.lsp.buf.definition()<CR>")
+  act("500.50.20", "PopUp.Code.References", LUA .. "vim.lsp.buf.references()<CR>")
+  act("500.50.30", "PopUp.Code.Documentation", LUA .. "vim.lsp.buf.hover()<CR>")
+  act("500.50.40", "PopUp.Code.Rename", LUA .. "require('plugins.local.lsprename').rename()<CR>")
+  act("500.50.50", "PopUp.Code.Code action", LUA .. "vim.lsp.buf.code_action()<CR>")
+  act("500.50.60", "PopUp.Code.Format", LUA .. "require('config.format').format()<CR>")
 
   -- ── Buscar / Reemplazar ────────────────────────────────────────
   act(
     "500.60.10",
-    "PopUp.Buscar.Reemplazar (archivo)",
+    "PopUp.Search.Replace (file)",
     LUA .. "require('plugins.local.replace').open(vim.fn.expand('<cword>'))<CR>"
   )
   act(
     "500.60.20",
-    "PopUp.Buscar.Reemplazar (workspace)",
+    "PopUp.Search.Replace (workspace)",
     LUA .. "require('plugins.local.wreplace').open(vim.fn.expand('<cword>'))<CR>"
   )
-  sep("500.60.30", "PopUp.Buscar.-sep-")
-  act("500.60.40", "PopUp.Buscar.Archivos", "<Cmd>Files<CR>")
-  act("500.60.50", "PopUp.Buscar.En archivos (grep)", "<Cmd>Grep<CR>")
-  act("500.60.60", "PopUp.Buscar.Buffers", "<Cmd>Buffers<CR>")
+  sep("500.60.30", "PopUp.Search.-sep-")
+  act("500.60.40", "PopUp.Search.Files", "<Cmd>Files<CR>")
+  act("500.60.50", "PopUp.Search.In files (grep)", "<Cmd>Grep<CR>")
+  act("500.60.60", "PopUp.Search.Buffers", "<Cmd>Buffers<CR>")
 
   -- ── Git ────────────────────────────────────────────────────────
-  act("500.70.10", "PopUp.Git.Blame de la línea", "<Cmd>GitBlame<CR>")
-  act("500.70.20", "PopUp.Git.Siguiente cambio", LUA .. "require('plugins.local.git').next_hunk()<CR>")
-  act("500.70.30", "PopUp.Git.Cambio anterior", LUA .. "require('plugins.local.git').prev_hunk()<CR>")
+  act("500.70.10", "PopUp.Git.Line blame", "<Cmd>GitBlame<CR>")
+  act("500.70.20", "PopUp.Git.Next change", LUA .. "require('plugins.local.git').next_hunk()<CR>")
+  act("500.70.30", "PopUp.Git.Previous change", LUA .. "require('plugins.local.git').prev_hunk()<CR>")
 
   -- ── Diagnósticos ───────────────────────────────────────────────
-  act("500.80.10", "PopUp.Diagnóstico.Ver (flotante)", LUA .. "vim.diagnostic.open_float()<CR>")
-  act("500.80.20", "PopUp.Diagnóstico.Todos (quickfix)", LUA .. "vim.diagnostic.setqflist()<CR>")
+  act("500.80.10", "PopUp.Diagnostics.Show (float)", LUA .. "vim.diagnostic.open_float()<CR>")
+  act("500.80.20", "PopUp.Diagnostics.All (quickfix)", LUA .. "vim.diagnostic.setqflist()<CR>")
 
   sep("500.90", "PopUp.-sep2-")
-  act("500.91", "PopUp.Abrir en navegador", LUA .. "pcall(vim.ui.open, vim.fn.expand('<cfile>'))<CR>")
-  act("500.92", "PopUp.Inspeccionar", "<Cmd>Inspect<CR>")
+  act("500.91", "PopUp.Open in browser", LUA .. "pcall(vim.ui.open, vim.fn.expand('<cfile>'))<CR>")
+  act("500.92", "PopUp.Inspect", "<Cmd>Inspect<CR>")
 
   -- El submenú "Código" (acciones LSP) solo sirve con un servidor LSP: sus entradas se
   -- habilitan o deshabilitan (gris) al abrir el menú según el buffer bajo el cursor.
   -- Se actúa sobre las hojas (deshabilitar el submenú padre no se refleja en el popup).
   local COD = {
-    "PopUp.Código.Ir\\ a\\ definición",
-    "PopUp.Código.Referencias",
-    "PopUp.Código.Documentación",
-    "PopUp.Código.Renombrar",
-    "PopUp.Código.Acción\\ de\\ código",
-    "PopUp.Código.Formatear",
+    "PopUp.Code.Go\\ to\\ definition",
+    "PopUp.Code.References",
+    "PopUp.Code.Documentation",
+    "PopUp.Code.Rename",
+    "PopUp.Code.Code\\ action",
+    "PopUp.Code.Format",
   }
   local grp = vim.api.nvim_create_augroup("ContextMenu", { clear = true })
   vim.api.nvim_create_autocmd("MenuPopup", {
     group = grp,
-    desc = "Habilitar las acciones de código solo con LSP",
+    desc = "Enable code actions only with LSP",
     callback = function()
       local action = next(vim.lsp.get_clients({ bufnr = 0 })) ~= nil and "enable" or "disable"
       for _, path in ipairs(COD) do

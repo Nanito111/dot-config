@@ -21,7 +21,7 @@ end
 function M.toggle_icons()
   M.set_icons(not M.icons_enabled)
   vim.notify(
-    "Iconos en el picker " .. (M.icons_enabled and "activados" or "desactivados"),
+    "Picker icons " .. (M.icons_enabled and "enabled" or "disabled"),
     vim.log.levels.INFO,
     { title = "Picker" }
   )
@@ -144,7 +144,7 @@ local function preview_loading(s, seq)
     return
   end
   vim.bo[s.preview_buf].modifiable = true
-  api.nvim_buf_set_lines(s.preview_buf, 0, -1, false, { "", "   Cargando…" })
+  api.nvim_buf_set_lines(s.preview_buf, 0, -1, false, { "", "   Loading…" })
   vim.bo[s.preview_buf].modifiable = false
   pcall(function()
     vim.bo[s.preview_buf].filetype = ""
@@ -671,7 +671,7 @@ end
 function M.files(opts)
   opts = opts or {}
   if vim.fn.executable("rg") == 0 then
-    vim.notify("ripgrep (rg) no está en el PATH", vim.log.levels.ERROR)
+    vim.notify("ripgrep (rg) is not in PATH", vim.log.levels.ERROR)
     return
   end
   local cmd = { "rg", "--files", "--path-separator", "/" }
@@ -680,11 +680,11 @@ function M.files(opts)
   end
   local files = vim.fn.systemlist(cmd)
   if vim.v.shell_error ~= 0 then
-    vim.notify("rg --files falló", vim.log.levels.ERROR)
+    vim.notify("rg --files failed", vim.log.levels.ERROR)
     return
   end
   pick({
-    title = opts.title or "Archivos",
+    title = opts.title or "Files",
     items = files,
     backdrop = true,
     icon_path = function(f)
@@ -715,14 +715,14 @@ function M.buffers()
 
   local items = build()
   if #items == 0 then
-    vim.notify("No hay buffers en este workspace", vim.log.levels.INFO)
+    vim.notify("No buffers in this workspace", vim.log.levels.INFO)
     return
   end
   pick({
     title = "Buffers",
     items = items,
     backdrop = true,
-    footer = "⏎ abrir · C-d cerrar",
+    footer = "⏎ open · C-d close",
     icon_path = function(item)
       local b = map[item]
       local name = b and api.nvim_buf_get_name(b)
@@ -767,7 +767,7 @@ end
 function M.grep(opts)
   opts = opts or {}
   if vim.fn.executable("rg") == 0 then
-    vim.notify("ripgrep (rg) no está en el PATH", vim.log.levels.ERROR)
+    vim.notify("ripgrep (rg) is not in PATH", vim.log.levels.ERROR)
     return
   end
   -- item mostrado -> posición del match. Se acumula (no se reinicia por consulta) para que
@@ -798,7 +798,7 @@ function M.grep(opts)
     return head .. "   " .. dir, path, #head + 3 -- columna byte donde empieza la carpeta
   end
   pick({
-    title = opts.title or "Contenido (cwd)",
+    title = opts.title or "Content (cwd)",
     backdrop = true,
     display = function(item)
       return (row(item))
@@ -882,7 +882,7 @@ end
 function M.terminals()
   local terms = require("plugins.local.workspace").tab_terminals()
   if #terms == 0 then
-    vim.notify("No hay terminales en este workspace", vim.log.levels.INFO)
+    vim.notify("No terminals in this workspace", vim.log.levels.INFO)
     return
   end
 
@@ -900,7 +900,7 @@ function M.terminals()
   end
 
   pick({
-    title = "Terminales",
+    title = "Terminals",
     items = items,
     backdrop = true,
     on_select = function(item, origin)

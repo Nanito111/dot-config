@@ -313,11 +313,11 @@ local function build()
 
   return {
     {
-      title = "Tema y colores",
+      title = "Theme & colors",
       items = {
         provider({
           id = "ui.theme",
-          label = "Tema",
+          label = "Theme",
           type = "enum",
           default = DEFAULTS["ui.theme"],
           choices = themes.labels,
@@ -328,7 +328,7 @@ local function build()
         }),
         provider({
           id = "ui.border",
-          label = "Borde de flotantes",
+          label = "Float border",
           type = "enum",
           default = DEFAULTS["ui.border"],
           choices = borders.labels,
@@ -345,7 +345,7 @@ local function build()
       items = {
         provider({
           id = "ui.statusline_preset",
-          label = "Preset de statusline",
+          label = "Statusline preset",
           type = "enum",
           default = DEFAULTS["ui.statusline_preset"],
           choices = statusline.presets,
@@ -360,11 +360,11 @@ local function build()
       },
     },
     {
-      title = "Interfaz",
+      title = "Interface",
       items = {
         provider({
           id = "ui.indentline",
-          label = "Guías de indentación",
+          label = "Indentation guides",
           type = "enum",
           default = DEFAULTS["ui.indentline"],
           choices = indent.choices,
@@ -375,7 +375,7 @@ local function build()
         }),
         provider({
           id = "ui.picker_icons",
-          label = "Iconos en los pickers",
+          label = "Picker icons",
           type = "bool",
           default = DEFAULTS["ui.picker_icons"],
           get = function()
@@ -391,14 +391,14 @@ local function build()
       items = {
         provider({
           id = "ui.dashboard_effect",
-          label = "Efecto del título (dashboard)",
+          label = "Title effect (dashboard)",
           type = "enum",
           default = DEFAULTS["ui.dashboard_effect"],
           choices = function()
             return { "off", "shimmer", "gradient" }
           end,
           display = function(v)
-            return ({ off = "ninguno", shimmer = "brillo", gradient = "degradado" })[v] or v
+            return ({ off = "none", shimmer = "shimmer", gradient = "gradient" })[v] or v
           end,
           get = dashboard.get_effect,
           apply = dashboard.set_effect,
@@ -406,7 +406,7 @@ local function build()
         }),
         provider({
           id = "ui.dashboard_color",
-          label = "Color del logo (dashboard)",
+          label = "Logo color (dashboard)",
           type = "enum",
           default = DEFAULTS["ui.dashboard_color"],
           choices = function()
@@ -423,7 +423,7 @@ local function build()
       items = {
         provider({
           id = "ui.breadcrumb_symbol",
-          label = "Símbolo del breadcrumb",
+          label = "Breadcrumb symbol",
           type = "enum",
           default = DEFAULTS["ui.breadcrumb_symbol"],
           choices = function()
@@ -436,11 +436,11 @@ local function build()
       },
     },
     {
-      title = "Panel lateral",
+      title = "Sidebar",
       items = {
         provider({
           id = "ui.sidebar_width",
-          label = "Ancho del panel lateral",
+          label = "Sidebar width",
           type = "number",
           default = DEFAULTS["ui.sidebar_width"],
           min = 20,
@@ -458,14 +458,14 @@ local function build()
         }),
         provider({
           id = "ui.sidebar_side",
-          label = "Lado del panel lateral",
+          label = "Sidebar side",
           type = "enum",
           default = DEFAULTS["ui.sidebar_side"],
           choices = function()
             return { "left", "right" }
           end,
           display = function(v)
-            return v == "right" and "derecha" or "izquierda"
+            return v == "right" and "right" or "left"
           end,
           get = function()
             return require("plugins.local.sidebar").side()
@@ -480,11 +480,11 @@ local function build()
       },
     },
     {
-      title = "Minimapa",
+      title = "Minimap",
       items = {
         provider({
           id = "ui.minimap",
-          label = "Minimapa",
+          label = "Minimap",
           type = "bool",
           default = DEFAULTS["ui.minimap"],
           get = minimap.is_enabled,
@@ -493,7 +493,7 @@ local function build()
         }),
         provider({
           id = "ui.minimap_width",
-          label = "Ancho del minimapa",
+          label = "Minimap width",
           type = "number",
           default = DEFAULTS["ui.minimap_width"],
           min = 8,
@@ -505,14 +505,14 @@ local function build()
         }),
         provider({
           id = "ui.minimap_side",
-          label = "Lado del minimapa",
+          label = "Minimap side",
           type = "enum",
           default = DEFAULTS["ui.minimap_side"],
           choices = function()
             return { "auto", "left", "right" }
           end,
           display = function(v)
-            return v == "auto" and "auto (opuesto al panel)" or (v == "right" and "derecha" or "izquierda")
+            return v == "auto" and "auto (opposite the sidebar)" or (v == "right" and "right" or "left")
           end,
           get = minimap.get_side,
           apply = minimap.apply_side,
@@ -520,14 +520,14 @@ local function build()
         }),
         provider({
           id = "ui.minimap_symbols",
-          label = "Símbolos del minimapa",
+          label = "Minimap symbols",
           type = "enum",
           default = DEFAULTS["ui.minimap_symbols"],
           choices = function()
             return { "dot", "block" }
           end,
           display = function(v)
-            return v == "block" and "bloques" or "braille"
+            return v == "block" and "blocks" or "braille"
           end,
           get = minimap.get_symbols,
           apply = minimap.apply_symbols,
@@ -536,11 +536,11 @@ local function build()
       },
     },
     {
-      title = "Herramientas por lenguaje",
+      title = "Tools by language",
       items = {
         {
           id = "indent.per_ft",
-          label = "Indentación por tipo de archivo",
+          label = "Indentation by file type",
           type = "action",
           overridden = function()
             return false
@@ -551,7 +551,7 @@ local function build()
         },
         {
           id = "lsp.per_ft",
-          label = "Servidores LSP por lenguaje",
+          label = "LSP servers by language",
           type = "action",
           overridden = function()
             return false
@@ -562,7 +562,7 @@ local function build()
         },
         {
           id = "format.per_ft",
-          label = "Formateadores por lenguaje",
+          label = "Formatters by language",
           type = "action",
           overridden = function()
             return false
@@ -573,7 +573,7 @@ local function build()
         },
         {
           id = "lint.per_ft",
-          label = "Linters por lenguaje",
+          label = "Linters by language",
           type = "action",
           overridden = function()
             return false
@@ -585,11 +585,11 @@ local function build()
       },
     },
     {
-      title = "Edición",
+      title = "Editing",
       items = {
         provider({
           id = "editor.format_on_save",
-          label = "Formatear al guardar",
+          label = "Format on save",
           type = "bool",
           default = DEFAULTS["editor.format_on_save"],
           get = format.get,
@@ -598,7 +598,7 @@ local function build()
         }),
         provider({
           id = "editor.trailing_whitespace",
-          label = "Resaltar espacios finales",
+          label = "Highlight trailing whitespace",
           type = "bool",
           default = DEFAULTS["editor.trailing_whitespace"],
           get = trailing.is_enabled,
@@ -607,7 +607,7 @@ local function build()
         }),
         {
           id = "editor.trailing_trim",
-          label = "Quitar espacios finales ahora",
+          label = "Trim trailing whitespace now",
           type = "action",
           overridden = function()
             return false
@@ -619,18 +619,18 @@ local function build()
       },
     },
     {
-      title = "Ortografía",
+      title = "Spelling",
       items = {
         provider({
           id = "ui.markdown_spell",
-          label = "Corrector en Markdown",
+          label = "Spell check in Markdown",
           type = "enum",
           default = DEFAULTS["ui.markdown_spell"],
           choices = function()
             return { "off", "es", "en", "es,en" }
           end,
           display = function(v)
-            return ({ off = "desactivado", es = "español", en = "inglés", ["es,en"] = "español + inglés" })[v] or v
+            return ({ off = "off", es = "Spanish", en = "English", ["es,en"] = "Spanish + English" })[v] or v
           end,
           get = winopts.get_md_spell,
           apply = winopts.set_md_spell,
@@ -638,7 +638,7 @@ local function build()
         }),
         {
           id = "spell.dicts",
-          label = "Diccionarios de ortografía…",
+          label = "Spelling dictionaries…",
           type = "action",
           overridden = function()
             return false
@@ -650,15 +650,15 @@ local function build()
       },
     },
     {
-      title = "Vista del buffer",
+      title = "Buffer view",
       items = {
-        vimopt({ opt = "wrap", label = "Ajuste de línea", type = "bool", scope = "win" }),
-        vimopt({ opt = "number", label = "Números de línea", type = "bool", scope = "win" }),
-        vimopt({ opt = "relativenumber", label = "Números relativos", type = "bool", scope = "win" }),
-        vimopt({ opt = "cursorline", label = "Resaltar línea del cursor", type = "bool", scope = "win" }),
+        vimopt({ opt = "wrap", label = "Line wrap", type = "bool", scope = "win" }),
+        vimopt({ opt = "number", label = "Line numbers", type = "bool", scope = "win" }),
+        vimopt({ opt = "relativenumber", label = "Relative numbers", type = "bool", scope = "win" }),
+        vimopt({ opt = "cursorline", label = "Highlight cursor line", type = "bool", scope = "win" }),
         vimopt({
           opt = "scrolloff",
-          label = "Margen de scroll",
+          label = "Scroll margin",
           type = "number",
           scope = nil,
           min = 0,
@@ -668,19 +668,19 @@ local function build()
       },
     },
     {
-      title = "Búsqueda",
+      title = "Search",
       items = {
-        vimopt({ opt = "ignorecase", label = "Ignorar mayúsculas al buscar", type = "bool", scope = nil }),
-        vimopt({ opt = "smartcase", label = "…salvo si escribes mayúsculas", type = "bool", scope = nil }),
+        vimopt({ opt = "ignorecase", label = "Ignore case when searching", type = "bool", scope = nil }),
+        vimopt({ opt = "smartcase", label = "…unless you type uppercase", type = "bool", scope = nil }),
       },
     },
     {
-      title = "Diagnósticos",
+      title = "Diagnostics",
       items = {
-        diagopt("virtual_text", "Texto virtual (en línea)"),
-        diagopt("signs", "Signos en el gutter"),
-        diagopt("underline", "Subrayado"),
-        diagopt("inlay_hints", "Inlay hints (tipos/parámetros)"),
+        diagopt("virtual_text", "Virtual text (inline)"),
+        diagopt("signs", "Signs in the gutter"),
+        diagopt("underline", "Underline"),
+        diagopt("inlay_hints", "Inlay hints (types/parameters)"),
       },
     },
   }

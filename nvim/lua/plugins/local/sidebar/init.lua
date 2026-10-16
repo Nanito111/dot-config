@@ -405,7 +405,7 @@ end
 -- ── Autocomandos genéricos ─────────────────────────────────────────
 api.nvim_create_autocmd({ "WinEnter", "BufEnter" }, {
   group = api.nvim_create_augroup("SidebarFocus", { clear = true }),
-  desc = "Colapsar/expandir y atenuar el sidebar según el foco",
+  desc = "Collapse/expand and dim the sidebar based on focus",
   callback = function()
     local sb = cur()
     if sb and sb.win and api.nvim_win_is_valid(sb.win) then
@@ -466,7 +466,7 @@ api.nvim_create_autocmd("FileType", {
 local saved_guicursor
 api.nvim_create_autocmd("BufEnter", {
   group = api.nvim_create_augroup("SidebarCursor", { clear = true }),
-  desc = "Ocultar el cursor dentro del sidebar",
+  desc = "Hide the cursor inside the sidebar",
   callback = function(ev)
     if view_ft()[vim.bo[ev.buf].filetype] then
       if not saved_guicursor then

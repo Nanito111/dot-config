@@ -155,7 +155,7 @@ end
 
 api.nvim_create_autocmd("FileType", {
   group = api.nvim_create_augroup("Indent", { clear = true }),
-  desc = "Aplicar la indentación por tipo de archivo",
+  desc = "Apply indentation by file type",
   callback = function(a)
     M.apply(a.buf)
   end,

@@ -15,12 +15,12 @@ local active = true -- estado global (toggle con :IndentLines / picker "vacío")
 
 -- Catálogo de estilos para el selector (M.pick). char "" = ocultar las guías.
 local CHARS = {
-  { label = "\u{250a}  guiones (cuádruple)", char = "\u{250a}" }, -- ┊
-  { label = "\u{2506}  guiones (triple)", char = "\u{2506}" }, -- ┆
-  { label = "\u{254e}  guiones (doble)", char = "\u{254e}" }, -- ╎
-  { label = "\u{2502}  continua", char = "\u{2502}" }, -- │
-  { label = "\u{258f}  barra fina", char = "\u{258f}" }, -- ▏
-  { label = "(vacío — ocultar)", char = "" },
+  { label = "\u{250a}  dashes (quadruple)", char = "\u{250a}" }, -- ┊
+  { label = "\u{2506}  dashes (triple)", char = "\u{2506}" }, -- ┆
+  { label = "\u{254e}  dashes (double)", char = "\u{254e}" }, -- ╎
+  { label = "\u{2502}  solid", char = "\u{2502}" }, -- │
+  { label = "\u{258f}  thin bar", char = "\u{258f}" }, -- ▏
+  { label = "(empty — hide)", char = "" },
 }
 
 -- Persistencia de la elección entre sesiones (vía config.settings; "" = ocultar)
@@ -292,7 +292,7 @@ function M.pick()
     by_label[o.label] = o.char
   end
   require("plugins.local.picker").pick({
-    title = "Guías de indentación",
+    title = "Indent guides",
     items = items,
     on_move = function(label) -- preview en vivo al navegar
       if label then
@@ -326,7 +326,7 @@ function M.toggle()
   end
   save_prefs()
   vim.notify(
-    "Guías de indentación " .. (active and "activadas" or "desactivadas"),
+    "Indent guides " .. (active and "enabled" or "disabled"),
     vim.log.levels.INFO,
     { title = "IndentLine" }
   )
@@ -336,7 +336,7 @@ local group = api.nvim_create_augroup("IndentLine", { clear = true })
 
 api.nvim_create_autocmd({ "BufWinEnter", "FileType", "TextChanged", "TextChangedI", "CursorMoved", "CursorMovedI" }, {
   group = group,
-  desc = "Redibujar las guías de indentación (CursorMoved: seguir el scope del cursor)",
+  desc = "Redraw indent guides (CursorMoved: follow the cursor scope)",
   callback = function(a)
     schedule(a.buf)
   end,
@@ -347,7 +347,7 @@ api.nvim_create_autocmd({ "BufWinEnter", "FileType", "TextChanged", "TextChanged
 -- Con debounce (schedule) para coalescer ráfagas de scroll; el render es barato (O(alto)).
 api.nvim_create_autocmd({ "WinScrolled", "WinResized" }, {
   group = group,
-  desc = "Redibujar las guías al cambiar el viewport (scroll/resize)",
+  desc = "Redraw guides when the viewport changes (scroll/resize)",
   callback = function(a)
     schedule(a.buf)
   end,
@@ -358,7 +358,7 @@ api.nvim_create_autocmd({ "WinScrolled", "WinResized" }, {
 api.nvim_create_autocmd("OptionSet", {
   group = group,
   pattern = { "shiftwidth", "tabstop", "expandtab", "softtabstop" },
-  desc = "Redibujar las guías al cambiar la indentación",
+  desc = "Redraw guides when indentation changes",
   callback = function()
     schedule(api.nvim_get_current_buf())
   end,
@@ -377,8 +377,8 @@ api.nvim_create_autocmd({ "BufDelete", "BufWipeout" }, {
   end,
 })
 
-api.nvim_create_user_command("IndentLines", M.toggle, { desc = "Alternar las guías de indentación" })
-api.nvim_create_user_command("IndentLinesPick", M.pick, { desc = "Elegir el estilo de las guías de indentación" })
+api.nvim_create_user_command("IndentLines", M.toggle, { desc = "Toggle indent guides" })
+api.nvim_create_user_command("IndentLinesPick", M.pick, { desc = "Choose the indent guide style" })
 
 load_prefs() -- restaurar el carácter/estado guardado antes del primer render
 

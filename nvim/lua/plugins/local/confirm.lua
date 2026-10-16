@@ -64,7 +64,7 @@ function M.confirm(msg, choices, default, opts)
     col = 0,
     width = width,
     height = #content,
-    title = " Confirmar ",
+    title = " Confirm ",
     title_pos = "center",
     focusable = false,
     noautocmd = true,

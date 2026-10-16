@@ -37,7 +37,7 @@ return {
       vim.api.nvim_create_user_command("LspLog", function()
         vim.cmd("tabedit " .. vim.fn.fnameescape(vim.lsp.log.get_filename()))
         vim.cmd("normal! G") -- saltar a lo más reciente
-      end, { desc = "Abrir el log del LSP" })
+      end, { desc = "Open the LSP log" })
 
       -- Capacidades de completado de blink para todos los servidores
       local ok, blink = pcall(require, "blink.cmp")

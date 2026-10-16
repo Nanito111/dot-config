@@ -175,7 +175,7 @@ end
 -- ── Historial (:Notifications) ─────────────────────────────────────
 function M.show_history()
   if #history == 0 then
-    vim.notify("Sin notificaciones todavía", nil, { ephemeral = true })
+    vim.notify("No notifications yet", nil, { ephemeral = true })
     return
   end
   local lines, hls = {}, {}
@@ -218,7 +218,7 @@ function M.show_history()
     enter = true,
     width = width,
     height = height,
-    title = " Notificaciones ",
+    title = " Notifications ",
     title_pos = "center",
     wo = { cursorline = true },
     close_keys = { "q", "<Esc>" },
@@ -231,7 +231,7 @@ function M.clear_history()
 end
 
 api.nvim_create_user_command("Notifications", M.show_history, {
-  desc = "Ver el historial de notificaciones",
+  desc = "View the notification history",
 })
 
 api.nvim_create_user_command("NotificationsClear", function(o)
@@ -241,7 +241,7 @@ api.nvim_create_user_command("NotificationsClear", function(o)
   end
 end, {
   bang = true,
-  desc = "Cerrar los toasts visibles (con ! también borra el historial)",
+  desc = "Close visible toasts (with ! also clears the history)",
 })
 
 -- Recolocar al redimensionar (la columna derecha cambia)

@@ -52,19 +52,19 @@ local SWITCH_OFF = "\u{f204}" --
 
 -- Icono por sección (nerd-font), indexado por el título del registro. Si falta, no se dibuja.
 local SECTION_ICONS = {
-  ["Tema y colores"] = "\u{f1fc}", --
+  ["Theme & colors"] = "\u{f1fc}", --
   ["Statusline"] = "\u{f0c9}", --
-  ["Interfaz"] = "\u{f108}", --
+  ["Interface"] = "\u{f108}", --
   ["Dashboard"] = "\u{f0e4}", --
   ["Winbar"] = "\u{f2d0}", --
-  ["Panel lateral"] = "\u{f0db}", --
-  ["Minimapa"] = "\u{f279}", --
-  ["Herramientas por lenguaje"] = "\u{f0ad}", --
-  ["Edición"] = "\u{f044}", --
-  ["Ortografía"] = "\u{f02d}", --
-  ["Vista del buffer"] = "\u{f06e}", --
-  ["Búsqueda"] = "\u{f002}", --
-  ["Diagnósticos"] = "\u{f188}", --
+  ["Sidebar"] = "\u{f0db}", --
+  ["Minimap"] = "\u{f279}", --
+  ["Tools by language"] = "\u{f0ad}", --
+  ["Editing"] = "\u{f044}", --
+  ["Spelling"] = "\u{f02d}", --
+  ["Buffer view"] = "\u{f06e}", --
+  ["Search"] = "\u{f002}", --
+  ["Diagnostics"] = "\u{f188}", --
 }
 
 -- Columnas libres entre el valor y el borde derecho de la ventana (las etiquetas llevan 2
@@ -82,7 +82,7 @@ local function value_text(spec)
     return v and SWITCH_ON or SWITCH_OFF
   elseif spec.type == "enum" then
     local s = spec.display and spec.display(v) or tostring(v)
-    return s == "" and "(oculto)" or s
+    return s == "" and "(hidden)" or s
   end
   return tostring(v)
 end
@@ -253,7 +253,7 @@ local function open_enum_picker(buf)
   for _, val in ipairs(spec.choices()) do
     local lbl = spec.display and spec.display(val) or tostring(val)
     if lbl == "" then
-      lbl = "(vacío — ocultar)"
+      lbl = "(empty — hide)"
     end
     labels[#labels + 1] = lbl
     to_value[lbl] = val

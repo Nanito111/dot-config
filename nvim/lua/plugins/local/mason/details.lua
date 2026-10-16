@@ -18,17 +18,17 @@ function M.lines(pkg)
       L[#L + 1] = k .. ": " .. v
     end
   end
-  kv("Categorías", table.concat(s.categories or {}, ", "))
-  kv("Lenguajes", table.concat(s.languages or {}, ", "))
-  kv("Licencia", table.concat(s.licenses or {}, ", "))
+  kv("Categories", table.concat(s.categories or {}, ", "))
+  kv("Languages", table.concat(s.languages or {}, ", "))
+  kv("License", table.concat(s.licenses or {}, ", "))
   kv("Homepage", s.homepage)
   local oki, iv = pcall(pkg.get_installed_version, pkg)
   if oki and iv then
-    kv("Instalada", iv)
+    kv("Installed", iv)
   end
   local okl, lv = pcall(pkg.get_latest_version, pkg)
   if okl and lv then
-    kv("Última", lv)
+    kv("Latest", lv)
   end
   return L
 end

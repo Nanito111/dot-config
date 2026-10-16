@@ -13,23 +13,23 @@ local function reltime(ts)
   local diff = os.time() - tonumber(ts)
   local mins = math.floor(diff / 60)
   if mins < 1 then
-    return "ahora"
+    return "now"
   elseif mins < 60 then
-    return "hace " .. mins .. "m"
+    return mins .. "m ago"
   end
   local hrs = math.floor(mins / 60)
   if hrs < 24 then
-    return "hace " .. hrs .. "h"
+    return hrs .. "h ago"
   end
   local days = math.floor(hrs / 24)
   if days < 30 then
-    return "hace " .. days .. "d"
+    return days .. "d ago"
   end
   local months = math.floor(days / 30)
   if months < 12 then
-    return "hace " .. months .. " mes"
+    return months .. " mo ago"
   end
-  return "hace " .. math.floor(months / 12) .. " a"
+  return math.floor(months / 12) .. " y ago"
 end
 
 -- Abre un popup flotante junto al cursor con el blame de la línea actual
@@ -71,7 +71,7 @@ end
 function M.blame()
   local buf = api.nvim_get_current_buf()
   if vim.fn.executable("git") == 0 or not signs.is_file(buf) then
-    vim.notify("git blame: no disponible aquí", vim.log.levels.WARN)
+    vim.notify("git blame: not available here", vim.log.levels.WARN)
     return
   end
   local name = api.nvim_buf_get_name(buf)
@@ -85,13 +85,13 @@ function M.blame()
     function(res)
       vim.schedule(function()
         if res.code ~= 0 then
-          vim.notify("git blame falló (¿archivo no rastreado?)", vim.log.levels.WARN)
+          vim.notify("git blame failed (untracked file?)", vim.log.levels.WARN)
           return
         end
         local out = res.stdout or ""
         local hash = out:match("^(%x+)")
         if hash and hash:match("^0+$") then
-          open_popup({ " Sin confirmar (cambios locales)" }, { "GitBlame" })
+          open_popup({ " Uncommitted (local changes)" }, { "GitBlame" })
           return
         end
         local author = out:match("author ([^\n]+)") or "?"

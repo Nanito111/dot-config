@@ -69,7 +69,7 @@ local function draw_toggles()
     table.concat({
       mark(o.regex, "M-e regex"),
       mark(o.case, "M-c Aa"),
-      mark(o.word, "M-w palabra"),
+      mark(o.word, "M-w word"),
     }, "  ")
   )
 end
@@ -86,8 +86,8 @@ local function draw()
   end
 
   local n = #s.matches
-  local count = n == 0 and "sin coincidencias" or string.format("%d/%d", s.idx, n)
-  set_footer(s.find_win, "⏎ una · C-a todas · C-n/p navegar · " .. count)
+  local count = n == 0 and "no matches" or string.format("%d/%d", s.idx, n)
+  set_footer(s.find_win, "⏎ one · C-a all · C-n/p navigate · " .. count)
 
   local cur = s.matches[s.idx]
   if cur and api.nvim_win_is_valid(s.origin) then
@@ -173,9 +173,9 @@ local function replace_all()
   end)
   s.changed = true
   vim.notify(
-    string.format("%d %s reemplazada%s", n, n == 1 and "coincidencia" or "coincidencias", n == 1 and "" or "s"),
+    string.format("%d %s replaced", n, n == 1 and "match" or "matches"),
     vim.log.levels.INFO,
-    { title = "Reemplazar" }
+    { title = "Replace" }
   )
   update()
 end
@@ -230,14 +230,14 @@ function M.open(query)
   end
   local buf = api.nvim_get_current_buf()
   if not vim.bo[buf].modifiable or vim.bo[buf].readonly then
-    vim.notify("El buffer no es editable", vim.log.levels.WARN, { title = "Reemplazar" })
+    vim.notify("The buffer is not editable", vim.log.levels.WARN, { title = "Replace" })
     return
   end
 
   local width = math.min(WIDTH, math.max(30, vim.o.columns - 6))
   local col = math.max(0, vim.o.columns - width - 4)
-  local find_buf, find_win = field("Buscar", 1, width, col)
-  local repl_buf, repl_win = field("Reemplazar", 4, width, col)
+  local find_buf, find_win = field("Search", 1, width, col)
+  local repl_buf, repl_win = field("Replace", 4, width, col)
 
   local origin = api.nvim_get_current_win()
   state = {

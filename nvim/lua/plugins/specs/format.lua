@@ -14,14 +14,14 @@ return {
         function()
           require("config.format").format()
         end,
-        desc = "Formatear buffer",
+        desc = "Format buffer",
       },
       {
         "<leader>lF",
         function()
           require("config.format").toggle()
         end,
-        desc = "Formatear al guardar (toggle)",
+        desc = "Format on save (toggle)",
       },
     },
     opts = {

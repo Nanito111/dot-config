@@ -110,7 +110,7 @@ end
 
 function M.undo()
   if not snapshot then
-    vim.notify("No hay ningún reemplazo que revertir", vim.log.levels.INFO, { title = "Reemplazar" })
+    vim.notify("No replacement to revert", vim.log.levels.INFO, { title = "Replace" })
     return
   end
   local n = 0
@@ -122,7 +122,7 @@ function M.undo()
     end
   end
   snapshot = nil
-  vim.notify(string.format("Reemplazo revertido en %d archivo(s)", n), vim.log.levels.INFO, { title = "Reemplazar" })
+  vim.notify(string.format("Replacement reverted in %d file(s)", n), vim.log.levels.INFO, { title = "Replace" })
 end
 
 -- ── Widget: pintado del contador y los toggles ─────────────────────
@@ -142,7 +142,7 @@ local function draw_toggles()
     table.concat({
       mark(o.regex, "M-e regex"),
       mark(o.case, "M-c Aa"),
-      mark(o.word, "M-w palabra"),
+      mark(o.word, "M-w word"),
     }, "  ")
   )
 end
@@ -173,7 +173,7 @@ local function fill_list(entries)
   end
   local lines = {}
   if #entries == 0 then
-    lines = { "  (sin coincidencias)" }
+    lines = { "  (no matches)" }
   else
     for _, e in ipairs(entries) do
       lines[#lines + 1] = "  " .. fit_line(e.path, e.count, s.width - 4)
@@ -193,7 +193,7 @@ local function update_count()
   end
   local q = find_text()
   if q == "" then
-    set_footer(s.find_win, "⏎/C-a reemplazar · sin término")
+    set_footer(s.find_win, "⏎/C-a replace · no term")
     fill_list({})
     return
   end
@@ -216,9 +216,9 @@ local function update_count()
       table.sort(entries, function(a, b)
         return a.path < b.path
       end)
-      local count = matches == 0 and "sin coincidencias"
-        or string.format("%d en %d archivo(s)", matches, files)
-      set_footer(s.find_win, "⏎/C-a reemplazar · " .. count)
+      local count = matches == 0 and "no matches"
+        or string.format("%d in %d file(s)", matches, files)
+      set_footer(s.find_win, "⏎/C-a replace · " .. count)
       fill_list(entries)
     end)
   end)
@@ -277,7 +277,7 @@ local function confirm()
   local opts = s.opts
   local files = search(q, r, opts)
   if #files == 0 then
-    vim.notify(string.format("Sin coincidencias de '%s'", q), vim.log.levels.INFO, { title = "Reemplazar" })
+    vim.notify(string.format("No matches for '%s'", q), vim.log.levels.INFO, { title = "Replace" })
     return
   end
   local total = 0
@@ -285,14 +285,14 @@ local function confirm()
     total = total + #f.edits
   end
   close()
-  local title = string.format("Reemplazar '%s' → '%s' — %d en %d archivo(s)", q, r, total, #files)
+  local title = string.format("Replace '%s' → '%s' — %d in %d file(s)", q, r, total, #files)
   lsprename.confirm(files, title, "utf-8", function(ok)
     if not ok then
       return
     end
     local sure = require("plugins.local.confirm").confirm(
-      string.format("¿Reemplazar %d coincidencia(s) en %d archivo(s)?\nSe puede deshacer con <leader>ru", total, #files),
-      "&Sí\n&No",
+      string.format("Replace %d match(es) in %d file(s)?\nUndo with <leader>ru", total, #files),
+      "&Yes\n&No",
       1,
       { backdrop = true }
     )
@@ -302,12 +302,12 @@ local function confirm()
     M.apply(files)
     vim.notify(
       string.format(
-        "Reemplazadas %d coincidencia(s) en %d archivo(s).  :ReplaceUndo (o <leader>ru) para revertir",
+        "Replaced %d match(es) in %d file(s).  :ReplaceUndo (or <leader>ru) to revert",
         total,
         #files
       ),
       vim.log.levels.INFO,
-      { title = "Reemplazar" }
+      { title = "Replace" }
     )
   end)
 end
@@ -331,14 +331,14 @@ function M.open(query)
     close()
   end
   if vim.fn.executable("rg") ~= 1 then
-    vim.notify("ripgrep (rg) no está disponible", vim.log.levels.WARN, { title = "Reemplazar" })
+    vim.notify("ripgrep (rg) is not available", vim.log.levels.WARN, { title = "Replace" })
     return
   end
 
   local width = math.min(WIDTH, math.max(30, vim.o.columns - 6))
   local col = math.max(0, vim.o.columns - width - 4)
-  local find_buf, find_win = field("Buscar (workspace)", 1, width, col)
-  local repl_buf, repl_win = field("Reemplazar", 4, width, col)
+  local find_buf, find_win = field("Search (workspace)", 1, width, col)
+  local repl_buf, repl_win = field("Replace", 4, width, col)
 
   -- Lista en vivo de archivos con coincidencias (para no esperar al paso de revisión)
   local list_buf = api.nvim_create_buf(false, true)
@@ -351,7 +351,7 @@ function M.open(query)
     col = col,
     width = width,
     height = 1,
-    title = " Coincidencias ",
+    title = " Matches ",
     title_pos = "left",
     wo = { cursorline = false, number = false, wrap = false },
   }).win
@@ -419,6 +419,6 @@ function M.open(query)
   update_count()
 end
 
-api.nvim_create_user_command("ReplaceUndo", M.undo, { desc = "Revertir el último reemplazo en el workspace" })
+api.nvim_create_user_command("ReplaceUndo", M.undo, { desc = "Revert the last workspace replacement" })
 
 return M

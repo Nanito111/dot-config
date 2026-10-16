@@ -108,7 +108,7 @@ local group = api.nvim_create_augroup("WinBar", { clear = true })
 
 api.nvim_create_autocmd({ "BufWinEnter", "BufEnter", "WinEnter", "TermOpen" }, {
   group = group,
-  desc = "Mostrar breadcrumbs solo en archivos",
+  desc = "Show breadcrumbs only in files",
   callback = set_winbar,
 })
 

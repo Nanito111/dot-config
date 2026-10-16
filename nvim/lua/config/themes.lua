@@ -97,7 +97,7 @@ function M.set(label)
   if apply(label) then
     require("config.settings").record("ui.theme", label)
   else
-    vim.notify("No se pudo aplicar el tema: " .. label, vim.log.levels.WARN)
+    vim.notify("Could not apply theme: " .. label, vim.log.levels.WARN)
   end
 end
 
@@ -113,13 +113,13 @@ end
 -- Código de ejemplo (lo resalta treesitter con el tema YA aplicado por on_move, así que
 -- muestra los colores reales) y debajo la paleta que la UI propia deriva de ese tema.
 local SAMPLE = {
-  "-- Ejemplo de código",
+  "-- Example code",
   "local M = {}",
   "",
   "---@param n number",
   "function M.fib(n)",
   "  if n < 2 then",
-  "    return n -- caso base",
+  "    return n -- base case",
   "  end",
   "  return M.fib(n - 1) + M.fib(n - 2)",
   "end",
@@ -155,7 +155,7 @@ end
 -- así que al final del ejemplo quedaría fuera de pantalla.
 local function preview()
   local pal = require("config.palette")
-  local lines, extmarks = { "-- Paleta del tema" }, {}
+  local lines, extmarks = { "-- Theme palette" }, {}
 
   for i = 1, #SWATCHES, 2 do
     local text = "--"
@@ -191,7 +191,7 @@ function M.pick()
   local original_cs = vim.g.colors_name
   local original_bg = vim.o.background
   require("plugins.local.picker").pick({
-    title = "Temas",
+    title = "Themes",
     items = M.labels(),
     preview = preview,
     on_move = function(label)
@@ -226,7 +226,7 @@ end, {
       return t:find(lead, 1, true) == 1
     end, M.labels())
   end,
-  desc = "Elegir tema (sin argumento abre el selector con vista previa)",
+  desc = "Choose theme (no argument opens the picker with live preview)",
 })
 
 return M

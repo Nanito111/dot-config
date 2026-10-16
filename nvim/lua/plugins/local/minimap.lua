@@ -636,7 +636,7 @@ end
 function M.toggle()
   M.set_enabled(not enabled)
   vim.notify(
-    enabled and "Minimapa activado" or "Minimapa desactivado",
+    enabled and "Minimap enabled" or "Minimap disabled",
     vim.log.levels.INFO,
     { title = "Minimap", ephemeral = true }
   )

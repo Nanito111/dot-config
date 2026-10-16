@@ -127,7 +127,7 @@ end)
 api.nvim_create_autocmd("ModeChanged", {
   group = api.nvim_create_augroup("CursorMode", { clear = true }),
   pattern = "*:*", -- todas las transiciones de modo (sin esto el default "*" no casa)
-  desc = "Color de la línea del cursor según el modo",
+  desc = "Cursor line color based on the mode",
   callback = function()
     set_line_hl(vim.v.event.new_mode)
   end,

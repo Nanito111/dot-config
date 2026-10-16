@@ -31,7 +31,7 @@ local lazy_presets = setmetatable({}, {
     local value = (ok and type(preset) == "table") and preset or false
     if not value then
       vim.schedule(function()
-        vim.notify("Preset de statusline inválido: " .. name, vim.log.levels.WARN)
+        vim.notify("Invalid statusline preset: " .. name, vim.log.levels.WARN)
       end)
     end
     rawset(t, name, value)

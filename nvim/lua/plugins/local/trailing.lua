@@ -105,7 +105,7 @@ M.set_enabled = M.set
 
 function M.toggle()
   M.set(not enabled)
-  vim.notify("Espacios finales: " .. (enabled and "resaltado ON" or "resaltado OFF"))
+  vim.notify("Trailing spaces: " .. (enabled and "highlight ON" or "highlight OFF"))
 end
 
 -- Quita los espacios finales del buffer actual (un solo undo, conserva cursor/vista)
@@ -116,7 +116,7 @@ function M.trim()
   local view = fn.winsaveview()
   pcall(vim.cmd, [[keeppatterns %s/\s\+$//e]])
   fn.winrestview(view)
-  vim.notify("Espacios finales eliminados")
+  vim.notify("Trailing spaces removed")
 end
 
 -- Restaura el estado persistido al arrancar

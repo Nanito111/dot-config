@@ -28,7 +28,7 @@ end
 -- Nuestro :Mason abre esta vista en vez de la UI oficial. mason.nvim recrea su propio :Mason
 -- al cargar (lazy), así que lo reponemos cuando eso ocurra.
 local function register_cmd()
-  vim.api.nvim_create_user_command("Mason", M.open, { desc = "Gestor de herramientas (sidebar)" })
+  vim.api.nvim_create_user_command("Mason", M.open, { desc = "Tool manager (sidebar)" })
 end
 register_cmd()
 vim.api.nvim_create_autocmd("User", {

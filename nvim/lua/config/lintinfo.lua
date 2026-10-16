@@ -36,13 +36,13 @@ local function render(ft, names, running, results)
 
   add("  Linters (nvim-lint)", "Title")
   add("")
-  add("  Filetype: " .. (ft ~= "" and ft or "(ninguno)"), "Comment")
+  add("  Filetype: " .. (ft ~= "" and ft or "(none)"), "Comment")
   add("")
 
   if #names == 0 then
-    add("  Sin linters configurados para este filetype.", "Comment")
+    add("  No linters configured for this filetype.", "Comment")
   else
-    add("  Configurados:")
+    add("  Configured:")
     local w = 0
     for _, n in ipairs(names) do
       w = math.max(w, #n)
@@ -59,7 +59,7 @@ local function render(ft, names, running, results)
         badge, badge_hl = "⚠", "DiagnosticWarn"
       end
       local pad = string.rep(" ", w - #n + 2)
-      local tail = cmd and (cmd .. (found and "" or "  (no está en el PATH)")) or "(sin comando)"
+      local tail = cmd and (cmd .. (found and "" or "  (not in PATH)")) or "(no command)"
       add("    " .. badge .. " " .. n .. pad .. tail)
       local row = #lines - 1
       marks[#marks + 1] = { row = row, col = 4, end_col = 4 + #badge, hl = badge_hl }
@@ -78,7 +78,7 @@ local function render(ft, names, running, results)
   local running_list = vim.tbl_keys(running)
   if #running_list > 0 then
     add("")
-    add("  Analizando ahora: " .. table.concat(running_list, ", "), "DiagnosticInfo")
+    add("  Running now: " .. table.concat(running_list, ", "), "DiagnosticInfo")
   end
 
   local width = 0
@@ -109,7 +109,7 @@ end
 
 function M.show()
   if not package.loaded["lint"] and not pcall(require, "lint") then
-    vim.notify("nvim-lint no está disponible", vim.log.levels.WARN, { title = "LintInfo" })
+    vim.notify("nvim-lint is not available", vim.log.levels.WARN, { title = "LintInfo" })
     return
   end
   local lint = require("lint")

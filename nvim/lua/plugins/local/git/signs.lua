@@ -290,7 +290,7 @@ local autocmd = api.nvim_create_autocmd
 
 autocmd({ "BufReadPost", "BufWritePost", "BufEnter" }, {
   group = group,
-  desc = "Actualizar signos de git",
+  desc = "Update git signs",
   callback = function(ev)
     schedule_head(ev.buf)
   end,
@@ -298,7 +298,7 @@ autocmd({ "BufReadPost", "BufWritePost", "BufEnter" }, {
 
 autocmd({ "TextChanged", "TextChangedI" }, {
   group = group,
-  desc = "Refrescar signos de git en vivo",
+  desc = "Refresh git signs live",
   callback = function(ev)
     debounced_refresh(ev.buf)
   end,

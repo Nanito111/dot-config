@@ -17,7 +17,7 @@ function M.apply()
     if ok and type(cfg) == "table" then
       pcall(vim.lsp.config, name, cfg)
     else
-      vim.notify("lsp-config/" .. name .. ".lua no devolvió una tabla", vim.log.levels.WARN)
+      vim.notify("lsp-config/" .. name .. ".lua did not return a table", vim.log.levels.WARN)
     end
   end
 end

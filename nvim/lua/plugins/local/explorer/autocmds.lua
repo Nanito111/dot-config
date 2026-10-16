@@ -149,7 +149,7 @@ autocmd("WinClosed", {
       rebuilding = false
       -- avisar en vez de callar: un fallo aquí deja el panel como única ventana
       if not ok then
-        vim.notify("No se pudo restaurar el dashboard: " .. tostring(err), vim.log.levels.WARN)
+        vim.notify("Could not restore the dashboard: " .. tostring(err), vim.log.levels.WARN)
       end
     end)
   end,

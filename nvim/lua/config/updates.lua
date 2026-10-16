@@ -20,7 +20,7 @@ local function check_mason()
     end
     if #outdated > 0 then
       vim.notify(
-        #outdated .. " herramienta(s) con actualización  ·  :Mason\n(" .. table.concat(outdated, ", ") .. ")",
+        #outdated .. " tool(s) with an update  ·  :Mason\n(" .. table.concat(outdated, ", ") .. ")",
         vim.log.levels.INFO,
         { title = "Mason" }
       )
@@ -30,7 +30,7 @@ end
 
 vim.api.nvim_create_autocmd("VimEnter", {
   group = vim.api.nvim_create_augroup("UpdatesCheck", { clear = true }),
-  desc = "Comprobar actualizaciones de herramientas (mason) tras el arranque",
+  desc = "Check for tool updates (mason) after startup",
   callback = function()
     vim.defer_fn(function()
       pcall(check_mason)

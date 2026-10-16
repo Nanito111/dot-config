@@ -41,7 +41,7 @@ local function tab_name(i, tab)
     return name
   end
   local base = vim.fn.fnamemodify(vim.fn.getcwd(-1, i), ":t")
-  return base ~= "" and base or "[sin nombre]"
+  return base ~= "" and base or "[no name]"
 end
 
 -- Tabline personalizada: cada workspace en una píldora redondeada
@@ -93,7 +93,7 @@ end
 -- nada en silencio: mejor decirlo.
 function M.cycle(delta)
   if #api.nvim_list_tabpages() < 2 then
-    vim.notify("No hay otros workspaces", vim.log.levels.WARN, { title = "Workspace" })
+    vim.notify("No other workspaces", vim.log.levels.WARN, { title = "Workspace" })
     return
   end
   vim.cmd(delta > 0 and "tabnext" or "tabprevious")
@@ -105,7 +105,7 @@ function M.jump(n)
   if tabs[n] then
     api.nvim_set_current_tabpage(tabs[n])
   else
-    vim.notify("No existe el workspace " .. n, vim.log.levels.WARN, { title = "Workspace" })
+    vim.notify("No such workspace: " .. n, vim.log.levels.WARN, { title = "Workspace" })
   end
 end
 
@@ -114,7 +114,7 @@ end
 function M.move(delta)
   local n = #api.nvim_list_tabpages()
   if n < 2 then
-    return vim.notify("No hay otros workspaces", vim.log.levels.WARN, { title = "Workspace" })
+    return vim.notify("No other workspaces", vim.log.levels.WARN, { title = "Workspace" })
   end
   local pos = api.nvim_tabpage_get_number(0)
   if (delta > 0 and pos == n) or (delta < 0 and pos == 1) then
@@ -287,13 +287,13 @@ local group = api.nvim_create_augroup("WorkspaceBuffers", { clear = true })
 
 api.nvim_create_autocmd("BufEnter", {
   group = group,
-  desc = "Registrar el buffer en su workspace",
+  desc = "Register the buffer in its workspace",
   callback = record_buffer,
 })
 
 api.nvim_create_autocmd("TermOpen", {
   group = group,
-  desc = "Registrar terminales (no flotantes) en su workspace",
+  desc = "Register terminals (non-floating) in their workspace",
   callback = function(ev)
     if is_tab_term(ev.buf) then -- excluye los flotantes (tienen term_label)
       record_exclusive(tab_terms, ev.buf)
@@ -303,7 +303,7 @@ api.nvim_create_autocmd("TermOpen", {
 
 api.nvim_create_autocmd("TabClosed", {
   group = group,
-  desc = "Limpiar buffers de tabs cerradas",
+  desc = "Clean up buffers from closed tabs",
   callback = function()
     for tab in pairs(tab_buffers) do
       if not api.nvim_tabpage_is_valid(tab) then

@@ -34,7 +34,7 @@ M.BORDERLESS = "borderless"
 vim.api.nvim_create_autocmd("FileType", {
   group = vim.api.nvim_create_augroup("BordersLazyBackdrop", { clear = true }),
   pattern = "lazy_backdrop",
-  desc = "El backdrop de :Lazy no debe heredar winborder (saldría enmarcado)",
+  desc = "The :Lazy backdrop must not inherit winborder (it would be framed)",
   callback = function(ev)
     for _, win in ipairs(vim.fn.win_findbuf(ev.buf)) do
       vim.w[win][M.BORDERLESS] = true
@@ -81,7 +81,7 @@ end
 function M.pick()
   local original = vim.o.winborder
   require("plugins.local.picker").pick({
-    title = "Borde de las ventanas",
+    title = "Window border",
     items = M.labels(),
     on_move = function(style)
       if style then
@@ -112,7 +112,7 @@ end, {
       return s:find(lead, 1, true) == 1
     end, M.labels())
   end,
-  desc = "Borde de las ventanas flotantes (sin argumento abre el selector)",
+  desc = "Floating window border (no argument opens the picker)",
 })
 
 return M

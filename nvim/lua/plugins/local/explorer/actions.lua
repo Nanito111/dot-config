@@ -34,14 +34,14 @@ local function system_open(path)
   elseif vim.ui and vim.ui.open then
     local _, err = vim.ui.open(dir)
     if err then
-      return vim.notify(err, vim.log.levels.WARN, { title = "Explorador" })
+      return vim.notify(err, vim.log.levels.WARN, { title = "Explorer" })
     end
   elseif vim.fn.executable("xdg-open") == 1 then
     vim.fn.jobstart({ "xdg-open", dir }, { detach = true })
   else
-    return vim.notify("No hay un abridor del sistema disponible", vim.log.levels.WARN, { title = "Explorador" })
+    return vim.notify("No system opener available", vim.log.levels.WARN, { title = "Explorer" })
   end
-  vim.notify("Abriendo en el sistema: " .. dir, vim.log.levels.INFO, { title = "Explorador" })
+  vim.notify("Opening in system: " .. dir, vim.log.levels.INFO, { title = "Explorer" })
 end
 
 -- Revela el archivo abierto en la ventana principal (expande sus carpetas), lleva el cursor
@@ -53,7 +53,7 @@ function M.reveal_current()
   end
   local name = s.current_file
   if not name or name == "" then
-    vim.notify("No hay archivo activo que revelar", vim.log.levels.INFO, { title = "Explorador" })
+    vim.notify("No active file to reveal", vim.log.levels.INFO, { title = "Explorer" })
     return
   end
   render.reveal(s)
@@ -210,7 +210,7 @@ function M.set_cwd()
   local dir = dir_of(s)
   local ok = pcall(vim.cmd.tcd, vim.fn.fnameescape(dir))
   if ok then
-    vim.notify("cwd: " .. vim.fn.fnamemodify(dir, ":~"), vim.log.levels.INFO, { title = "Explorador" })
+    vim.notify("cwd: " .. vim.fn.fnamemodify(dir, ":~"), vim.log.levels.INFO, { title = "Explorer" })
   end
 end
 
@@ -265,7 +265,7 @@ function M.create()
   -- prompt con la ruta relativa al cwd (más corta); "" si es el propio cwd
   local rel = rel_cwd(base)
   rel = (rel ~= "" and rel .. "/" or "")
-  local prompt = "Crear en " .. (rel ~= "" and rel or ".") .. " → "
+  local prompt = "Create in " .. (rel ~= "" and rel or ".") .. " → "
 
   vim.ui.input({ prompt = prompt, completion = "dir" }, function(input)
     if not input or input == "" or input:sub(-1) == ":" then
@@ -303,9 +303,9 @@ function M.delete()
   if not n then
     return
   end
-  local kind = n.is_dir and "carpeta" or "archivo"
+  local kind = n.is_dir and "folder" or "file"
   local confirm = require("plugins.local.confirm").confirm
-  if confirm("¿Borrar " .. kind .. " '" .. n.name .. "'?", "&Si\n&No", 2) ~= 1 then
+  if confirm("Delete " .. kind .. " '" .. n.name .. "'?", "&Yes\n&No", 2) ~= 1 then
     return
   end
   vim.fn.delete(n.path, n.is_dir and "rf" or "")
@@ -322,7 +322,7 @@ function M.rename()
   if not n then
     return
   end
-  local prompt = "Renombrar '" .. n.name .. "'"
+  local prompt = "Rename '" .. n.name .. "'"
   vim.ui.input({ prompt = prompt, default = n.name, completion = "file" }, function(input)
     if not input or input == "" then
       return
@@ -331,11 +331,11 @@ function M.rename()
       return
     end -- sin cambios
     if input:find("[/\\]") then -- no permitir mover con / o \
-      vim.notify("Nuevo nombre no puede llevar '/' o '\\'", vim.log.levels.WARN)
+      vim.notify("New name can't contain '/' or '\\'", vim.log.levels.WARN)
       return
     end
     if input:find("^%.%.") then -- no permitir salir con ../
-      vim.notify("Ruta no permitida", vim.log.levels.WARN)
+      vim.notify("Path not allowed", vim.log.levels.WARN)
       return
     end
 
@@ -345,7 +345,7 @@ function M.rename()
       return
     end -- mismo archivo
     if vim.fn.filereadable(target) == 1 or vim.fn.isdirectory(target) == 1 then
-      vim.notify("Ya existe: " .. input, vim.log.levels.WARN)
+      vim.notify("Already exists: " .. input, vim.log.levels.WARN)
       return
     end
 
@@ -369,7 +369,7 @@ function M.cut()
   local n = node_at_cursor(cur())
   if n then
     clip = { path = n.path, op = "cut" }
-    vim.notify("Cortado: " .. n.name)
+    vim.notify("Cut: " .. n.name)
   end
 end
 
@@ -377,7 +377,7 @@ function M.copy()
   local n = node_at_cursor(cur())
   if n then
     clip = { path = n.path, op = "copy" }
-    vim.notify("Copiado: " .. n.name)
+    vim.notify("Copied: " .. n.name)
   end
 end
 
@@ -463,7 +463,7 @@ function M.copy_path(mode)
   local mods = mode == "abs" and ":p" or mode == "name" and ":t" or ":."
   local p = vim.fn.fnamemodify(path, mods):gsub("/$", "") -- sin barra final en carpetas
   vim.fn.setreg("+", p)
-  vim.notify("Copiado: " .. p, vim.log.levels.INFO, { title = "Explorador" })
+  vim.notify("Copied: " .. p, vim.log.levels.INFO, { title = "Explorer" })
 end
 
 -- O: abre la carpeta bajo el cursor (o la del archivo, o la raíz) en el explorador del sistema

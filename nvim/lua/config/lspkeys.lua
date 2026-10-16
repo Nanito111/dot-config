@@ -12,7 +12,7 @@ local M = {}
 local function open_locations(o)
   local items = o.items or {}
   if #items == 0 then
-    vim.notify("Sin resultados", vim.log.levels.INFO, { title = "LSP" })
+    vim.notify("No results", vim.log.levels.INFO, { title = "LSP" })
     return
   end
   local function jump(it, origin)
@@ -39,7 +39,7 @@ local function open_locations(o)
     items = display,
     backdrop = true,
     input = o.input ~= false, -- las listas de ubicaciones (referencias) van sin buscador
-    footer = (o.input == false) and "j/k mover · Enter abrir · q cerrar" or nil,
+    footer = (o.input == false) and "j/k move · Enter open · q close" or nil,
     preview = function(item)
       local it = map[item]
       if it then
@@ -70,29 +70,29 @@ function M.on_attach(buf)
   local function map(lhs, fn, desc)
     vim.keymap.set("n", lhs, fn, { buffer = buf, desc = desc, silent = true })
   end
-  map("gd", vim.lsp.buf.definition, "LSP: ir a definición")
-  map("gD", vim.lsp.buf.declaration, "LSP: ir a declaración")
+  map("gd", vim.lsp.buf.definition, "LSP: go to definition")
+  map("gD", vim.lsp.buf.declaration, "LSP: go to declaration")
   -- K: hover con borde redondeado (a juego con el resto)
   map("K", function()
     vim.lsp.buf.hover()
-  end, "LSP: hover (documentación)")
+  end, "LSP: hover (documentation)")
   -- rename propio (confirmación + undo). require() al invocar -> recargable
   map("<leader>lr", function()
     require("plugins.local.lsprename").rename()
-  end, "LSP: renombrar símbolo (con confirmación)")
+  end, "LSP: rename symbol (with confirmation)")
   map("grn", function()
     require("plugins.local.lsprename").rename()
-  end, "LSP: renombrar símbolo (con confirmación)")
+  end, "LSP: rename symbol (with confirmation)")
   map("<leader>lu", function()
     require("plugins.local.lsprename").undo()
-  end, "LSP: revertir el último rename")
+  end, "LSP: undo last rename")
   map("<leader>la", function()
     vim.lsp.buf.code_action({
       filter = function(a)
         return not a.disabled
       end,
     })
-  end, "LSP: acciones de código")
+  end, "LSP: code actions")
   -- <leader>lf / <leader>lF (formatear / toggle formato-al-guardar) los define el spec de
   -- conform (global), para no duplicar el mapeo (which-key lo mostraba como "+2").
 
@@ -104,29 +104,29 @@ function M.on_attach(buf)
         open_locations(o)
       end,
     })
-  end, "LSP: referencias")
+  end, "LSP: references")
   map("<leader>ld", function()
     vim.lsp.buf.definition({ on_list = open_locations })
-  end, "LSP: definición(es)")
+  end, "LSP: definition(s)")
   map("<leader>li", function()
     vim.lsp.buf.implementation({ on_list = open_locations })
-  end, "LSP: implementaciones")
+  end, "LSP: implementations")
   map("<leader>lt", function()
     vim.lsp.buf.type_definition({ on_list = open_locations })
-  end, "LSP: definición de tipo")
+  end, "LSP: type definition")
   map("<leader>ls", function()
     vim.lsp.buf.document_symbol({ on_list = open_locations })
-  end, "LSP: símbolos del documento")
+  end, "LSP: document symbols")
   map("<leader>lS", function()
-    vim.ui.input({ prompt = "Símbolo del proyecto: " }, function(q)
+    vim.ui.input({ prompt = "Project symbol: " }, function(q)
       if q ~= nil then
         vim.lsp.buf.workspace_symbol(q, { on_list = open_locations })
       end
     end)
-  end, "LSP: símbolos del proyecto")
+  end, "LSP: project symbols")
   map("<leader>lh", function()
     vim.lsp.buf.signature_help()
-  end, "LSP: ayuda de firma")
+  end, "LSP: signature help")
 end
 
 -- Autocomando: al conectar, aplicar keymaps. require(self) al invocar para que, tras

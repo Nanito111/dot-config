@@ -6,39 +6,39 @@ local M = {}
 
 -- Idiomas del mirror de spell de Vim (código -> nombre en español).
 local LANGS = {
-  { "es", "Español" },
-  { "en", "Inglés" },
-  { "pt", "Portugués" },
-  { "fr", "Francés" },
-  { "de", "Alemán" },
-  { "it", "Italiano" },
-  { "ca", "Catalán" },
-  { "gl", "Gallego" },
-  { "nl", "Neerlandés" },
-  { "ru", "Ruso" },
-  { "uk", "Ucraniano" },
-  { "pl", "Polaco" },
-  { "cs", "Checo" },
-  { "sk", "Eslovaco" },
-  { "sv", "Sueco" },
-  { "da", "Danés" },
-  { "nb", "Noruego (Bokmål)" },
-  { "nn", "Noruego (Nynorsk)" },
-  { "ro", "Rumano" },
-  { "hu", "Húngaro" },
-  { "el", "Griego" },
-  { "hr", "Croata" },
-  { "sl", "Esloveno" },
-  { "lt", "Lituano" },
-  { "lv", "Letón" },
-  { "ga", "Irlandés" },
-  { "gd", "Gaélico escocés" },
-  { "cy", "Galés" },
-  { "af", "Afrikáans" },
-  { "id", "Indonesio" },
-  { "la", "Latín" },
-  { "he", "Hebreo" },
-  { "yi", "Yidis" },
+  { "es", "Spanish" },
+  { "en", "English" },
+  { "pt", "Portuguese" },
+  { "fr", "French" },
+  { "de", "German" },
+  { "it", "Italian" },
+  { "ca", "Catalan" },
+  { "gl", "Galician" },
+  { "nl", "Dutch" },
+  { "ru", "Russian" },
+  { "uk", "Ukrainian" },
+  { "pl", "Polish" },
+  { "cs", "Czech" },
+  { "sk", "Slovak" },
+  { "sv", "Swedish" },
+  { "da", "Danish" },
+  { "nb", "Norwegian (Bokmål)" },
+  { "nn", "Norwegian (Nynorsk)" },
+  { "ro", "Romanian" },
+  { "hu", "Hungarian" },
+  { "el", "Greek" },
+  { "hr", "Croatian" },
+  { "sl", "Slovenian" },
+  { "lt", "Lithuanian" },
+  { "lv", "Latvian" },
+  { "ga", "Irish" },
+  { "gd", "Scottish Gaelic" },
+  { "cy", "Welsh" },
+  { "af", "Afrikaans" },
+  { "id", "Indonesian" },
+  { "la", "Latin" },
+  { "he", "Hebrew" },
+  { "yi", "Yiddish" },
   { "eo", "Esperanto" },
 }
 
@@ -60,7 +60,7 @@ end
 -- plano. Llama a on_done(ok) al terminar.
 local function install(code, on_done)
   if vim.fn.executable("curl") == 0 then
-    vim.notify("curl no está en el PATH", vim.log.levels.ERROR, { title = "Spell" })
+    vim.notify("curl is not in PATH", vim.log.levels.ERROR, { title = "Spell" })
     return on_done and on_done(false)
   end
   local dir = spell_dir()
@@ -74,9 +74,9 @@ local function install(code, on_done)
         -- archivo de sugerencias (opcional; si no existe, no pasa nada)
         local sug = code .. ".utf-8.sug"
         vim.system({ "curl", "-fsSL", "-o", dir .. "/" .. sug, BASE .. sug }, {}, function() end)
-        vim.notify("Diccionario instalado: " .. code, vim.log.levels.INFO, { title = "Spell" })
+        vim.notify("Dictionary installed: " .. code, vim.log.levels.INFO, { title = "Spell" })
       else
-        vim.notify("No se pudo instalar '" .. code .. "'", vim.log.levels.WARN, { title = "Spell" })
+        vim.notify("Could not install '" .. code .. "'", vim.log.levels.WARN, { title = "Spell" })
       end
       if on_done then
         on_done(r.code == 0)
@@ -96,10 +96,10 @@ local function build()
   local items, map = {}, {}
   for _, l in ipairs(LANGS) do
     local code, name = l[1], l[2]
-    local state = installed(code) and "\u{f00c} instalado" or "\u{f019} instalar"
+    local state = installed(code) and "\u{f00c} installed" or "\u{f019} install"
     local disp = string.format("%-24s %s", name .. " (" .. code .. ")", state)
     if act[code] then
-      disp = disp .. "  \u{2190} activo en Markdown"
+      disp = disp .. "  \u{2190} active in Markdown"
     end
     items[#items + 1] = disp
     map[disp] = code
@@ -111,10 +111,10 @@ end
 function M.pick()
   local items, map = build()
   require("plugins.local.picker").pick({
-    title = "Diccionarios de ortografía",
+    title = "Spelling dictionaries",
     items = items,
     backdrop = true,
-    footer = "⏎ instalar · C-a aplicar en Markdown · Esc cerrar",
+    footer = "⏎ install · C-a apply in Markdown · Esc close",
     keymaps = {
       ["<CR>"] = function(ctx)
         local code = map[ctx.item() or ""]
@@ -122,10 +122,10 @@ function M.pick()
           return
         end
         if installed(code) then
-          vim.notify("'" .. code .. "' ya está instalado", vim.log.levels.INFO, { title = "Spell" })
+          vim.notify("'" .. code .. "' is already installed", vim.log.levels.INFO, { title = "Spell" })
           return
         end
-        vim.notify("Instalando '" .. code .. "'…", vim.log.levels.INFO, { title = "Spell" })
+        vim.notify("Installing '" .. code .. "'…", vim.log.levels.INFO, { title = "Spell" })
         install(code, function()
           local new_items, new_map = build()
           map = new_map
@@ -140,7 +140,7 @@ function M.pick()
         end
         local function apply()
           require("config.winopts").set_md_spell(code)
-          vim.notify("Corrector de Markdown: " .. code, vim.log.levels.INFO, { title = "Spell" })
+          vim.notify("Markdown spell checker: " .. code, vim.log.levels.INFO, { title = "Spell" })
           local ni, nm = build()
           map = nm
           ctx.set_items(ni)
@@ -148,7 +148,7 @@ function M.pick()
         if installed(code) then
           apply()
         else
-          vim.notify("Instalando '" .. code .. "' para aplicarlo…", vim.log.levels.INFO, { title = "Spell" })
+          vim.notify("Installing '" .. code .. "' to apply it…", vim.log.levels.INFO, { title = "Spell" })
           install(code, function(ok)
             if ok then
               apply()

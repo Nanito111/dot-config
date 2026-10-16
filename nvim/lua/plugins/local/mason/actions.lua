@@ -67,7 +67,7 @@ function M.installed()
       pkg = pkg,
       version = oki and iv or nil,
       outdated = oki and okl and iv ~= lv,
-      category = (pkg.spec.categories or {})[1] or "Otros",
+      category = (pkg.spec.categories or {})[1] or "Other",
     }
   end
   table.sort(list, function(a, b)
@@ -160,9 +160,9 @@ function M.install(name)
     M.in_progress[name] = nil
     vim.schedule(function()
       if success then
-        vim.notify(name .. " instalado", vim.log.levels.INFO, { title = "Mason" })
+        vim.notify(name .. " installed", vim.log.levels.INFO, { title = "Mason" })
       else
-        vim.notify("Falló instalar " .. name .. "\n" .. tostring(err), vim.log.levels.ERROR, { title = "Mason" })
+        vim.notify("Failed to install " .. name .. "\n" .. tostring(err), vim.log.levels.ERROR, { title = "Mason" })
       end
       on_change()
     end)
@@ -178,10 +178,10 @@ function M.uninstall(pkg)
   pkg:uninstall(nil, function(success, err)
     vim.schedule(function()
       if success ~= false then
-        vim.notify(pkg.name .. " desinstalado", vim.log.levels.INFO, { title = "Mason" })
+        vim.notify(pkg.name .. " uninstalled", vim.log.levels.INFO, { title = "Mason" })
       else
         vim.notify(
-          "Falló desinstalar " .. pkg.name .. "\n" .. tostring(err),
+          "Failed to uninstall " .. pkg.name .. "\n" .. tostring(err),
           vim.log.levels.ERROR,
           { title = "Mason" }
         )

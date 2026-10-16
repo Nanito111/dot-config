@@ -83,7 +83,7 @@ function M.confirm(files, title, encoding, on_confirm)
     lines[#lines + 1] = ""
     local btn = " "
     ranges = {}
-    for i, lab in ipairs({ "Sí", "No" }) do
+    for i, lab in ipairs({ "Yes", "No" }) do
       local t = "[ " .. lab .. " ]"
       ranges[i] = { #btn, #btn + #t }
       btn = btn .. t .. "  "
@@ -106,7 +106,7 @@ function M.confirm(files, title, encoding, on_confirm)
     height = lh,
     title = " " .. title .. " ",
     title_pos = "left",
-    footer = " j/k archivos · C-n/p cambios · ←→ · ⏎ ",
+    footer = " j/k files · C-n/p changes · ←→ · ⏎ ",
     footer_pos = "center",
     wo = { cursorline = true },
   }).win
@@ -328,13 +328,13 @@ function M.rename()
   local bufnr = api.nvim_get_current_buf()
   local clients = vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/rename" })
   if #clients == 0 then
-    vim.notify("Ningún servidor LSP soporta renombrar aquí", vim.log.levels.WARN, { title = "Rename" })
+    vim.notify("No LSP server supports renaming here", vim.log.levels.WARN, { title = "Rename" })
     return
   end
   local client = clients[1]
   local cword = vim.fn.expand("<cword>")
 
-  vim.ui.input({ prompt = "Renombrar a: ", default = cword }, function(new_name)
+  vim.ui.input({ prompt = "Rename to: ", default = cword }, function(new_name)
     if not new_name or new_name == "" or new_name == cword then
       return
     end
@@ -344,7 +344,7 @@ function M.rename()
       vim.schedule(function()
         if err or not result then
           vim.notify(
-            err and err.message or "El servidor no devolvió cambios",
+            err and err.message or "The server returned no changes",
             vim.log.levels.WARN,
             { title = "Rename" }
           )
@@ -352,10 +352,10 @@ function M.rename()
         end
         local files = M.edit_files(result)
         if #files == 0 then
-          vim.notify("Sin cambios", vim.log.levels.INFO, { title = "Rename" })
+          vim.notify("No changes", vim.log.levels.INFO, { title = "Rename" })
           return
         end
-        local title = string.format("Renombrar '%s' → '%s' — %d archivo(s)", cword, new_name, #files)
+        local title = string.format("Rename '%s' → '%s' — %d file(s)", cword, new_name, #files)
         M.confirm(files, title, client.offset_encoding, function(ok)
           if not ok then
             return
@@ -363,8 +363,8 @@ function M.rename()
           -- Popup final de confirmación (¿seguro?) con la pista de deshacer, tras revisar
           -- los cambios en el diálogo de preview.
           local sure = require("plugins.local.confirm").confirm(
-            string.format("¿Aplicar el rename en %d archivo(s)?\nSe puede deshacer con <leader>lu", #files),
-            "&Sí\n&No",
+            string.format("Apply the rename in %d file(s)?\nUndo with <leader>lu", #files),
+            "&Yes\n&No",
             1,
             { backdrop = true }
           )
@@ -373,7 +373,7 @@ function M.rename()
           end
           M.apply(result, client.offset_encoding)
           vim.notify(
-            string.format("Renombrado en %d archivo(s).  :LspRenameUndo (o <leader>lu) para revertir", #files),
+            string.format("Renamed in %d file(s).  :LspRenameUndo (or <leader>lu) to revert", #files),
             vim.log.levels.INFO,
             { title = "Rename" }
           )
@@ -386,7 +386,7 @@ end
 -- Revierte el último rename restaurando los snapshots
 function M.undo()
   if not snapshot then
-    vim.notify("No hay ningún rename que revertir", vim.log.levels.INFO, { title = "Rename" })
+    vim.notify("No rename to revert", vim.log.levels.INFO, { title = "Rename" })
     return
   end
   local n = 0
@@ -398,9 +398,9 @@ function M.undo()
     end
   end
   snapshot = nil
-  vim.notify(string.format("Rename revertido en %d archivo(s)", n), vim.log.levels.INFO, { title = "Rename" })
+  vim.notify(string.format("Rename reverted in %d file(s)", n), vim.log.levels.INFO, { title = "Rename" })
 end
 
-api.nvim_create_user_command("LspRenameUndo", M.undo, { desc = "Revertir el último rename del LSP" })
+api.nvim_create_user_command("LspRenameUndo", M.undo, { desc = "Revert the last LSP rename" })
 
 return M

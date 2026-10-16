@@ -210,7 +210,7 @@ function M.pick()
   local names = M.borders()
   table.sort(names)
   require("plugins.local.picker").pick({
-    title = "Borde de la statusline",
+    title = "Statusline border",
     items = names,
     on_move = function(name)
       if name then
@@ -234,7 +234,7 @@ function M.pick_preset()
   local names = M.presets()
   table.sort(names)
   require("plugins.local.picker").pick({
-    title = "Preset de statusline",
+    title = "Statusline preset",
     items = names,
     on_move = function(name)
       if name then
@@ -326,22 +326,22 @@ vim.o.statusline = "%!v:lua.statusline()"
 
 api.nvim_create_user_command("StatuslineBorder", function(o)
   if not M.set_border(o.args) then
-    vim.notify("Borde desconocido: " .. o.args, vim.log.levels.WARN)
+    vim.notify("Unknown border: " .. o.args, vim.log.levels.WARN)
   end
 end, {
   nargs = 1,
   complete = M.borders,
-  desc = "Cambiar el borde de la statusline",
+  desc = "Change the statusline border",
 })
 
 api.nvim_create_user_command("StatuslinePreset", function(o)
   if not M.set_preset(o.args) then
-    vim.notify("Preset desconocido: " .. o.args, vim.log.levels.WARN)
+    vim.notify("Unknown preset: " .. o.args, vim.log.levels.WARN)
   end
 end, {
   nargs = 1,
   complete = M.presets,
-  desc = "Cambiar el preset de la statusline",
+  desc = "Change the statusline preset",
 })
 
 local group = api.nvim_create_augroup("Statusline", { clear = true })
@@ -363,7 +363,7 @@ end
 -- terminal embebida (capta commits/pull hechos en :terminal o lazygit).
 autocmd({ "DirChanged", "TabEnter", "FocusGained", "BufWritePost", "TermLeave", "TermClose" }, {
   group = group,
-  desc = "Actualizar la rama de git del workspace (cwd)",
+  desc = "Update the workspace git branch (cwd)",
   callback = schedule_git,
 })
 update_git() -- rama inicial de la tab actual
@@ -409,7 +409,7 @@ end
 
 autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
   group = group,
-  desc = "Animar el indicador de linter mientras nvim-lint analiza",
+  desc = "Animate the linter indicator while nvim-lint runs",
   callback = function()
     vim.schedule(drive_lint_spinner)
   end,
@@ -417,7 +417,7 @@ autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
 
 autocmd("DiagnosticChanged", {
   group = group,
-  desc = "Redibujar la statusline al cambiar los diagnósticos",
+  desc = "Redraw the statusline when diagnostics change",
   callback = function()
     -- APLAZADO, no en el propio evento: quien fija los diagnósticos puede estar a mitad
     -- de su render (Mason reemplaza las líneas, fija diagnósticos y SOLO DESPUÉS reaplica

@@ -93,7 +93,7 @@ local function render(buf)
 
   -- fila-acción arriba: ⏎ abre el picker para instalar algo nuevo (más intuitivo que 'a').
   -- Con → a la derecha, como los botones "action" del panel de settings.
-  local label = "  \u{f067}  Instalar herramienta"
+  local label = "  \u{f067}  Install tool"
   local arrow = "→"
   local pad = math.max(1, width - 3 - vim.fn.strdisplaywidth(label) - vim.fn.strdisplaywidth(arrow))
   local add = label .. string.rep(" ", pad) .. arrow
@@ -113,7 +113,7 @@ local function render(buf)
       entries[#entries + 1] = {
         name = name,
         pkg = st.pkg,
-        category = (st.pkg and st.pkg.spec and (st.pkg.spec.categories or {})[1]) or "Instalando",
+        category = (st.pkg and st.pkg.spec and (st.pkg.spec.categories or {})[1]) or "Installing",
       }
     end
   end
@@ -233,7 +233,7 @@ local function do_uninstall(buf)
     return
   end
   local ans =
-    require("plugins.local.confirm").confirm("¿Desinstalar «" .. e.name .. "»?", "&Si\n&No", 2, { backdrop = true })
+    require("plugins.local.confirm").confirm("Uninstall «" .. e.name .. "»?", "&Yes\n&No", 2, { backdrop = true })
   if ans == 1 then
     actions.uninstall(e.pkg)
   end
@@ -248,7 +248,7 @@ local function open_config(buf)
   end
   local path = config_path(e.name)
   if not path then
-    vim.notify("«" .. e.name .. "» no tiene config propia en tools-settings", vim.log.levels.INFO, { title = "Mason" })
+    vim.notify("«" .. e.name .. "» has no config in tools-settings", vim.log.levels.INFO, { title = "Mason" })
     return
   end
   local target
@@ -285,7 +285,7 @@ local function update_all(buf)
     end
   end
   if n == 0 then
-    vim.notify("Todo está al día", vim.log.levels.INFO, { title = "Mason" })
+    vim.notify("Everything is up to date", vim.log.levels.INFO, { title = "Mason" })
   end
 end
 
@@ -304,7 +304,7 @@ end
 local function install_new()
   local catalog = actions.catalog()
   if #catalog == 0 then
-    vim.notify("No hay más paquetes disponibles", vim.log.levels.INFO, { title = "Mason" })
+    vim.notify("No more packages available", vim.log.levels.INFO, { title = "Mason" })
     return
   end
 
@@ -353,7 +353,7 @@ local function install_new()
   end
 
   local function footer_text()
-    return string.format("[Cat: %s]  [Lang: %s]   <C-g> categoría · <C-l> lenguaje", cats[ci], langs[li])
+    return string.format("[Cat: %s]  [Lang: %s]   <C-g> category · <C-l> language", cats[ci], langs[li])
   end
 
   local function apply(ctx)
@@ -386,7 +386,7 @@ local function install_new()
   end
 
   require("plugins.local.picker").pick({
-    title = "Instalar herramienta",
+    title = "Install tool",
     items = filtered(),
     footer = footer_text(),
     backdrop = true,
@@ -482,33 +482,33 @@ function M.create()
       fn(buf)
     end, { buffer = buf, silent = true, nowait = true, desc = desc })
   end
-  map("u", do_update, "Actualizar paquete")
-  map("x", do_uninstall, "Desinstalar paquete")
-  map("U", update_all, "Actualizar lo desactualizado")
+  map("u", do_update, "Update package")
+  map("x", do_uninstall, "Uninstall package")
+  map("U", update_all, "Update outdated")
   map("a", function()
     install_new()
-  end, "Instalar herramienta")
-  map("e", open_config, "Abrir su configuración")
-  map("K", activate, "Ver detalles")
+  end, "Install tool")
+  map("e", open_config, "Open its config")
+  map("K", activate, "View details")
   map("r", function(b)
     render(b)
-  end, "Refrescar la vista")
+  end, "Refresh view")
   map("R", function(b)
     render(b)
   end)
-  map("<CR>", activate, "Ver detalles")
+  map("<CR>", activate, "View details")
   map("<Tab>", function()
     require("plugins.local.sidebar").next()
-  end, "Siguiente panel del sidebar")
+  end, "Next sidebar panel")
   map("<S-Tab>", function()
     require("plugins.local.sidebar").prev()
-  end, "Panel anterior del sidebar")
+  end, "Previous sidebar panel")
   map("q", function()
     require("plugins.local.sidebar").close()
-  end, "Cerrar el panel")
+  end, "Close panel")
   map("?", function(b)
     mason_help(b)
-  end, "Atajos de Mason")
+  end, "Mason keymaps")
 
   api.nvim_create_autocmd("CursorMoved", {
     buffer = buf,

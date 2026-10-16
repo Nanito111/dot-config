@@ -53,7 +53,7 @@ local function explorer_help()
   table.sort(entries, function(a, b)
     return a.key:lower() < b.key:lower()
   end)
-  local ch = require("plugins.local.whichkey.popup").read_key("Explorador", entries, true)
+  local ch = require("plugins.local.whichkey.popup").read_key("Explorer", entries, true)
   if ch and ch ~= "" and ch ~= "\27" then
     api.nvim_feedkeys(string(ch), "m", false)
   end
@@ -175,7 +175,7 @@ end
 local peek_group = api.nvim_create_augroup("ExplorerPeek", { clear = true })
 api.nvim_create_autocmd({ "CursorMoved", "WinScrolled" }, {
   group = peek_group,
-  desc = "Tooltip con el nombre completo de la línea del explorador",
+  desc = "Tooltip with the full name of the explorer line",
   callback = function(ev)
     if vim.bo[ev.buf].filetype == "explorer" then
       local pos = api.nvim_win_get_cursor(0)
@@ -189,7 +189,7 @@ api.nvim_create_autocmd({ "CursorMoved", "WinScrolled" }, {
 })
 api.nvim_create_autocmd({ "WinLeave", "BufLeave", "CursorMovedI" }, {
   group = peek_group,
-  desc = "Cerrar el tooltip del explorador al salir",
+  desc = "Close the explorer tooltip on leave",
   callback = peek_close,
 })
 
@@ -212,27 +212,27 @@ local function ex_create()
   local function map(lhs, fn, desc)
     vim.keymap.set("n", lhs, fn, { buffer = s.buf, silent = true, nowait = true, desc = desc })
   end
-  map("<CR>", actions.on_enter, "Abrir archivo / expandir carpeta")
-  map("l", actions.on_enter, "Abrir archivo / expandir carpeta")
-  map("h", actions.on_collapse, "Colapsar carpeta")
-  map("H", actions.go_up, "Subir la raíz un nivel")
-  map("L", actions.go_in, "Subir la raíz un nivel")
-  map("K", actions.set_cwd, "Fijar la carpeta como cwd (tcd)")
-  map("J", actions.reveal_current, "Centrar en el archivo actual")
-  map("o", actions.open_in_system, "Abrir la carpeta en el explorador del sistema")
+  map("<CR>", actions.on_enter, "Open file / expand folder")
+  map("l", actions.on_enter, "Open file / expand folder")
+  map("h", actions.on_collapse, "Collapse folder")
+  map("H", actions.go_up, "Move root up one level")
+  map("L", actions.go_in, "Move root up one level")
+  map("K", actions.set_cwd, "Set folder as cwd (tcd)")
+  map("J", actions.reveal_current, "Center on current file")
+  map("o", actions.open_in_system, "Open folder in system explorer")
   map("R", function()
     render.render(cur())
-  end, "Refrescar el árbol")
-  map("q", sidebar.close, "Cerrar el panel")
-  map("<Tab>", sidebar.next, "Vista siguiente")
-  map("<S-Tab>", sidebar.prev, "Vista anterior")
+  end, "Refresh tree")
+  map("q", sidebar.close, "Close panel")
+  map("<Tab>", sidebar.next, "Next view")
+  map("<S-Tab>", sidebar.prev, "Previous view")
   map("<leader>x", "<Nop>") -- desactivar cerrar-buffer global dentro del explorador
-  map("a", actions.create, "Crear archivo/carpeta")
-  map("d", actions.delete, "Borrar")
-  map("r", actions.rename, "Renombrar")
-  map("x", actions.cut, "Cortar")
-  map("y", actions.copy, "Copiar archivo/carpeta")
-  map("p", actions.paste, "Pegar")
+  map("a", actions.create, "Create file/folder")
+  map("d", actions.delete, "Delete")
+  map("r", actions.rename, "Rename")
+  map("x", actions.cut, "Cut")
+  map("y", actions.copy, "Copy file/folder")
+  map("p", actions.paste, "Paste")
   -- ff: buscar archivos por nombre dentro de la carpeta bajo el cursor (si es un archivo,
   -- se usa su carpeta). fw: buscar contenido (grep) dentro de la carpeta o archivo bajo el cursor.
   map("ff", function()
@@ -244,9 +244,9 @@ local function ex_create()
     end
     require("plugins.local.picker").files({
       path = dir,
-      title = "Archivos en " .. vim.fn.fnamemodify(dir, ":t") .. "/",
+      title = "Files in " .. vim.fn.fnamemodify(dir, ":t") .. "/",
     })
-  end, "Buscar archivos por nombre en la carpeta")
+  end, "Find files by name in folder")
   map("fw", function()
     local s = cur()
     local node = s and render.node_at_cursor(s)
@@ -258,24 +258,24 @@ local function ex_create()
     local is_dir = node and node.is_dir or path == (s and s.root)
     require("plugins.local.picker").grep({
       path = path,
-      title = "Buscar en " .. name .. (is_dir and "/" or ""),
+      title = "Search in " .. name .. (is_dir and "/" or ""),
     })
-  end, "Buscar contenido dentro (grep)")
+  end, "Search content inside (grep)")
   -- c abre el which-key con las opciones de copiar; ca/cr/cn siguen funcionando como chord
   map("c", function()
     require("plugins.local.whichkey").show("c")
-  end, "Copiar ruta…")
+  end, "Copy path…")
   -- c es prefijo: ca=absoluta · cr=relativa · cn=nombre
   map("ca", function()
     actions.copy_path("abs")
-  end, "Copiar ruta absoluta")
+  end, "Copy absolute path")
   map("cr", function()
     actions.copy_path("rel")
-  end, "Copiar ruta relativa")
+  end, "Copy relative path")
   map("cn", function()
     actions.copy_path("name")
-  end, "Copiar el nombre")
-  map("?", explorer_help, "Atajos del explorador (which-key)")
+  end, "Copy name")
+  map("?", explorer_help, "Explorer keymaps (which-key)")
   return s.buf
 end
 

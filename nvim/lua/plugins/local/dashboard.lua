@@ -29,9 +29,9 @@ local function get_header()
 end
 
 local buttons = {
-  "e   Explorador de archivos   (<leader>e)",
-  "n   Nuevo archivo            (n)",
-  "q   Salir                    (q)",
+  "e   File explorer            (<leader>e)",
+  "n   New file                 (n)",
+  "q   Quit                     (q)",
 }
 
 -- ¿Es un buffer "real" (archivo listado y normal)?
@@ -89,7 +89,7 @@ local function get_buf()
   -- demás ventanas normales del tab; el :q pendiente cierra la última = el tab.
   autocmd("QuitPre", {
     buffer = dash_buf,
-    desc = "Cerrar el tab completo al :q desde el dashboard",
+    desc = "Close the whole tab on :q from the dashboard",
     callback = function()
       local cur = api.nvim_get_current_win()
       for _, w in ipairs(api.nvim_tabpage_list_wins(0)) do
@@ -342,7 +342,7 @@ local group = api.nvim_create_augroup("Dashboard", { clear = true })
 -- Al iniciar sin argumentos
 autocmd("VimEnter", {
   group = group,
-  desc = "Mostrar dashboard al iniciar",
+  desc = "Show dashboard on startup",
   callback = function()
     if vim.fn.argc() == 0 and not has_real_buffers() then
       M.open()
@@ -353,7 +353,7 @@ autocmd("VimEnter", {
 -- Al cerrar el último buffer real
 autocmd("BufDelete", {
   group = group,
-  desc = "Mostrar dashboard al cerrar el último buffer",
+  desc = "Show dashboard when the last buffer closes",
   callback = function()
     vim.schedule(function()
       if not has_real_buffers() then
@@ -366,7 +366,7 @@ autocmd("BufDelete", {
 -- Recentrar al redimensionar
 autocmd("VimResized", {
   group = group,
-  desc = "Recentrar dashboard",
+  desc = "Recenter dashboard",
   callback = function()
     local win = api.nvim_get_current_win()
     local buf = api.nvim_win_get_buf(win)

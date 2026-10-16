@@ -21,6 +21,6 @@ function M.open()
   sidebar.open("settings")
 end
 
-vim.api.nvim_create_user_command("Settings", M.open, { desc = "Panel de configuración (sidebar)" })
+vim.api.nvim_create_user_command("Settings", M.open, { desc = "Settings panel (sidebar)" })
 
 return M

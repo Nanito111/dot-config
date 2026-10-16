@@ -14,7 +14,7 @@ end
 function M.pick(opts, on_choose)
   opts = opts or {}
   local s = { root = abspath(opts.root or vim.fn.getcwd()), expanded = {}, nodes = {}, dirs_only = true }
-  local prompt = opts.prompt or "Carpeta: "
+  local prompt = opts.prompt or "Folder: "
   local sel = 1 -- línea seleccionada en el árbol (1 = la raíz)
 
   local width = math.min(80, math.max(40, vim.o.columns - 8))
@@ -33,9 +33,9 @@ function M.pick(opts, on_choose)
     height = tree_h,
     col = col,
     row = row + 3,
-    title = " Carpetas ",
+    title = " Folders ",
     title_pos = "center",
-    footer = " ⏎ elegir · C-n/C-p mover · →/Tab abrir · C-o entrar · C-u subir · Esc ",
+    footer = " ⏎ select · C-n/C-p move · →/Tab open · C-o enter · C-u up · Esc ",
     footer_pos = "center",
     wo = { cursorline = true, winhighlight = "CursorLine:ExplorerCursorLine" },
   }).win
@@ -122,7 +122,7 @@ function M.pick(opts, on_choose)
       s.root, s.expanded, sel = abspath(path), {}, 1
       draw()
     else
-      vim.notify("No es una carpeta: " .. path, vim.log.levels.WARN, { title = "Carpetas" })
+      vim.notify("Not a folder: " .. path, vim.log.levels.WARN, { title = "Folders" })
     end
   end
 
@@ -130,7 +130,7 @@ function M.pick(opts, on_choose)
     local path = api.nvim_buf_get_lines(prompt_buf, 0, 1, false)[1] or ""
     path = abspath(path)
     if vim.fn.isdirectory(path) == 0 then
-      vim.notify("No existe la carpeta: " .. path, vim.log.levels.WARN, { title = "Carpetas" })
+      vim.notify("Folder does not exist: " .. path, vim.log.levels.WARN, { title = "Folders" })
       return
     end
     close()

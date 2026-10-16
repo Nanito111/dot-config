@@ -74,7 +74,7 @@ function M.toggle()
       apply(buf, api.nvim_get_current_buf() == buf and api.nvim_win_get_cursor(0)[1] or -1)
     end
   end
-  vim.notify("Ocultar .env: " .. (enabled and "ON" or "OFF"), vim.log.levels.INFO, { title = "EnvCloak" })
+  vim.notify("Hide .env: " .. (enabled and "ON" or "OFF"), vim.log.levels.INFO, { title = "EnvCloak" })
 end
 
 -- ── Activación ─────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ local group = api.nvim_create_augroup("EnvCloak", { clear = true })
 
 api.nvim_create_autocmd({ "BufReadPost", "BufWinEnter", "TextChanged", "TextChangedI" }, {
   group = group,
-  desc = "Enmascarar valores en archivos .env",
+  desc = "Mask values in .env files",
   callback = function(ev)
     if is_env(ev.buf) then
       refresh(ev.buf)
@@ -93,7 +93,7 @@ api.nvim_create_autocmd({ "BufReadPost", "BufWinEnter", "TextChanged", "TextChan
 -- Revelar la línea bajo el cursor (y reenmascarar la anterior) al moverse
 api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
   group = group,
-  desc = "Revelar la línea del cursor en archivos .env",
+  desc = "Reveal the cursor line in .env files",
   callback = function(ev)
     if is_env(ev.buf) then
       refresh(ev.buf)
@@ -101,7 +101,7 @@ api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
   end,
 })
 
-api.nvim_create_user_command("EnvCloak", M.toggle, { desc = "Alternar el ocultado de valores en .env" })
+api.nvim_create_user_command("EnvCloak", M.toggle, { desc = "Toggle value hiding in .env files" })
 
 -- Enmascarar los .env ya abiertos (arranque y :ReloadConfig)
 for _, buf in ipairs(api.nvim_list_bufs()) do

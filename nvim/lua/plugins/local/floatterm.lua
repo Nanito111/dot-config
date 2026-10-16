@@ -29,7 +29,7 @@ function M.toggle(name, cmd)
   -- Verificar que el binario exista antes de intentar arrancarlo
   if vim.fn.executable(cmd[1]) == 0 then
     vim.notify(
-      string.format("No está instalado o\nfalta '%s' agregarlo al PATH", cmd[1]),
+      string.format("Not installed, or\nadd '%s' to the PATH", cmd[1]),
       vim.log.levels.INFO,
       { title = name, ephemeral = true }
     )
@@ -85,7 +85,7 @@ end
 -- Borrar el buffer de terminal termina su proceso.
 api.nvim_create_autocmd("TabClosed", {
   group = api.nvim_create_augroup("FloatTerm", { clear = true }), -- agrupado: no duplica al recargar
-  desc = "Cerrar terminales flotantes de la tab cerrada",
+  desc = "Close floating terminals of the closed tab",
   callback = function()
     for key, st in pairs(state) do
       if st.tab and not api.nvim_tabpage_is_valid(st.tab) then
