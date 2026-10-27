@@ -60,6 +60,7 @@ local SECTION_ICONS = {
   ["Sidebar"] = "\u{f0db}", --
   ["Minimap"] = "\u{f279}", --
   ["Tools by language"] = "\u{f0ad}", --
+  ["Workspaces"] = "\u{f009}", --
   ["Editing"] = "\u{f044}", --
   ["Spelling"] = "\u{f02d}", --
   ["Buffer view"] = "\u{f06e}", --

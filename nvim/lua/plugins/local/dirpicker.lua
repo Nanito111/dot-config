@@ -8,7 +8,11 @@ local render = require("plugins.local.explorer.render")
 local M = {}
 
 local function abspath(p)
-  return vim.fn.fnamemodify(vim.fn.expand(p), ":p"):gsub("[\\/]$", "")
+  local a = vim.fn.fnamemodify(vim.fn.expand(p), ":p")
+  if a ~= "/" then -- no reducir la raíz "/" a "" al quitar la barra final
+    a = a:gsub("[\\/]+$", "")
+  end
+  return a
 end
 
 function M.pick(opts, on_choose)

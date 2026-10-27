@@ -10,6 +10,7 @@ function M.input(opts, on_confirm)
   require("plugins.local.ui").input.open({
     prompt = opts.prompt,
     default = opts.default,
+    placeholder = opts.placeholder,
     relative = opts.relative,
     completion = opts.completion,
     on_confirm = on_confirm or function() end,
@@ -44,7 +45,7 @@ function M.select(items, opts, on_choice)
   end
 
   require("plugins.local.picker").pick({
-    title = (opts.prompt or "Seleccionar"):gsub("%s*:?%s*$", ""),
+    title = (opts.prompt or "Select"):gsub("%s*:?%s*$", ""),
     items = display,
     on_select = function(s)
       local e = map[s]

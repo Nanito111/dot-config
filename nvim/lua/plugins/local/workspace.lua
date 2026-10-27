@@ -65,11 +65,12 @@ function _G.tabline()
 end
 
 -- Crea un workspace: nueva tab con su propio cwd (tcd), nombre, explorador y dashboard.
--- `name` es opcional (editable en el prompt); si viene vacío, se usa el basename de la carpeta.
+-- `name` es opcional (editable en el prompt); si viene vacío, lo resuelve config.workspaces
+-- (nombre predefinido por ruta) y, en su defecto, el basename de la carpeta.
 function M.new(dir, name)
   dir = (dir and dir ~= "") and dir or vim.fn.getcwd()
   dir = vim.fn.fnamemodify(vim.fn.expand(dir), ":p")
-  name = (name and name ~= "") and name or vim.fn.fnamemodify(dir:gsub("[\\/]$", ""), ":t")
+  name = (name and name ~= "") and name or require("config.workspaces").name_for(dir)
 
   vim.cmd("tabnew")
   vim.cmd("tcd " .. vim.fn.fnameescape(dir))

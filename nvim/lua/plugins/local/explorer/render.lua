@@ -13,6 +13,11 @@ local normpath, read_dir = util.normpath, util.read_dir
 
 local LINK_ICON = "\u{f0c1}" --  symlink (fa-link)
 
+-- Une carpeta + nombre sin duplicar la barra cuando la carpeta es la raíz "/".
+local function join(dir, name)
+  return (dir == "/" and "" or dir) .. "/" .. name
+end
+
 local M = {}
 
 local function set_hl()
@@ -85,7 +90,7 @@ end
 local function build(s, path, depth, out)
   for _, e in ipairs(read_dir(path)) do
     if e.is_dir or not s.dirs_only then
-      local full = path .. "/" .. e.name
+      local full = join(path, e.name)
       out[#out + 1] = { path = full, name = e.name, is_dir = e.is_dir, is_link = e.is_link, depth = depth }
       if e.is_dir and s.expanded[full] then
         build(s, full, depth + 1, out)
@@ -229,15 +234,15 @@ function M.reveal(s)
     return
   end
   local root = normpath(s.root)
-  if target:sub(1, #root + 1) ~= root .. "/" then
-    return -- el archivo no está bajo la raíz
+  if root ~= "" and target:sub(1, #root + 1) ~= root .. "/" then
+    return -- el archivo no está bajo la raíz (root == "" es "/": todo cuelga de ahí)
   end
   local dir = s.root
   while normpath(dir) ~= target do
     local next_dir
     for _, e in ipairs(read_dir(dir)) do
       if e.is_dir then
-        local child = dir .. "/" .. e.name
+        local child = join(dir, e.name)
         local nc = normpath(child)
         if target == nc or target:sub(1, #nc + 1) == nc .. "/" then
           next_dir = child

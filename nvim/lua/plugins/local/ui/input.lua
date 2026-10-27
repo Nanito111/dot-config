@@ -11,11 +11,15 @@ function M.open(opts)
   opts = opts or {}
   local prompt = (opts.prompt or "Input"):gsub("%s*:?%s*$", "")
   local default = opts.default or ""
+  -- placeholder: nombre sugerido mostrado como ghost text (atenuado) con el buffer vacío; al
+  -- escribir desaparece y, si se confirma vacío, se usa como valor. `default` precarga texto
+  -- editable; `placeholder` NO toca el buffer. Normalmente se usa uno u otro.
+  local placeholder = opts.placeholder or ""
 
   -- posición/tamaño: explícitos si el llamador los da (layouts apilados); si no, se calculan
   local width = opts.width
   if not width then
-    width = math.min(math.max(#prompt + 4, #default + 8, 30), math.floor(vim.o.columns * 0.8))
+    width = math.min(math.max(#prompt + 4, #default + 8, #placeholder + 8, 30), math.floor(vim.o.columns * 0.8))
   end
   local relative = opts.relative == "editor" and "editor" or "cursor"
   local row, col = opts.row, opts.col
@@ -41,6 +45,23 @@ function M.open(opts)
   vim.b[buf].completion = false -- sin autocompletado (blink) en el cuadro
   api.nvim_buf_set_lines(buf, 0, -1, false, { default })
 
+  -- Ghost text del placeholder: virt_text atenuado sobre la línea cuando está vacía; se oculta
+  -- al escribir y reaparece al borrar todo. Es solo visual (no entra en el valor del buffer).
+  if placeholder ~= "" then
+    local gns = api.nvim_create_namespace("ui_input_ghost")
+    local function render_ghost()
+      api.nvim_buf_clear_namespace(buf, gns, 0, -1)
+      if (api.nvim_buf_get_lines(buf, 0, 1, false)[1] or "") == "" then
+        api.nvim_buf_set_extmark(buf, gns, 0, 0, {
+          virt_text = { { placeholder, "Comment" } },
+          virt_text_pos = "overlay",
+        })
+      end
+    end
+    api.nvim_create_autocmd({ "TextChangedI", "TextChanged", "InsertEnter" }, { buffer = buf, callback = render_ghost })
+    render_ghost()
+  end
+
   -- Modo build-only: el llamador engancha keymaps/cierre; devolvemos handles a secas.
   if not opts.on_confirm then
     return fl
@@ -62,7 +83,11 @@ function M.open(opts)
     vim.keymap.set(mode, lhs, fn, { buffer = buf, nowait = true, silent = true })
   end
   map({ "i", "n" }, "<CR>", function()
-    finish(api.nvim_buf_get_lines(buf, 0, 1, false)[1] or "")
+    local line = api.nvim_buf_get_lines(buf, 0, 1, false)[1] or ""
+    if line == "" and placeholder ~= "" then
+      line = placeholder -- confirmar vacío acepta el ghost text
+    end
+    finish(line)
   end)
   map({ "i", "n" }, "<Esc>", function()
     finish(nil)

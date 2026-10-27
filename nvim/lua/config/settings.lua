@@ -585,6 +585,22 @@ local function build()
       },
     },
     {
+      title = "Workspaces",
+      items = {
+        {
+          id = "workspace.names",
+          label = "Predefined names by path",
+          type = "action",
+          overridden = function()
+            return next(require("config.workspaces").rows()) ~= nil
+          end,
+          run = function()
+            require("plugins.local.settings.workspaces_table").open()
+          end,
+        },
+      },
+    },
+    {
       title = "Editing",
       items = {
         provider({

@@ -279,9 +279,10 @@ map("n", "<leader>sn", function()
     if not (dir and dir ~= "") then
       return
     end
-    -- Nombre editable, precargado con el basename de la carpeta (⏎ acepta, Esc cancela)
-    local base = vim.fn.fnamemodify(vim.fn.expand(dir):gsub("[\\/]$", ""), ":t")
-    vim.ui.input({ prompt = "Workspace name: ", default = base, relative = "editor" }, function(name)
+    -- Nombre sugerido como ghost text (config.workspaces por ruta, o el nombre de la carpeta);
+    -- escribir lo reemplaza, ⏎ vacío lo acepta, Esc cancela
+    local suggested = require("config.workspaces").name_for(dir)
+    vim.ui.input({ prompt = "Workspace name: ", placeholder = suggested, relative = "editor" }, function(name)
       if name == nil then
         return -- Esc: cancelar la creación
       end
