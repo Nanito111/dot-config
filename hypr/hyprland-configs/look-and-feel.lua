@@ -9,17 +9,17 @@ hl.config({
     general = {
         gaps_in    = 3,
         gaps_out   = 4,
-        border_size = 1,
+        border_size = 3,
 
         col = {
             -- Reemplaza con tus valores reales de colors.conf:
-            active_border   = { colors = { primary } },
-            inactive_border = { colors = { surface_bright } },
+            active_border   = { colors = { Colors.primary } },
+            inactive_border = { colors = { Colors.surface_bright } },
         },
 
         resize_on_border = false,
         allow_tearing    = true,
-        layout           = "dwindle",
+        layout           = "scrolling",
     },
 
     decoration = {
@@ -35,18 +35,36 @@ hl.config({
             offset  = { 0, 1 },
             -- NOTA: shadow:ignore_window fue removido en 0.55 (ahora siempre activo).
             -- color: reemplaza con tu valor real de $shadow
-            color   = shadow,
+            color   = Colors.shadow,
         },
 
         blur = {
             enabled           = true,
+            variant           = "kawase",
             new_optimizations = true,
             ignore_opacity    = true,
             xray              = false,
             size              = 5,
             passes            = 2,
             brightness        = 0.8,
-            noise             = 0,
+            noise             = 0.2,
+
+            haze = {
+              intensity = 1,
+              iridescence = 1,
+            },
+        },
+        border_part_of_window = false,
+        motion_blur = {
+          enabled             = true,
+          samples             = 3,
+        },
+        glow = {
+            enabled           = false,
+        },
+        wobble = {
+            enabled           = false,
+            velocity_epsilon  = 600,
         },
     },
 
@@ -100,27 +118,27 @@ hl.animation({ leaf = "monitorAdded",    enabled = true,  speed = 3.00, bezier =
 hl.config({
     group = {
         col = {
-            border_active          = { colors = { primary } },
-            border_inactive        = { colors = { surface_bright } },
-            border_locked_active   = { colors = { tertiary } },
-            border_locked_inactive = { colors = { tertiary_container } },
+            border_active          = { colors = { Colors.primary } },
+            border_inactive        = { colors = { Colors.surface_bright } },
+            border_locked_active   = { colors = { Colors.tertiary } },
+            border_locked_inactive = { colors = { Colors.tertiary_container } },
         },
 
         groupbar = {
-            text_color               = background,
-            text_color_inactive      = primary,
-            text_color_locked_active = background,
-            text_color_locked_inactive = tertiary_container,
+            text_color               = Colors.background,
+            text_color_inactive      = Colors.primary,
+            text_color_locked_active = Colors.background,
+            text_color_locked_inactive = Colors.tertiary_container,
             font_size                = 12,
             font_weight_active       = "medium",
             font_weight_inactive     = "light",
 
             gradients                = true,
             col = {
-                active         = { colors = { primary } },
-                inactive       = { colors = { background } },
-                locked_active  = { colors = { tertiary } },
-                locked_inactive = { colors = { background } },
+                active         = { colors = { Colors.primary } },
+                inactive       = { colors = { Colors.background } },
+                locked_active  = { colors = { Colors.tertiary } },
+                locked_inactive = { colors = { Colors.background } },
             },
 
             height           = 18,

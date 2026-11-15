@@ -8,18 +8,11 @@
 -- Y luego referenciarlo en look-and-feel.lua directamente como variables Lua.
 --
 -- Ejemplo:
-primary           = "rgba(cba6f7ff)"
-surface_bright    = "rgba(313244ff)"
-background        = "rgba(1e1e2eff)"
-shadow            = "rgba(00000066)"
-tertiary          = "rgba(f38ba8ff)"
-tertiary_container = "rgba(45475aff)"
-
-return {
-    primary            = primary,
-    surface_bright     = surface_bright,
-    background         = background,
-    shadow             = shadow,
-    tertiary           = tertiary,
-    tertiary_container = tertiary_container,
+Colors = {
+	primary             = "rgba(aaaaaaff)",
+	surface_bright      = "rgba(313131ff)",
+	background          = "rgba(1e1e1eff)",
+	shadow              = "rgba(00000066)",
+	tertiary            = "rgba(e3e3e3ff)",
+	tertiary_container  = "rgba(454545ff)",
 }

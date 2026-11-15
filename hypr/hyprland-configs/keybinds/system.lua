@@ -2,9 +2,9 @@
 -- Migrated from keybinds/system.conf
 
 -- System binds
-hl.bind(mainMod .. " + P",             hl.dsp.exec_cmd("caelestia shell lock lock"))
-hl.bind(mainMod .. " + SHIFT + P",     hl.dsp.exec_cmd("pc-suspend"))
-hl.bind(mainMod .. " + SHIFT + escape",hl.dsp.exec_cmd("pc-logout"))
+hl.bind(MainMod .. " + P",             hl.dsp.exec_cmd("caelestia shell lock lock"))
+hl.bind(MainMod .. " + SHIFT + P",     hl.dsp.exec_cmd("pc-suspend"))
+hl.bind(MainMod .. " + SHIFT + escape",hl.dsp.exec_cmd("pc-logout"))
 
 -- Volume (sink)
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+"),   { locked = true, repeating = true })
@@ -13,13 +13,13 @@ hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_S
 hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),{ locked = true, repeating = true })
 
 -- Custom volume keys (sink)
-hl.bind(mainMod .. " + SHIFT + N", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SOURCE +"), { repeating = true })
-hl.bind(mainMod .. " + SHIFT + B", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SOURCE -"), { repeating = true })
-hl.bind(mainMod .. " + SHIFT + M", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SOURCE mute"), { repeating = true })
+hl.bind(MainMod .. " + SHIFT + N", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SOURCE +"), { repeating = true })
+hl.bind(MainMod .. " + SHIFT + B", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SOURCE -"), { repeating = true })
+hl.bind(MainMod .. " + SHIFT + M", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SOURCE mute"), { repeating = true })
 
-hl.bind(mainMod .. " + N", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SINK +"), { repeating = true })
-hl.bind(mainMod .. " + B", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SINK -"), { repeating = true })
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SINK mute"), { repeating = true })
+hl.bind(MainMod .. " + N", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SINK +"), { repeating = true })
+hl.bind(MainMod .. " + B", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SINK -"), { repeating = true })
+hl.bind(MainMod .. " + M", hl.dsp.exec_cmd(change_volume .. " DEFAULT_AUDIO_SINK mute"), { repeating = true })
 
 -- Brightness
 hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("brightnessctl s 10%+"), { locked = true, repeating = true })
@@ -34,7 +34,6 @@ hl.bind("XF86AudioPrev",  hl.dsp.exec_cmd("playerctl previous"),    { locked = t
 -- Zoom
 local MAX_ZOOM = 5
 local MIN_ZOOM = 1
-local ZOOM_TOGGLE_FACTOR = 1.5
 
 ---@param offset number
 ---@return nil
@@ -45,16 +44,16 @@ local function zoom(offset)
     elseif current ~= MIN_ZOOM then
         current = MIN_ZOOM
     else
-        current = ZOOM_TOGGLE_FACTOR
+        current = 0
     end
     current = math.max(MIN_ZOOM, math.min(MAX_ZOOM, current))
     hl.config({ cursor = { zoom_factor = current } })
 end
 
-hl.bind(mainMod .. " + mouse:274", zoom)
-hl.bind(mainMod .. " + mouse_down", function()
-    zoom(0.2)
-end)
-hl.bind(mainMod .. " + mouse_up", function()
+hl.bind(MainMod .. " + mouse:274", zoom)
+hl.bind(MainMod .. " + mouse_down", function()
     zoom(-0.2)
+end)
+hl.bind(MainMod .. " + mouse_up", function()
+    zoom(0.2)
 end)

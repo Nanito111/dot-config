@@ -1,7 +1,7 @@
 -- hyprland-configs/keybinds/init.lua
 -- Migrated from keybinds/init.conf
 
-mainMod = "SUPER"
+MainMod = "SUPER"
 
 hl.config({
     binds = {

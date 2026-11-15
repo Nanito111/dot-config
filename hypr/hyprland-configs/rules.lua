@@ -16,8 +16,8 @@ hl.window_rule({
 hl.window_rule({
     name = "no-focus-blank-xwayland",
     match = {
-        class      = "^$",
-        title      = "^$",
+        class      = ".*",
+        title      = ".*",
         xwayland   = true,
         float      = true,
         fullscreen = false,
@@ -26,12 +26,20 @@ hl.window_rule({
     no_focus = true,
 })
 
--- Global: no blur except zen, thunar, Thunar
+-- Global: no xdg drags
 hl.window_rule({
-    name = "no-blur-most",
-    match = { class = "^(?!zen$|thunar$|Thunar$).*$" },
-    no_blur = true,
+    name = "no-xdg-drags",
+    match = { class = ".*" },
+    no_xdg_drags = true,
 })
+
+-- Global: no blur except zen, thunar, Thunar
+-- hl.window_rule({
+--     name = "no-blur-most",
+--     match = { class = "^(?!zen$|thunar$|Thunar$).*$" },
+--     no_blur = true,
+-- })
+
 
 -- checkupdates (foot)
 hl.window_rule({
