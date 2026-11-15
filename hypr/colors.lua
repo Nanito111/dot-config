@@ -1,1 +1,0 @@
-/home/francisco/.local/state/caelestia/theme/hyprland.lua

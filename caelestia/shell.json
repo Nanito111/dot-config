@@ -2,30 +2,44 @@
     "appearance": {
         "anim": {
             "durations": {
-                "scale": 0.4762938230383974
+                "scale": 0.48
             }
         },
         "font": {
-            "family": {
-                "material": "Material Symbols Rounded",
-                "mono": "Bitcount Grid Single",
-                "sans": "Bitcount Prop Single"
+            "body": {
+                "family": "Patrick Hand"
             },
-            "size": {
-                "scale": 1.1420537897310514
-            }
+            "clock": "Cherry Bomb One",
+            "headline": {
+                "family": "Cherry Bomb One"
+            },
+            "icon": {
+                "family": "Material Symbols Rounded"
+            },
+            "label": {
+                "family": "Patrick Hand"
+            },
+            "mono": {
+                "family": "Noto Mono"
+            },
+            "scale": 1,
+            "title": {
+                "family": "Cherry Bomb One"
+            },
+            "workspaces": "Rubik"
         },
         "padding": {
-            "scale": 1.0707627118644067
+            "scale": 1.07
         },
         "rounding": {
-            "scale": 0.5541463414634147
+            "scale": 0.5
         },
         "spacing": {
-            "scale": 0.3737288135593221
+            "scale": 0.37
         },
         "transparency": {
-            "enabled": false
+            "base": 0.95,
+            "enabled": true
         }
     },
     "background": {
@@ -33,15 +47,15 @@
             "background": {
                 "blur": true,
                 "enabled": false,
-                "opacity": 0.8625461254612548
+                "opacity": 0.28
             },
             "enabled": true,
             "invertColors": false,
-            "position": "bottom-left",
+            "position": "middle-left",
             "shadow": {
-                "blur": 1,
+                "blur": 2,
                 "enabled": true,
-                "opacity": 1
+                "opacity": 0.3
             }
         },
         "enabled": true,
@@ -53,20 +67,60 @@
     "bar": {
         "activeWindow": {
             "compact": true,
-            "inverted": true
+            "inverted": true,
+            "showOnHover": false
         },
         "clock": {
-            "background": false,
+            "background": true,
             "showDate": true,
-            "showIcon": false
+            "showIcon": false,
+            "showSeconds": false
         },
         "dragThreshold": 100,
+        "entries": [
+            {
+                "enabled": true,
+                "id": "logo"
+            },
+            {
+                "enabled": true,
+                "id": "workspaces"
+            },
+            {
+                "enabled": true,
+                "id": "spacer"
+            },
+            {
+                "enabled": true,
+                "id": "activeWindow"
+            },
+            {
+                "enabled": true,
+                "id": "spacer"
+            },
+            {
+                "enabled": true,
+                "id": "tray"
+            },
+            {
+                "enabled": true,
+                "id": "clock"
+            },
+            {
+                "enabled": true,
+                "id": "statusIcons"
+            },
+            {
+                "enabled": true,
+                "id": "power"
+            }
+        ],
         "excludedScreens": [
             "DVI-D-1"
         ],
         "persistent": true,
         "popouts": {
-            "activeWindow": true,
+            "activeWindow": false,
             "statusIcons": true,
             "tray": true
         },
@@ -75,13 +129,36 @@
             "volume": true
         },
         "showOnHover": true,
-        "status": {
-            "showAudio": false,
-            "showBattery": true,
-            "showKbLayout": true,
-            "showMicrophone": false,
-            "showWifi": false
-        },
+        "statusIcons": [
+            {
+                "enabled": true,
+                "id": "lockStatus"
+            },
+            {
+                "enabled": true,
+                "id": "audio"
+            },
+            {
+                "enabled": true,
+                "id": "microphone"
+            },
+            {
+                "enabled": true,
+                "id": "kbLayout"
+            },
+            {
+                "enabled": true,
+                "id": "network"
+            },
+            {
+                "enabled": true,
+                "id": "bluetooth"
+            },
+            {
+                "enabled": false,
+                "id": "battery"
+            }
+        ],
         "tray": {
             "background": true,
             "compact": false,
@@ -89,15 +166,17 @@
         },
         "workspaces": {
             "activeIndicator": true,
-            "occupiedBg": false,
-            "perMonitorWorkspaces": true,
+            "activeTrail": true,
+            "occupiedBg": true,
+            "perMonitor": true,
+            "showUnoccupied": true,
             "showWindows": false,
             "shown": 4
         }
     },
     "border": {
-        "rounding": 14,
-        "thickness": 18
+        "rounding": 10,
+        "thickness": 12
     },
     "dashboard": {
         "resourceUpdateInterval": 1000
@@ -105,13 +184,13 @@
     "general": {
         "apps": {
             "audio": [
-                "pavucontrol"
+                "org.gnome.Decibels"
             ],
             "explorer": [
                 "thunar"
             ],
             "playback": [
-                "mpv"
+                "clapper"
             ],
             "terminal": [
                 "foot"
@@ -122,19 +201,31 @@
             "lockBeforeSleep": true,
             "timeouts": [
                 {
+                    "enabled": true,
                     "idleAction": "lock",
+                    "inhibitWhenAudio": false,
+                    "inhibitWhenCharging": false,
+                    "respectInhibitors": true,
                     "timeout": 600
                 },
                 {
+                    "enabled": true,
                     "idleAction": "dpms off",
+                    "inhibitWhenAudio": false,
+                    "inhibitWhenCharging": false,
+                    "respectInhibitors": true,
                     "returnAction": "dpms on",
                     "timeout": 615
                 },
                 {
+                    "enabled": true,
                     "idleAction": [
                         "systemctl",
                         "suspend-then-hibernate"
                     ],
+                    "inhibitWhenAudio": false,
+                    "inhibitWhenCharging": false,
+                    "respectInhibitors": true,
                     "timeout": 600
                 }
             ]
@@ -142,12 +233,13 @@
     },
     "launcher": {
         "actionPrefix": "/",
-        "enableDangerousActions": false,
+        "enableDangerousActions": true,
         "favouriteApps": [
             "thunar",
             "waterfox",
             "foot",
-            "obsidian"
+            "obsidian",
+            "helium"
         ],
         "hiddenApps": [
             "thunar-settings",
@@ -166,9 +258,11 @@
             "qvidcap",
             "ukmm"
         ],
-        "showOnHover": false,
+        "maxWallpapers": 12,
+        "showOnHover": true,
         "useFuzzy": {
-            "apps": true
+            "apps": true,
+            "wallpapers": true
         },
         "vimKeybinds": true
     },
@@ -179,7 +273,16 @@
         "wallpaperDir": "~/Pictures/wallpapers"
     },
     "services": {
-        "useFahrenheit": false,
-        "useTwelveHourClock": false
+        "clockFormat": "TwentyFourHour",
+        "dataUnits": "Decimal",
+        "defaultPlayer": "BrowserWorks waterfox",
+        "sensorUnits": "Celsius",
+        "weatherUnits": "Celsius"
+    },
+    "utilities": {
+        "toasts": {
+            "capsLockChanged": true,
+            "fullscreen": "important"
+        }
     }
 }
