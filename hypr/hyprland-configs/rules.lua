@@ -13,18 +13,18 @@ hl.window_rule({
 })
 
 -- Global: no focus for blank xwayland floating windows
-hl.window_rule({
-    name = "no-focus-blank-xwayland",
-    match = {
-        class      = ".*",
-        title      = ".*",
-        xwayland   = true,
-        float      = true,
-        fullscreen = false,
-        pin        = false,
-    },
-    no_focus = true,
-})
+-- hl.window_rule({
+--     name = "no-focus-blank-xwayland",
+--     match = {
+--         class      = ".*",
+--         title      = ".*",
+--         xwayland   = true,
+--         float      = true,
+--         fullscreen = false,
+--         pin        = false,
+--     },
+--     no_focus = true,
+-- })
 
 -- Global: no xdg drags
 hl.window_rule({

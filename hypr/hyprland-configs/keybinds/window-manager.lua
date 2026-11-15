@@ -14,8 +14,6 @@ hl.bind(MainMod .. " + K", hl.dsp.focus({ direction = "u" }))
 hl.bind(MainMod .. " + J", hl.dsp.focus({ direction = "d" }))
 
 -- Move focus (mouse scrolling)
-hl.bind(MainMod .. " + H", hl.dsp.focus({ direction = "l" }))
-hl.bind(MainMod .. " + L", hl.dsp.focus({ direction = "r" }))
 hl.bind(MainMod .. " + SHIFT + mouse_up",   hl.dsp.focus({ direction = "l" }))
 hl.bind(MainMod .. " + SHIFT + mouse_down", hl.dsp.focus({ direction = "r" }))
 

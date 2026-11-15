@@ -46,13 +46,8 @@ hl.config({
             xray              = false,
             size              = 5,
             passes            = 2,
-            brightness        = 0.8,
+            brightness        = 0.7,
             noise             = 0.2,
-
-            haze = {
-              intensity = 1,
-              iridescence = 1,
-            },
         },
         border_part_of_window = false,
         motion_blur = {
